@@ -10,7 +10,7 @@ const IMG = {
     ProfileImagePost: require('./ProfileImagePost.png'),
     PostImage: require('./PostImage.png'),
     MessageProfile: require('./MessageProfile.png'),
-
+    AddPostModelImage:require('./AddPostModelImage.png'),
 
 
    

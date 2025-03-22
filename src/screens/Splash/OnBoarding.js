@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
         width: width,
         height: height,
         resizeMode: 'cover',
-        bottom: 18
+        // bottom: 18
     },
     hiddenTouchable: {
         padding: 100,

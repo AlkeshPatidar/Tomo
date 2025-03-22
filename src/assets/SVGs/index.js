@@ -32,16 +32,14 @@ import Info from './Info.svg';
 import AddUserIcon from './AddUserIcon.svg';
 import OtionsButtons from './OtionsButtons.svg';
 
+import TabBottomLine from './tabBottomLine.svg';
+import ActiveHome from './ActiveHome.svg';
+import ActiveSearch from './ActiveSearch.svg';
+import ActiveMessage from './ActiveMessage.svg';
+import TabCloseBtn from './TabCloseBtn.svg';
 
-
-
-
-
-
-
-
-
-
+import AddstoryIconTabs from './AddstoryIconTabs.svg';
+import AddPostIcon from './AddPostIcon.svg';
 
 
 
@@ -76,6 +74,12 @@ export {
     Flag,
     Info,
     AddUserIcon,
-    OtionsButtons
-
+    OtionsButtons,
+    TabBottomLine,
+    ActiveHome,
+    ActiveSearch,
+    ActiveMessage,
+    TabCloseBtn,
+    AddstoryIconTabs,
+    AddPostIcon
 };
