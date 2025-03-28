@@ -12,19 +12,24 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import IMG from '../../assets/Images';
 import { App_Primary_color } from '../../common/Colors/colors';
+import { useSelector } from 'react-redux';
 
 const { width, height } = Dimensions.get('window');
 
-const slides = [
-    { id: '1', image: IMG.Onboarding1 },
-    { id: '2', image: IMG.Onboarding1 },
-    { id: '3', image: IMG.Onboarding1 },
-];
+
+
 
 const OnBoarding = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const flatListRef = useRef(null);
     const navigation = useNavigation();
+const { isDarkMode } = useSelector(state => state.theme);
+
+const slides = [
+    { id: '1', image:isDarkMode? IMG.OnBoardinDark: IMG.Onboarding1 },
+    { id: '2', image:isDarkMode? IMG.OnBoardinDark: IMG.Onboarding1 },
+    { id: '3', image:isDarkMode? IMG.OnBoardinDark: IMG.Onboarding1 },
+];
 
     const handleScroll = event => {
         const index = Math.round(event.nativeEvent.contentOffset.x / width);
@@ -42,7 +47,7 @@ const OnBoarding = () => {
             <StatusBar
                 translucent={true}
                 backgroundColor="transparent"
-                barStyle="dark-content"
+                barStyle={isDarkMode?'light-content' :"dark-content"}
             />
             <FlatList
                 ref={flatListRef}

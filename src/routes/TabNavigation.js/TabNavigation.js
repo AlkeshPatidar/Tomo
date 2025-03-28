@@ -6,7 +6,7 @@ import Home from '../../screens/Home/Home';
 
 import { TouchableOpacity, View } from 'react-native';
 
-import { ActiveHome, ActiveMessage, ActiveSearch, DeActiveSearch, TabBottomLine } from '../../assets/SVGs';
+import { ActiveHome, ActiveMessage, ActiveSearch, DeActiveHomeWhite, DeActiveSearch, DeactiveWhiteMsg, DeActiveWhiteSearch, TabBottomLine } from '../../assets/SVGs';
 import { MidIcon } from '../../assets/SVGs';
 import { DeActiveMsg } from '../../assets/SVGs';
 import { DeActiveLast } from '../../assets/SVGs';
@@ -15,10 +15,13 @@ import SearchScreen from '../../screens/Search/SearchFeed';
 import MessageList from '../../screens/Message/MessageList';
 import Followers from '../../screens/Followers/Followers';
 import OptionModal from '../AddPostModel';
+import UserDetail from '../../screens/UserDetail/UserDetail';
+import { useSelector } from 'react-redux';
 
 const Tab = createBottomTabNavigator();
 function TabNavigation() {
   const [modalVisible, setModalVisible] = React.useState(false);
+  const { isDarkMode } = useSelector(state => state.theme);
 
   return (
     <>
@@ -34,7 +37,7 @@ function TabNavigation() {
             alignItems: 'center',
             elevation: 20,
             shadowColor: '#000',
-            backgroundColor: white,
+            backgroundColor: isDarkMode ? '#252525' : white,
             borderTopRightRadius: 20,
             borderTopLeftRadius: 20,
             // borderRadius: 16,
@@ -57,7 +60,7 @@ function TabNavigation() {
                 </View>
               ) : (
                 <View style={{ alignItems: 'center', top: 16, width: 100 }}>
-                  <DeActiveHome />
+                  {isDarkMode ? <DeActiveHomeWhite /> : <DeActiveHome />}
                 </View>
               ),
           }}
@@ -76,7 +79,7 @@ function TabNavigation() {
                 </View>
               ) : (
                 <View style={{ alignItems: 'center', top: 16, width: 100 }}>
-                  <DeActiveSearch />
+                  {isDarkMode ? <DeActiveWhiteSearch /> : <DeActiveSearch />}
                 </View>
               ),
           }}
@@ -90,13 +93,13 @@ function TabNavigation() {
             tabBarIcon: ({ focused }) =>
               focused ? (
                 <TouchableOpacity style={{ alignItems: 'center', top: 0, width: 100 }}
-                onPress={() => setModalVisible(true)}
+                  onPress={() => setModalVisible(true)}
                 >
                   <MidIcon />
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity style={{ alignItems: 'center', top: 0, width: 100 }}
-                onPress={() => setModalVisible(true)}
+                  onPress={() => setModalVisible(true)}
                 >
                   <MidIcon />
                 </TouchableOpacity>
@@ -118,14 +121,16 @@ function TabNavigation() {
                 </View>
               ) : (
                 <View style={{ alignItems: 'center', top: 16, width: 100 }}>
-                  <DeActiveMsg />
+                  {isDarkMode ? <DeactiveWhiteMsg /> : <DeActiveMsg />}
                 </View>
               ),
           }}
         />
         <Tab.Screen
           name="last"
-          component={Followers}
+          // component={Followers}
+          component={UserDetail}
+
           options={{
             tabBarLabel: () => null,
             tabBarIcon: ({ focused }) =>

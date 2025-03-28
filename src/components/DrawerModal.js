@@ -2,250 +2,301 @@ import React, { useState } from 'react';
 import {
     View,
     Text,
+    Image,
     TouchableOpacity,
     StyleSheet,
-    Image,
+    Linking,
+    Alert,
     ScrollView,
-    Share
+    Share,
 } from 'react-native';
-import Modal from 'react-native-modal'; // Modal package for drawer effect
-import { moderateScale, verticalScale, } from 'react-native-size-matters';
-import CustomText from './TextComponent';
-import { FONTS_FAMILY } from '../assets/Fonts';
-import { BookmarkSimple, Down, DownArrowCircle, Flag, Headset, Notepad, PencilLine, SignOut, Star } from '../assets/SVGs';
+import Modal from 'react-native-modal';
+import { Forward, } from '../assets/SVGs/index';
 import Row from './wrapper/row';
-// import { EditIcon, BookmarkIcon, RateIcon, HelpIcon, ContactIcon, TermsIcon, LogoutIcon, LanguageIcon } from './assets/icons'; // Use your icons here
+import { FONTS_FAMILY } from '../assets/Fonts';
+import CustomText from './TextComponent';
+import SpaceBetweenRow from './wrapper/spacebetween';
+import { clearAsyncStorage } from '../utils/Apis';
+import { showError } from '../utils/helperFunctions';
+import { navigationRef } from '../routes/StackNavigation/route';
+import IMG from '../assets/Images';
+import ThemeToggle from './ThemeToggle';
+import { useSelector } from 'react-redux';
 
-const DrawerModal = ({
-    isModalVisible,
-    toggleModal,
-    navigation
-}) => {
-    //   const [isModalVisible, setModalVisible] = useState(false);
 
-    //   const toggleModal = () => {
-    //     setModalVisible(!isModalVisible);
-    //   };
 
-    const onInvite = async () => {
-        try {
-          const result = await Share.share({
-            message: 'Check out this cool app! https://example.com', // Your message or URL here
-          }, {
-            // Ensure this targets WhatsApp by specifying the package
-            dialogTitle: 'Share via',
-            excludedActivityTypes: [], // You can exclude other apps if needed
-          });
-      
-          if (result.action === Share.sharedAction) {
-            if (result.activityType) {
-              // Shared with activity type of result.activityType
-              console.log('Shared with activity type:', result.activityType);
-            } else {
-              // Shared without specifying activity type
-              console.log('Shared successfully');
-            }
-          } else if (result.action === Share.dismissedAction) {
-            // Dismissed
-            console.log('Share dismissed');
-          }
-        } catch (error) {
-          console.error('Error while sharing:', error.message);
-        }
-      };
-      
+const CustomDrawer = ({ isVisible, onClose, navigation }) => {
 
-    const handleNavigation = (key) => {
-        if (key == 'Edit Profile') {
-            navigation.navigate('EditProfile')
-        }
-        if (key == 'Contact Us') {
-            navigation.navigate('ContactUsScreen')
+    const handleLogout = async () => {
+        console.log("navigationRef", navigationRef);
 
+        Alert.alert(
+            'Logout', // Title
+            'Do you really want to logout?', // Message
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel', // Cancel button style
+                },
+                {
+                    text: 'Yes',
+                    onPress: async () => {
+                        try {
+                            await clearAsyncStorage();
+                            navigation?.navigate('Login');
+                            // na.getParent()?.navigate('Login');
+                        } catch (error) {
+                            showError('Error while logging out');
+                        }
+                    },
+                },
+            ],
+            { cancelable: true } // Dismiss by tapping outside
+        );
+    };
+
+    const handleOperation = async (label) => {
+        if (label == 'Log Out') {
+            handleLogout()
         }
-        if (key == 'Send Feedback') {
-            navigation.navigate('SendFeedBack')
-        }
-        if (key == 'Privacy Policy') {
-            navigation.navigate('Privacy')
-        }
-        if (key == 'Terms & Condition') {
-            navigation.navigate('TermsAndConditons')
-        }
-        if (key == 'Rate Us') {
-            navigation.navigate('RatingScreen')
-        }
-        if (key == 'Invite Freinds') {
-        onInvite()
-        }
-        if (key == 'Public Post') {
-            navigation.navigate('News',{type:'Public Post'})
-        }
-        if (key == 'User Search') {
-            navigation.navigate('UserSearch')
+        if (label == 'Terms & Conditions') {
+            // navigation.navigate('TermsAndCondition')
+            onClose()
+
         }
 
-        if (key == 'Questions') {
-            navigation.navigate('QuestionsScreen')
+        if (label == 'Help Center') {
+            navigation.navigate('ContactUs')
+            onClose()
+
+        }
+        if (label == 'Privacy Policy') {
+
+            navigation.navigate('PrivacyPolicy')
+            onClose()
+
+
+        }
+        if (label == 'FAQ') {
+            navigation.navigate('FAQs')
+            onClose()
+            
+        }
+        if (label == 'Followers') {
+            navigation.navigate('Followers')
+            onClose()
+            
         }
         
-        if (key == 'Top News') {
-            navigation.navigate('TopNews')
+
+        if (label == 'Invite a Freind') {
+            const inviteLink = 'https://www.example.com/invite';
+        
+            try {
+                const result = await Share.share({
+                    message: `Hey! Check out this amazing app: ${inviteLink}`,
+                    url: inviteLink,
+                    title: 'Invite a Friend',
+                });
+        
+                if (result.action === Share.sharedAction) {
+                    if (result.activityType) {
+                        console.log('Shared with activity type:', result.activityType);
+                    } else {
+                        console.log('Shared successfully');
+                        onClose()
+                    }
+                } else if (result.action === Share.dismissedAction) {
+                    console.log('Share dismissed');
+                    onClose()
+
+                }
+            } catch (error) {
+                console.error('Error sharing invite:', error.message);
+            }
         }
-        // if (key == 'My Contacts') {
-        //     navigation.navigate('MyContacts')
-        // }
-        if (key == 'Survey') {
-            navigation.navigate('Survey')
-        }
-        if (key == 'Influencers') {
-            navigation.navigate('Influencers')
-        }
-        // TermsAndConditons
+        
     }
+    const { isDarkMode } = useSelector(state => state.theme);
+
+    const styles = StyleSheet.create({
+        modal: {
+            margin: 0,
+            justifyContent: 'flex-end',
+        },
+        drawerContainer: {
+            width: '80%',
+            height: '100%',
+            backgroundColor:isDarkMode?'#252525': 'rgba(248, 248, 248, 1)',
+            // paddingVertical: 10,
+            paddingHorizontal: 15,
+            alignSelf: 'flex-end',
+        },
+        header: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            // marginBottom: 20,
+            marginTop: 20
+        },
+        closeButton: {
+            // padding: 10,
+            position: 'absolute',
+            right: -30
+        },
+        closeText: {
+            fontSize: 24,
+            color: '#000',
+        },
+        shopOwnerButton: {
+            backgroundColor: 'white',
+            paddingVertical: 6,
+            paddingHorizontal: 12,
+            borderRadius: 6,
+            borderWidth: 0.5,
+            borderColor: 'rgba(226, 113, 39, 1)',
+            flexDirection: 'row',
+            gap: 5,
+        },
+        shopOwnerText: {
+            color: 'rgba(226, 113, 39, 1)',
+            fontFamily: FONTS_FAMILY.Inter_Regular,
+            fontSize: 12,
+        },
+        profileSection: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            borderWidth: 1,
+            padding: 10,
+            justifyContent: 'space-between',
+            borderRadius: 8,
+            borderColor: 'rgba(221, 221, 221, 1)',
+        },
+        profileImage: {
+            width: 50,
+            height: 50,
+            borderRadius: 40,
+            // marginBottom: 10,
+        },
+        profileName: {
+            fontSize: 17,
+            fontFamily: FONTS_FAMILY.Inter_SemiBold,
+            color: 'black',
+        },
+        accountType: {
+            fontSize: 12,
+            color: 'gray',
+            fontFamily: FONTS_FAMILY.Inter_Regular,
+        },
+        options: {
+            marginTop: 20,
+        },
+        optionItem: {
+            paddingVertical: 6,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            // borderBottomWidth: 1,
+            borderBottomColor: '#e0e0e0',
+            // backgroundColor:'white'
+        },
+        optionText: {
+            fontSize: 14,
+            color: '#000',
+            fontFamily: FONTS_FAMILY.Inter_SemiBold,
+        },
+        logoutButton: {
+            marginTop: 30,
+            alignSelf: 'center',
+        },
+        logoutText: {
+            fontSize: 16,
+            color: 'red',
+            fontWeight: 'bold',
+        },
+        qrCode: {
+            width: 140,
+            height: 140,
+            alignSelf: 'center',
+            marginTop: 20,
+        },
+    });
+
+    const OptionItem = ({ label, icon, tc }) => (
+        <TouchableOpacity style={styles.optionItem}
+            onPress={() => handleOperation(label)}
+        >
+            <SpaceBetweenRow style={{
+                backgroundColor:isDarkMode?'black': 'white',
+                 borderRadius: 10,
+                width: '100%',
+                padding: 8
+            }}>
+                <Row style={{ gap: 18, }}>
+                    {icon}
+                    <Text style={{ ...styles.optionText, color:isDarkMode?'white': 'black', fontFamily: FONTS_FAMILY.SourceSans3_Medium, fontSize: 14 }}>
+                        {label}
+                    </Text>
+                </Row>
+                {/* <Forward /> */}
+
+            </SpaceBetweenRow>
+        </TouchableOpacity>
+    );
 
     return (
-        <View style={styles.container}>
+        <Modal
+            isVisible={isVisible}
+            onBackdropPress={onClose}
+            animationIn="slideInRight"
+            animationOut="slideOutRight"
+            style={styles.modal}>
+            <View style={styles.drawerContainer}>
 
+                {/* Options */}
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                >
+                    <Image source={IMG.Applogo}
+                    style={{
+                        height:100, 
+                        width:100,
+                        alignSelf:'center',
+                        marginVertical:20
 
-            <Modal
-                isVisible={isModalVisible}
-                onBackdropPress={toggleModal}
-                style={styles.modal}
-                animationIn="slideInLeft"
-                animationOut="slideOutLeft"
-                hasBackdrop={true}
-                backdropOpacity={0.7}
-            >
-                <View style={styles.drawer}>
-                    {/* Profile Section */}
-                    <TouchableOpacity style={styles.profileSection}
-                        onPress={() => navigation.navigate('EditProfile')}
-                    >
-                        <Image
-                            source={{ uri: 'https://via.placeholder.com/100' }} // Placeholder profile image
-                            style={styles.profileImage}
+                    }}
+                    />
+                      <ThemeToggle />
+
+                    <View style={styles.options}>
+                        <OptionItem label="Followers" nav={'Followers'} />
+                        <OptionItem label="Privacy Policy"  />
+                        <OptionItem label="Terms & Conditions" />
+                        <OptionItem label="Help Center"  />
+                        <OptionItem label="Invite a Freind"  />
+                        <OptionItem label="FAQ" />
+                        <OptionItem label="Log Out" />
+
+                        <View
+                            style={{
+                                height: 0.5,
+                                backgroundColor: 'rgba(221, 221, 221, 1)',
+                                width: '90%',
+                                marginVertical: 10,
+                            }}
                         />
-                        <View>
-                            <Text style={styles.userName}>Rahul Sharma</Text>
-                            <Text style={styles.userEmail}>rahulsharma@gmail.com</Text>
 
-                        </View>
-                    </TouchableOpacity>
-
-                    {/* Language Selector */}
-                    <View style={styles.menuItem}>
-                        <Flag />
-                        <Text style={styles.menuText}>Language</Text>
-                        <Row>
-                            <Text style={styles.languageText}>English</Text>
-                            <Down />
-                        </Row>
                     </View>
 
-                    {/* Menu Items */}
-                    <ScrollView showsVerticalScrollIndicator={false}>
-                        {menuData.map((item, index) => (
-                            <TouchableOpacity key={index} style={styles.menuItem}
-                                onPress={()=>{
-                                    handleNavigation(item?.title)
-                                }}
-                            >
-                                {item.icon}
-                                <Text style={styles.menuText}>{item.title}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                </View>
-            </Modal>
-        </View>
+                </ScrollView>
+
+            </View>
+        </Modal>
     );
+
 };
 
-const menuData = [
-    { title: 'Edit Profile', icon: <PencilLine /> },
-    // { title: 'Bookmark', icon: <BookmarkSimple /> },
-    { title: 'Send Feedback', icon: <Star /> },
-    { title: 'Rate Us', icon: <Star /> },
-    { title: 'Privacy Policy', icon: <Star /> },
-    { title: 'Contact Us', icon: <Headset /> },
-    { title: 'Public Post', icon: <Headset /> },
-    // { title: 'Setting', icon: <Headset /> },
-    // { title: 'Contact Us', icon: <Headset /> },
-   
-    { title: 'User Search', icon: <Notepad /> },
-    { title: 'Top News', icon: <Notepad /> },
-    // { title: 'My Contacts', icon: <Notepad /> },
-    { title: 'Survey', icon: <Notepad /> },
-    { title: 'Influencers', icon: <Notepad /> },
 
-   
-    { title: 'Questions', icon: <Notepad /> },
-    { title: 'Terms & Condition', icon: <Notepad /> },
-    { title: 'Invite Freinds', icon: <Notepad /> },
-    // { title: 'Rate Us', icon: <SignOut /> },
-    { title: 'Log-out', icon: <SignOut /> },
 
-];
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modal: {
-        margin: 0,
-        justifyContent: 'flex-start',
-    },
-    drawer: {
-        width: '80%',
-        height: '100%',
-        backgroundColor: '#fff',
-        padding: moderateScale(20),
-        // borderTopRightRadius: moderateScale(10),
-        // borderBottomRightRadius: moderateScale(10),
-    },
-    profileSection: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: verticalScale(20),
-        gap: 10
-    },
-    profileImage: {
-        width: moderateScale(50),
-        height: moderateScale(50),
-        borderRadius: moderateScale(35),
-        marginBottom: verticalScale(10),
-    },
-    userName: {
-        fontSize: moderateScale(18),
-        fontWeight: 'bold',
-        color: '#333',
-    },
-    userEmail: {
-        fontSize: moderateScale(14),
-        color: '#8A8A8A',
-    },
-    menuItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingVertical: verticalScale(10),
-        borderBottomWidth: 1,
-        borderBottomColor: '#E6E6E6',
-    },
-    menuText: {
-        fontSize: moderateScale(14),
-        color: '#333',
-        flex: 1,
-        marginLeft: moderateScale(10),
-        fontFamily: FONTS_FAMILY.Comfortaa_Regular
-    },
-    languageText: {
-        fontSize: moderateScale(14),
-        color: '#333',
-    },
-});
 
-export default DrawerModal;
+export default CustomDrawer;

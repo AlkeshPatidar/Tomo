@@ -40,11 +40,38 @@ import TabCloseBtn from './TabCloseBtn.svg';
 
 import AddstoryIconTabs from './AddstoryIconTabs.svg';
 import AddPostIcon from './AddPostIcon.svg';
+import Menu from './Menu.svg';
+import PrimaryBackWhite from './primaryBackWhite.svg';
+
+import EmailWhite from './EmailWhite.svg';
+import LockWhite from './LockWhite.svg';
+import EyeIconWhite from './EyeIconWhite.svg';
+
+import DeActiveHomeWhite from './DeActiveHomeWhite.svg';
+import DeActiveWhiteSearch from './DeActiveWhiteSearch.svg';
+import DeactiveWhiteMsg from './DeactiveWhiteMsg.svg';
+
+import WhiteThreeDot from './WhiteThreeDot.svg';
+import BookMarkWhite from './whiteBookMark.svg';
+import PostShareWhite from './whitePostShare.svg';
+import CommentWhite from './CommentWhite.svg';
+import LikeWhite from './LikeWhite.svg';
+import BackOuterWhite from './BackOuterWhite.svg';
+
+
+
+
+
+
+
 
 
 
 
 export {
+    DeActiveHomeWhite,
+    DeActiveWhiteSearch,
+    DeactiveWhiteMsg,
     Back,
     EmailIcon,
     LockIcon,
@@ -81,5 +108,16 @@ export {
     ActiveMessage,
     TabCloseBtn,
     AddstoryIconTabs,
-    AddPostIcon
+    AddPostIcon,
+    Menu,
+    PrimaryBackWhite,
+    EmailWhite,
+    LockWhite,
+    EyeIconWhite,
+    CommentWhite,
+    LikeWhite,
+    PostShareWhite,
+    BookMarkWhite,
+    WhiteThreeDot,
+    BackOuterWhite
 };

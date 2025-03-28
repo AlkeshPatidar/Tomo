@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
 import { Mic, Search } from '../../assets/SVGs';
+import { useSelector } from 'react-redux';
 
 const searchData = [
     { id: '1', image: 'https://picsum.photos/id/237/200/300' },
@@ -24,13 +25,54 @@ const searchData = [
 ];
 
 const SearchScreen = () => {
+
+    const { isDarkMode } = useSelector(state => state.theme);
+
+    const styles = StyleSheet.create({
+        container: {
+            flex: 1,
+            // backgroundColor: '#fff',
+            backgroundColor:isDarkMode?'black': '#fff',
+
+        },
+        searchContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor:isDarkMode?'#252525': '#F0F0F0',
+            borderRadius: 30,
+            margin: 10,
+            padding: 4,
+            marginTop:50,
+            paddingHorizontal:15
+        },
+        icon: {
+            marginRight: 10,
+        },
+        searchInput: {
+            flex: 1,
+            fontSize: 16,
+        },
+        imageWrapper: {
+            flex: 1,
+            margin: 1,
+        },
+        largeItem: {
+            flex: 2,
+        },
+        image: {
+            width: '100%',
+            height: 120,
+            resizeMode: 'cover',
+        },
+    });
+
     return (
         <View style={styles.container}>
             {/* Search Bar */}
             <StatusBar
                 translucent={true}
                 backgroundColor="transparent"
-                barStyle="dark-content"
+                barStyle={isDarkMode?"light-content": "dark-content"}
             />
             <View style={styles.searchContainer}>
                 <Search />
@@ -57,40 +99,6 @@ const SearchScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-    searchContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#F0F0F0',
-        borderRadius: 30,
-        margin: 10,
-        padding: 4,
-        marginTop:50,
-        paddingHorizontal:15
-    },
-    icon: {
-        marginRight: 10,
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: 16,
-    },
-    imageWrapper: {
-        flex: 1,
-        margin: 1,
-    },
-    largeItem: {
-        flex: 2,
-    },
-    image: {
-        width: '100%',
-        height: 120,
-        resizeMode: 'cover',
-    },
-});
+
 
 export default SearchScreen;

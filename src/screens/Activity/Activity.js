@@ -1,15 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar, Text, Animated } from 'react-native';
-import { PrimaryBackArrow, Search } from '../../assets/SVGs';
+import { PrimaryBackArrow, PrimaryBackWhite, Search } from '../../assets/SVGs';
 import Row from '../../components/wrapper/row';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import IMG from '../../assets/Images';
 import LinearGradient from 'react-native-linear-gradient';
+import { useSelector } from 'react-redux';
+import { white } from '../../common/Colors/colors';
 
 const Activity = ({ navigation }) => {
     const [data, setData] = useState(DATA);
     const [searchText, setSearchText] = useState('');
     const [animatedValue] = useState(new Animated.Value(0));
+    const { isDarkMode } = useSelector(state => state.theme);
+
 
     useEffect(() => {
         // Animation for fade in effect
@@ -44,13 +48,89 @@ const Activity = ({ navigation }) => {
     const renderHeader = () => (
         <Row style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-                <PrimaryBackArrow />
+                {isDarkMode ? <PrimaryBackWhite /> : <PrimaryBackArrow />}
             </TouchableOpacity>
             <Text style={styles.headerText}>
                 Activity <Text style={styles.highlightedText}>({data.length})</Text>
             </Text>
         </Row>
     );
+
+
+    const styles = StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: isDarkMode ? 'black' : '#fff',
+        },
+        header: {
+            paddingTop: 50,
+            paddingHorizontal: 20,
+            gap: 90,
+        },
+        headerText: {
+            fontSize: 20,
+            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+            color: isDarkMode ? white : 'black'
+        },
+        highlightedText: {
+            color: isDarkMode ? 'white' : 'rgba(79, 82, 254, 1)',
+        },
+
+        icon: {
+            marginRight: 10,
+        },
+        searchInput: {
+            flex: 1,
+            fontSize: 16,
+        },
+        sectionHeader: {
+            fontSize: 16,
+            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+            color: isDarkMode ? 'white' : '#000',
+            paddingVertical: 8,
+            paddingHorizontal: 16,
+            // backgroundColor: '#f9f9f9',
+        },
+        cardContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            padding: 12,
+            // borderBottomWidth: 1,
+            // borderBottomColor: '#e0e0e0',
+        },
+        profileImage: {
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            marginRight: 12,
+        },
+        textContainer: {
+            flex: 1,
+        },
+        name: {
+            fontSize: 14,
+            color: isDarkMode ? 'white' : '#000',
+            fontFamily: FONTS_FAMILY.SourceSans3_Bold
+        },
+        action: {
+            fontSize: 13,
+            color: '#555',
+            marginVertical: 2,
+        },
+        time: {
+            fontSize: 12,
+            color: '#999',
+        },
+        followButton: {
+            paddingVertical: 6,
+            paddingHorizontal: 16,
+            borderRadius: 8,
+        },
+        followText: {
+            fontSize: 14,
+            fontWeight: '600',
+        },
+    });
 
     // Render card
     const Card = ({ item }) => (
@@ -68,14 +148,15 @@ const Activity = ({ navigation }) => {
             </TouchableOpacity>
             <TouchableOpacity onPress={() => handleFollowToggle(item.id)}>
                 <LinearGradient
-                    colors={item.isFollowing ? ['#e0e0e0', '#e0e0e0'] : ['#ff00ff', '#6a5acd']}
+                    colors={item.isFollowing ? [isDarkMode?'#252525': '#e0e0e0', isDarkMode?'#252525': '#e0e0e0'] : ['#ff00ff', '#6a5acd']}
                     start={{ x: 1, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.followButton}
                 >
                     <Text style={[
                         styles.followText,
-                        { color: item.isFollowing ? '#000' : '#fff' }
+                        { color: item.isFollowing ? (isDarkMode ? '#fff' : '#000') : '#fff' }
+
                     ]}>
                         {item.isFollowing ? 'Following' : 'Follow'}
                     </Text>
@@ -92,7 +173,7 @@ const Activity = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <StatusBar translucent={true} backgroundColor="transparent" barStyle="dark-content" />
+            <StatusBar translucent={true} backgroundColor="transparent" barStyle= {isDarkMode?'"light-content" ': "dark-content" } />
             {renderHeader()}
             <FlatList
                 style={{ marginTop: 20, paddingHorizontal: 10 }}
@@ -116,79 +197,7 @@ const Activity = ({ navigation }) => {
 };
 
 // ✅ Styling
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-    header: {
-        paddingTop: 50,
-        paddingHorizontal: 20,
-        gap: 90,
-    },
-    headerText: {
-        fontSize: 20,
-        fontFamily: FONTS_FAMILY.SourceSans3_Bold,
-    },
-    highlightedText: {
-        color: 'rgba(79, 82, 254, 1)',
-    },
 
-    icon: {
-        marginRight: 10,
-    },
-    searchInput: {
-        flex: 1,
-        fontSize: 16,
-    },
-    sectionHeader: {
-        fontSize: 16,
-        fontFamily: FONTS_FAMILY.SourceSans3_Bold,
-        color: '#000',
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        // backgroundColor: '#f9f9f9',
-    },
-    cardContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 12,
-        // borderBottomWidth: 1,
-        // borderBottomColor: '#e0e0e0',
-    },
-    profileImage: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        marginRight: 12,
-    },
-    textContainer: {
-        flex: 1,
-    },
-    name: {
-        fontSize: 14,
-        color: '#000',
-        fontFamily: FONTS_FAMILY.SourceSans3_Bold
-    },
-    action: {
-        fontSize: 13,
-        color: '#555',
-        marginVertical: 2,
-    },
-    time: {
-        fontSize: 12,
-        color: '#999',
-    },
-    followButton: {
-        paddingVertical: 6,
-        paddingHorizontal: 16,
-        borderRadius: 8,
-    },
-    followText: {
-        fontSize: 14,
-        fontWeight: '600',
-    },
-});
 
 const DATA = [
     // This month

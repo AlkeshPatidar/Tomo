@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar, Text, Animated } from 'react-native';
-import { PrimaryBackArrow, Search } from '../../assets/SVGs';
+import { PrimaryBackArrow, PrimaryBackWhite, Search } from '../../assets/SVGs';
 import Row from '../../components/wrapper/row';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import IMG from '../../assets/Images';
 import LinearGradient from 'react-native-linear-gradient';
+import { useSelector } from 'react-redux';
 
 const Followers = ({ navigation }) => {
     const [data, setData] = useState(DATA);
     const [searchText, setSearchText] = useState('');
     const [animatedValue] = useState(new Animated.Value(0));
+    const { isDarkMode } = useSelector(state => state.theme);
 
     useEffect(() => {
         // Animation for fade in effect
@@ -44,7 +46,8 @@ const Followers = ({ navigation }) => {
     const renderHeader = () => (
         <Row style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-                <PrimaryBackArrow />
+                {isDarkMode ? <PrimaryBackWhite /> : <PrimaryBackArrow />}
+
             </TouchableOpacity>
             <Text style={styles.headerText}>
                 Followers

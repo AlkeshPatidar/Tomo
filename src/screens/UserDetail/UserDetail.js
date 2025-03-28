@@ -1,13 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList, StatusBar } from 'react-native';
 import SpaceBetweenRow from '../../components/wrapper/spacebetween';
-import { AddUserIcon, OtionsButtons, PrimaryBackArrow, ThreeDotIcon } from '../../assets/SVGs';
+import { AddUserIcon, Menu, OtionsButtons, PrimaryBackArrow, PrimaryBackWhite, ThreeDotIcon } from '../../assets/SVGs';
 import Row from '../../components/wrapper/row';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import CustomText from '../../components/TextComponent';
 import LinearGradient from 'react-native-linear-gradient';
+import CustomDrawer from '../../components/DrawerModal';
+import { useSelector } from 'react-redux';
+import IMG from '../../assets/Images';
+
 
 const UserDetail = ({ navigation }) => {
+    const [isDrawerVisible, setDrawerVisible] = useState(false);
+    const { isDarkMode } = useSelector(state => state.theme);
+
     const highlights = [
         { id: '1', title: 'UX Course', image: 'https://picsum.photos/id/237/200/300' },
         { id: '2', title: 'UX Portfolio', image: 'https://picsum.photos/id/237/200/300' },
@@ -30,6 +37,126 @@ const UserDetail = ({ navigation }) => {
         { id: '12', image: 'https://picsum.photos/seed/picsum/200/300' },
     ];
 
+    const styles = StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: isDarkMode ? '#252525' : '#ffffff',
+        },
+        header: {
+            paddingTop: 50,
+            paddingHorizontal: 20,
+            // gap: 90,
+        },
+        headerText: {
+            fontSize: 20,
+            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+            color: isDarkMode ? "white" : 'black',
+        },
+        highlightedText: {
+            color: 'rgba(79, 82, 254, 1)',
+        },
+        headerContainer: {
+            flexDirection: 'row',
+            padding: 16,
+            alignItems: 'center',
+            gap: 18
+        },
+        profileImage: {
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+        },
+        headerActions: {
+            flexDirection: 'row',
+            marginLeft: 'auto',
+            gap: 10
+        },
+        followButton: {
+            backgroundColor: '#F20089',
+            paddingVertical: 6,
+            paddingHorizontal: 16,
+            borderRadius: 8,
+            marginRight: 8,
+        },
+        messageButton: {
+            backgroundColor: '#E5E5E5',
+            paddingVertical: 6,
+            paddingHorizontal: 16,
+            borderRadius: 8,
+        },
+        buttonText: {
+            fontSize: 14,
+            color: '#ffffff',
+            fontFamily: FONTS_FAMILY.SourceSans3_Bold
+        },
+        bioContainer: {
+            paddingHorizontal: 16,
+        },
+        bioName: {
+            fontSize: 16,
+            fontWeight: 'bold',
+            color: isDarkMode ? 'white' : '#999999',
+
+        },
+        bioPronoun: {
+            fontSize: 14,
+            color: isDarkMode ? 'white' : '#999999',
+        },
+        bioDescription: {
+            fontSize: 14,
+            marginTop: 4,
+            color: isDarkMode ? 'white' : '#333333',
+        },
+        highlightsList: {
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+        },
+        highlightContainer: {
+            alignItems: 'center',
+            marginRight: 12,
+        },
+        highlightImage: {
+            width: 56,
+            height: 56,
+            borderRadius: 35,
+            borderWidth: 1,
+            borderColor: '#ddd',
+        },
+        highlightText: {
+            fontSize: 12,
+            marginTop: 4,
+            fontFamily: FONTS_FAMILY.SourceSans3_Regular,
+            color: isDarkMode ? 'white' : null
+        },
+        statsContainer: {
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+            paddingVertical: 12,
+        },
+        statItem: {
+            alignItems: 'center',
+        },
+        statNumber: {
+            fontSize: 16,
+            fontWeight: 'bold',
+            color: isDarkMode ? 'white' : null
+        },
+        statLabel: {
+            fontSize: 12,
+            color: '#777',
+        },
+        postsContainer: {
+            paddingHorizontal: 4,
+            marginTop: 7
+        },
+        postImage: {
+            width: '32%',
+            height: 100,
+            margin: 1,
+            // borderRadius: 6,
+        },
+    });
+
     const renderHighlight = ({ item }) => (
         <View style={styles.highlightContainer}>
             <Image source={{ uri: item.image }} style={styles.highlightImage} />
@@ -37,14 +164,26 @@ const UserDetail = ({ navigation }) => {
         </View>
     );
     const renderHeader = () => (
-        <Row style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-                <PrimaryBackArrow />
+        <SpaceBetweenRow style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.navigate('Tab',{screen:'Home'})}>
+                    {isDarkMode ? <PrimaryBackWhite /> : <PrimaryBackArrow />}
             </TouchableOpacity>
             <Text style={styles.headerText}>
                 ux_dyniza
             </Text>
-        </Row>
+            <TouchableOpacity onPress={() => setDrawerVisible(true)}>
+                {
+                    isDarkMode ?
+                        <Image source={IMG.menuIcon}
+                            style={{
+                                height: 30,
+                                width: 30
+                            }}
+                        /> :
+                        <Menu fill={'white'} />
+                }
+            </TouchableOpacity>
+        </SpaceBetweenRow>
     );
 
     const renderPost = ({ item }) => (
@@ -55,7 +194,7 @@ const UserDetail = ({ navigation }) => {
         <View style={styles.container}>
             {/* HEADER SECTION */}
             {renderHeader()}
-            <StatusBar translucent={true} backgroundColor="transparent" barStyle="dark-content" />
+            <StatusBar translucent={true} backgroundColor="transparent" barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
             <View style={styles.headerContainer}>
                 <Image
@@ -64,10 +203,10 @@ const UserDetail = ({ navigation }) => {
                 />
                 <View>
                     <Row style={{ marginBottom: 10, gap: 50 }}>
-                        <CustomText style={{ color: 'black', fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold }}>ux_dyniza</CustomText>
-                        <TouchableOpacity>
+                        <CustomText style={{ color: isDarkMode ? "white" : 'black', fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold }}>ux_dyniza</CustomText>
+                        {/* <TouchableOpacity>
                             <ThreeDotIcon />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </Row>
 
                     <View style={styles.headerActions}>
@@ -148,123 +287,15 @@ const UserDetail = ({ navigation }) => {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.postsContainer}
             />
+            <CustomDrawer
+                isVisible={isDrawerVisible}
+                onClose={() => setDrawerVisible(false)}
+                navigation={navigation}
+            />
         </View>
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#ffffff',
-    },
-    header: {
-        paddingTop: 50,
-        paddingHorizontal: 20,
-        gap: 90,
-    },
-    headerText: {
-        fontSize: 20,
-        fontFamily: FONTS_FAMILY.SourceSans3_Bold,
-    },
-    highlightedText: {
-        color: 'rgba(79, 82, 254, 1)',
-    },
-    headerContainer: {
-        flexDirection: 'row',
-        padding: 16,
-        alignItems: 'center',
-        gap: 18
-    },
-    profileImage: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-    },
-    headerActions: {
-        flexDirection: 'row',
-        marginLeft: 'auto',
-        gap: 10
-    },
-    followButton: {
-        backgroundColor: '#F20089',
-        paddingVertical: 6,
-        paddingHorizontal: 16,
-        borderRadius: 8,
-        marginRight: 8,
-    },
-    messageButton: {
-        backgroundColor: '#E5E5E5',
-        paddingVertical: 6,
-        paddingHorizontal: 16,
-        borderRadius: 8,
-    },
-    buttonText: {
-        fontSize: 14,
-        color: '#ffffff',
-        fontFamily: FONTS_FAMILY.SourceSans3_Bold
-    },
-    bioContainer: {
-        paddingHorizontal: 16,
-    },
-    bioName: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    bioPronoun: {
-        fontSize: 14,
-        color: '#999999',
-    },
-    bioDescription: {
-        fontSize: 14,
-        marginTop: 4,
-        color: '#333333',
-    },
-    highlightsList: {
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-    },
-    highlightContainer: {
-        alignItems: 'center',
-        marginRight: 12,
-    },
-    highlightImage: {
-        width: 56,
-        height: 56,
-        borderRadius: 35,
-        borderWidth: 1,
-        borderColor: '#ddd',
-    },
-    highlightText: {
-        fontSize: 12,
-        marginTop: 4,
-        fontFamily: FONTS_FAMILY.SourceSans3_Regular
-    },
-    statsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        paddingVertical: 12,
-    },
-    statItem: {
-        alignItems: 'center',
-    },
-    statNumber: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    statLabel: {
-        fontSize: 12,
-        color: '#777',
-    },
-    postsContainer: {
-        paddingHorizontal: 4,
-        marginTop: 7
-    },
-    postImage: {
-        width: '32%',
-        height: 100,
-        margin: 1,
-        // borderRadius: 6,
-    },
-});
+
 
 export default UserDetail;

@@ -11,12 +11,13 @@ import {
 } from "react-native";
 import ImagePicker from "react-native-image-picker";
 import IMG from "../../assets/Images";
-import { Flag, Info, PrimaryBackArrow, Video } from "../../assets/SVGs";
+import { Flag, Info, PrimaryBackArrow, PrimaryBackWhite, Video } from "../../assets/SVGs";
 import SpaceBetweenRow from "../../components/wrapper/spacebetween";
 import Row from "../../components/wrapper/row";
 import { FONTS_FAMILY } from "../../assets/Fonts";
 import CustomText from "../../components/TextComponent";
-import color from "../../common/Colors/colors";
+import color, { white } from "../../common/Colors/colors";
+import { useSelector } from "react-redux";
 // import { Ionicons } from "@expo/vector-icons"; // For icons
 
 const ChatScreen = ({ navigation }) => {
@@ -105,12 +106,102 @@ const ChatScreen = ({ navigation }) => {
                     <Image source={{ uri: item.avatar }} style={styles.avatar} />
                 )}
                 <View style={[styles.messageBubble, isMyMessage && styles.myMessageBubble]}>
-                    {item.text && <Text style={{ ...styles.messageText, color: item?.sender == 'me' ? 'white' : 'black' }}>{item.text}</Text>}
+                    {item.text && <Text style={{ ...styles.messageText, color: item?.sender == 'me' ? 'white' : isDarkMode ? 'white' : 'black' }}>{item.text}</Text>}
                     {item.image && <Image source={{ uri: item.image }} style={styles.messageImage} />}
                 </View>
             </View>
         );
     };
+    const { isDarkMode } = useSelector(state => state.theme);
+
+    const styles = StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: isDarkMode ? 'black' : "#FFFF",
+        },
+        header: {
+            // padding: 16,
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: isDarkMode ? 'black' : "#fff",
+            borderBottomWidth: 1,
+            borderBottomColor: "#EEE",
+            paddingTop: 50,
+            gap: 10,
+        },
+        profileImage: {
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+        },
+        headerText: {
+            marginLeft: 10,
+        },
+        profileName: {
+            fontSize: 16,
+            fontWeight: "bold",
+            color: "#000",
+        },
+        status: {
+            fontSize: 14,
+            color: "#999",
+        },
+        chatContainer: {
+            flex: 1,
+            paddingHorizontal: 16,
+        },
+        messageContainer: {
+            flexDirection: "row",
+            marginVertical: 4,
+            alignItems: "flex-end",
+        },
+        myMessage: {
+            justifyContent: "flex-end",
+        },
+        avatar: {
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            marginRight: 8,
+        },
+        messageBubble: {
+            padding: 16,
+            borderRadius: 20,
+            backgroundColor: isDarkMode ? '#252525' : "#F1F1F1",
+            maxWidth: "75%",
+        },
+        myMessageBubble: {
+            backgroundColor: "#4F52FE",
+        },
+        messageText: {
+            color: isDarkMode ? 'white' : "#000",
+            fontSize: 14,
+            fontFamily: FONTS_FAMILY.SourceSans3_Medium
+        },
+        messageImage: {
+            width: 150,
+            height: 150,
+            borderRadius: 8,
+            marginTop: 5,
+        },
+        inputContainer: {
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderTopWidth: 1,
+            borderTopColor: "#EEE",
+        },
+        input: {
+            flex: 1,
+            paddingHorizontal: 12,
+            backgroundColor: isDarkMode ? "#252525" : "#F1F1F1",
+            borderRadius: 20,
+            marginHorizontal: 8,
+            fontSize: 16,
+            color: isDarkMode ? white : 'black'
+        },
+    });
 
     return (
         <View style={styles.container}>
@@ -126,7 +217,7 @@ const ChatScreen = ({ navigation }) => {
             }}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <PrimaryBackArrow />
+                        {isDarkMode ? <PrimaryBackWhite /> : <PrimaryBackArrow />}
                     </TouchableOpacity>
                     <Image source={IMG.MessageProfile} style={styles.profileImage} />
                     <View style={styles.headerText}>
@@ -180,93 +271,6 @@ const ChatScreen = ({ navigation }) => {
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "#FFFF",
-    },
-    header: {
-        // padding: 16,
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#fff",
-        borderBottomWidth: 1,
-        borderBottomColor: "#EEE",
-        paddingTop: 50,
-        gap: 10,
-    },
-    profileImage: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-    },
-    headerText: {
-        marginLeft: 10,
-    },
-    profileName: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "#000",
-    },
-    status: {
-        fontSize: 14,
-        color: "#999",
-    },
-    chatContainer: {
-        flex: 1,
-        paddingHorizontal: 16,
-    },
-    messageContainer: {
-        flexDirection: "row",
-        marginVertical: 4,
-        alignItems: "flex-end",
-    },
-    myMessage: {
-        justifyContent: "flex-end",
-    },
-    avatar: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        marginRight: 8,
-    },
-    messageBubble: {
-        padding: 16,
-        borderRadius: 20,
-        backgroundColor: "#F1F1F1",
-        maxWidth: "75%",
-    },
-    myMessageBubble: {
-        backgroundColor: "#4F52FE",
-    },
-    messageText: {
-        color: "#000",
-        fontSize: 14,
-        fontFamily: FONTS_FAMILY.SourceSans3_Medium
-    },
-    messageImage: {
-        width: 150,
-        height: 150,
-        borderRadius: 8,
-        marginTop: 5,
-    },
-    inputContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        borderTopWidth: 1,
-        borderTopColor: "#EEE",
-    },
-    input: {
-        flex: 1,
-        paddingHorizontal: 12,
-        backgroundColor: "#F1F1F1",
-        borderRadius: 20,
-        marginHorizontal: 8,
-        fontSize: 16,
-        color: 'black'
-    },
-});
+
 
 export default ChatScreen;
