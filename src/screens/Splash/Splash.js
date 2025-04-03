@@ -1,20 +1,45 @@
-import React, { useEffect } from "react";
-import { ImageBackground, StatusBar, StyleSheet, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, ImageBackground, StatusBar, StyleSheet, View } from "react-native";
 import CustomText from "../../components/TextComponent";
 import IMG from "../../assets/Images";
 import { initializeTheme } from "../../redux/actions/themeActions";
+import { apiGet, getItem } from "../../utils/Apis";
+import { setUser } from "../../redux/reducer/user";
+import { useDispatch } from "react-redux";
+import urls from "../../config/urls";
 
 
 const Splash = ({ navigation }) => {
 
     useEffect(() => {
         initializeTheme()
-        setTimeout(() => {
-          navigation.navigate('Onboarding')
-        }, 3000)
-      }, [])
+        fetchData()
+    }, [])
 
-      
+
+    const dispatch = useDispatch()
+
+    const [loading, setLoading] = useState(false)
+    const fetchData = async () => {
+        const token = await getItem('token');
+        setLoading(true)
+        if (token) {
+            const getUserDetails = await apiGet(urls.userProfile)
+            console.log(getUserDetails?.data, '---------------');
+            dispatch(setUser(JSON.stringify(getUserDetails?.data)));
+            navigation.navigate('Tab');
+            setLoading(false)
+        } else {
+            navigation.replace('Onboarding')
+            setLoading(false)
+        }
+
+
+    }
+
+
+
+
 
     return (
         <ImageBackground source={IMG.Splash} style={styles.container}>
@@ -23,7 +48,15 @@ const Splash = ({ navigation }) => {
                 backgroundColor="transparent"
                 barStyle="light-content"
             />
-
+            <ActivityIndicator
+                color={'white'}
+                size='large'
+                style={{
+                    position: 'absolute',
+                    bottom: 40,
+                    alignSelf:'center'
+                }}
+            />
         </ImageBackground>
     )
 }

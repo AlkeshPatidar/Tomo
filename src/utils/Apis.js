@@ -4,14 +4,16 @@ import { showError } from './helperFunctions';
 import RNRestart from 'react-native-restart';
 import { Alert } from 'react-native';
 
-export const BASE_URL = 'https://kreedabackend.vercel.app/api';
+export const BASE_URL = 'https://tomo-backend-app.vercel.app';
 
 export async function getHeaders() {
   let token = await getItem('token');
   console.log("token in api", token);
   if (token) {
     return {
-      Authorization: 'Bearer ' + token,
+      // Authorization: 'Bearer ' + token,
+      Authorization: 'Bearer ' + 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZTY5YjY3OWM3NDY1OGY3MjI2YjcwZiIsImlhdCI6MTc0MzIyNzgyNn0.4AnKNo_IvtQDCX2H6Z4IJGlx_nSkoaQmWCZTfLUf__Q',
+
     };
   }
   return {};
@@ -141,137 +143,7 @@ export async function apiReq(
 // formdata Api
 
 
-export async function makeApiFormDataRequest(endpoint, method, data = {}, hobbies, isPurpose, isImagePicked) {
-  console.log('PAYLOAD-----------------', data, 'PAYLOAD')
 
-  try {
-    const token = await getItem('token');
-    const headers = {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'multipart/form-data',
-    };
-
-    const formData = new FormData();
-
-
-
-    for (const key in data) {
-      if (Array.isArray(data[key])) {
-        data[key].forEach(item => {
-          formData.append(`${key}[]`, item);
-        });
-      }
-
-
-      if (isImagePicked == true) {
-        if (key === 'image1' && data[key] && data[key].uri) {
-          const response = await fetch(data[key].uri);
-          const blob = await response.blob();
-          const filename = data[key].uri.split('/').pop();
-          const fileType = blob.type;
-
-          formData.append('image1', {
-            name: filename,
-            type: fileType,
-            uri: data[key].uri,
-          });
-        }
-        else if (key === 'image2' && data[key] && data[key].uri) {
-          const response = await fetch(data[key].uri);
-          const blob = await response.blob();
-          const filename = data[key].uri.split('/').pop();
-          const fileType = blob.type;
-
-          formData.append('image2', {
-            name: filename,
-            type: fileType,
-            uri: data[key].uri,
-          });
-        }
-        else if (key === 'image3' && data[key] && data[key].uri) {
-          const response = await fetch(data[key].uri);
-          const blob = await response.blob();
-          const filename = data[key].uri.split('/').pop();
-          const fileType = blob.type;
-
-          formData.append('image3', {
-            name: filename,
-            type: fileType,
-            uri: data[key].uri,
-          });
-        }
-        else if (key === 'image4' && data[key] && data[key].uri) {
-          const response = await fetch(data[key].uri);
-          const blob = await response.blob();
-          const filename = data[key].uri.split('/').pop();
-          const fileType = blob.type;
-
-          formData.append('image4', {
-            name: filename,
-            type: fileType,
-            uri: data[key].uri,
-          });
-        }
-        else if (key === 'image5' && data[key] && data[key].uri) {
-          const response = await fetch(data[key].uri);
-          const blob = await response.blob();
-          const filename = data[key].uri.split('/').pop();
-          const fileType = blob.type;
-
-          formData.append('image5', {
-            name: filename,
-            type: fileType,
-            uri: data[key].uri,
-          });
-        }
-      }
-
-
-
-      else {
-
-        if (hobbies == true) {
-
-          formData.append("hobbies", JSON.stringify(data));
-        }
-        if (isPurpose) {
-          formData.append("purpose", JSON.stringify(data));
-          // console.log(JSON.stringify(data));
-        }
-        else {
-          formData.append(key, data[key]);
-        }
-
-      }
-    }
-
-
-    const requestOptions = {
-      method: method,
-      url: endpoint,
-      headers: headers,
-      data: formData,
-    };
-
-    console.log('Request Options:', JSON.stringify(requestOptions));
-
-    const response = await axios(requestOptions);
-    console.log('response OF API', response)
-    return response.data;
-  } catch (error) {
-    if (error.response) {
-      console.error('Response error:', error.response.data);
-      console.error('Response status:', error.response.status);
-      console.error('Response headers:', error.response.headers);
-    } else if (error.request) {
-      console.error('Request error:', error.request);
-    } else {
-      console.error('General error:', error.message);
-    }
-    console.error('Config error:', error.config);
-    throw error;
-  }
-}
 
 
 

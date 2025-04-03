@@ -28,7 +28,7 @@ import { useSelector } from 'react-redux';
 const CustomDrawer = ({ isVisible, onClose, navigation }) => {
 
     const handleLogout = async () => {
-        console.log("navigationRef", navigationRef);
+        // console.log("navigationRef", navigationRef);
 
         Alert.alert(
             'Logout', // Title
@@ -58,6 +58,7 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
     const handleOperation = async (label) => {
         if (label == 'Log Out') {
             handleLogout()
+            onClose()
         }
         if (label == 'Terms & Conditions') {
             // navigation.navigate('TermsAndCondition')

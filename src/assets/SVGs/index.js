@@ -57,6 +57,8 @@ import PostShareWhite from './whitePostShare.svg';
 import CommentWhite from './CommentWhite.svg';
 import LikeWhite from './LikeWhite.svg';
 import BackOuterWhite from './BackOuterWhite.svg';
+import SpeakerOff from './SpeakerOff.svg';
+
 
 
 
@@ -119,5 +121,6 @@ export {
     PostShareWhite,
     BookMarkWhite,
     WhiteThreeDot,
-    BackOuterWhite
+    BackOuterWhite,
+    SpeakerOff
 };

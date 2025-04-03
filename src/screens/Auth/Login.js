@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     Animated,
     Easing,
@@ -26,15 +26,25 @@ import {
 } from "../../assets/SVGs";
 import { FONTS_FAMILY } from "../../assets/Fonts";
 import CustomInputField from "../../components/CustomInputField";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { inValidEmail, inValidPassword } from "../../utils/CheckValidation";
+import { ToastMsg } from "../../utils/helperFunctions";
+import { apiGet, apiPost, getItem, setItem } from "../../utils/Apis";
+import urls from "../../config/urls";
+import useLoader from "../../utils/LoaderHook";
+import { setUser } from "../../redux/reducer/user";
 
 const Login = ({ navigation }) => {
     const { isDarkMode } = useSelector(state => state.theme);
+    const { showLoader, hideLoader } = useLoader()
+    const dispatch = useDispatch()
 
     // Animation Refs
     const slideAnim = useRef(new Animated.Value(100)).current;
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const buttonScale = useRef(new Animated.Value(1)).current;
+
+    const [userInfo, setUserInfor] = useState({})
 
     useEffect(() => {
         // Slide-In and Fade-In Animation
@@ -72,6 +82,64 @@ const Login = ({ navigation }) => {
         }).start();
     };
 
+    const handleInputChange = (name, value) => {
+        setUserInfor({ ...userInfo, [name]: value });
+    };
+
+    const onLogin = async () => {
+        console.log('Isss::::::::::::::::::::::::::::::::::::', userInfo?.Email, userInfo?.Password);
+        
+        const emailError = inValidEmail(userInfo?.Email);
+        if (emailError) {
+            // return showWarning(emailError);
+            return ToastMsg(emailError);
+        }
+
+        const passwordError = inValidPassword(userInfo?.Password);
+        if (passwordError) {
+            // return showWarning(emailError);
+            return ToastMsg(passwordError);
+        }
+        try {
+            showLoader();
+            const data = { 
+                Email: userInfo.Email, 
+                Password: userInfo?.Password
+            };
+            console.log(data,'DATA');
+                const response = await apiPost(urls.userLogin, data, {
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            console.log("response", response);
+
+            if (response?.statusCode === 200) {
+                ToastMsg(response?.message)
+
+                // Store token
+                setItem('token', response?.data?.token);
+                const token = await getItem('token');
+
+                if (token) {
+                    const getUserDetails = await apiGet(urls.userProfile);
+                    if (getUserDetails?.statusCode === 200) {
+                        dispatch(setUser(JSON.stringify(getUserDetails?.data)));
+                            navigation.navigate('Tab');
+                    }
+                    hideLoader();
+                    setUserInfor({})
+                }
+            }
+        } catch (error) {
+            hideLoader();
+            if (error?.message) {
+                ToastMsg(error?.message);
+                // response?.message
+            } else {
+                ToastMsg('Network Error');
+            }
+        }
+    };
+
     const renderHeader = () => {
         return (
             <Animated.View style={[styles.headerContainer, { opacity: fadeAnim }]}>
@@ -105,11 +173,15 @@ const Login = ({ navigation }) => {
                     <CustomInputField
                         placeholder="Enter your Email address"
                         Lefticon={isDarkMode ? <EmailWhite /> : <EmailIcon />}
+                        value={userInfo?.Email}
+                        onChangeText={(value) => handleInputChange('Email', value)}
                     />
                     <CustomInputField
                         placeholder="Enter Password"
                         Lefticon={isDarkMode ? <LockWhite /> : <LockIcon />}
                         icon={isDarkMode ? <EyeIconWhite /> : <EyeIcon />}
+                        value={userInfo?.Password}
+                        onChangeText={(value) => handleInputChange('Password', value)}
                     />
                     <Animated.View
                         style={[
@@ -120,14 +192,21 @@ const Login = ({ navigation }) => {
                             activeOpacity={0.7}
                             onPressIn={handleButtonPressIn}
                             onPressOut={handleButtonPressOut}
-                            onPress={() => navigation.navigate('Singnup')}>
+                            // onPress={() => navigation.navigate('Singnup')}
+                            onPress={() => onLogin()}
+
+                            >
                             <LoginBtn />
                         </TouchableOpacity>
                     </Animated.View>
 
                     <CustomText style={styles.signupText}>
                         Don't you have an account?{' '}
+                        <TouchableOpacity
+                        onPress={() => navigation.navigate('Singnup')}
+                        >
                         <CustomText style={styles.signupLink}>Sign up</CustomText>
+                        </TouchableOpacity>
                     </CustomText>
                 </View>
 

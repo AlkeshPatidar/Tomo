@@ -7,13 +7,19 @@ import IMG from '../../assets/Images';
 import LinearGradient from 'react-native-linear-gradient';
 import { useSelector } from 'react-redux';
 import { white } from '../../common/Colors/colors';
+import { apiGet } from '../../utils/Apis';
+import urls from '../../config/urls';
+import useLoader from '../../utils/LoaderHook';
 
 const Activity = ({ navigation }) => {
     const [data, setData] = useState(DATA);
     const [searchText, setSearchText] = useState('');
     const [animatedValue] = useState(new Animated.Value(0));
     const { isDarkMode } = useSelector(state => state.theme);
+    const { showLoader, hideLoader } = useLoader()
 
+    const [loading, setLoading] = useState(false)
+    const [allNotifications, setAllNotifications] = useState([])
 
     useEffect(() => {
         // Animation for fade in effect
@@ -24,6 +30,21 @@ const Activity = ({ navigation }) => {
         }).start();
     }, []);
 
+    useEffect(() => {
+        fetchData()
+    }, [])
+
+
+
+    const fetchData = async () => {
+        showLoader()
+        const res = await apiGet(urls.getAllNotifications)
+        console.log("------------Notifications-----", res.data);
+        setAllNotifications(res?.data)
+        setLoading(false)
+        hideLoader()
+
+    }
 
 
     // Grouping data
@@ -51,7 +72,7 @@ const Activity = ({ navigation }) => {
                 {isDarkMode ? <PrimaryBackWhite /> : <PrimaryBackArrow />}
             </TouchableOpacity>
             <Text style={styles.headerText}>
-                Activity <Text style={styles.highlightedText}>({data.length})</Text>
+                Activity <Text style={styles.highlightedText}>({allNotifications.length})</Text>
             </Text>
         </Row>
     );
@@ -135,20 +156,22 @@ const Activity = ({ navigation }) => {
     // Render card
     const Card = ({ item }) => (
         <Animated.View style={[styles.cardContainer, { opacity: animatedValue }]}>
-            <Image source={item.user.image} style={styles.profileImage} />
+            <Image source={IMG.MessageProfile} style={styles.profileImage} />
             <TouchableOpacity style={styles.textContainer}
                 onPress={() => navigation.navigate('UserDetail')}
             >
-                <Text style={styles.name}>{item.user.name}</Text>
+                <Text style={styles.name}>{'Vikash Kohli'}</Text>
                 <Row>
 
-                    <Text style={styles.action}>{item.user.action}</Text>
-                    <Text style={styles.time}>{item.user.time}</Text>
+                    <Text style={styles.action}>{item?.content}</Text>
+                    <Text style={styles.time}>{item?.user?.time}</Text>
                 </Row>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleFollowToggle(item.id)}>
+            <TouchableOpacity
+            //  onPress={() => handleFollowToggle(item.id)}
+            >
                 <LinearGradient
-                    colors={item.isFollowing ? [isDarkMode?'#252525': '#e0e0e0', isDarkMode?'#252525': '#e0e0e0'] : ['#ff00ff', '#6a5acd']}
+                    colors={item.isFollowing ? [isDarkMode ? '#252525' : '#e0e0e0', isDarkMode ? '#252525' : '#e0e0e0'] : ['#ff00ff', '#6a5acd']}
                     start={{ x: 1, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.followButton}
@@ -173,21 +196,27 @@ const Activity = ({ navigation }) => {
 
     return (
         <View style={styles.container}>
-            <StatusBar translucent={true} backgroundColor="transparent" barStyle= {isDarkMode?'"light-content" ': "dark-content" } />
+            <StatusBar translucent={true} backgroundColor="transparent" barStyle={isDarkMode ? '"light-content" ' : "dark-content"} />
             {renderHeader()}
             <FlatList
                 style={{ marginTop: 20, paddingHorizontal: 10 }}
-                data={Object.keys(groupedData).flatMap((key) => [
-                    { type: 'header', key }, // Add header with unique key
-                    ...groupedData[key].map((item) => ({ ...item, key: `${key}-${item.id}` })), // Add unique key to each item
-                ])}
+                // data={Object.keys(groupedData).flatMap((key) => [
+                //     { type: 'header', key }, // Add header with unique key
+                //     ...groupedData[key].map((item) => ({ ...item, key: `${key}-${item.id}` })), // Add unique key to each item
+                // ])}
+                data={allNotifications}
                 keyExtractor={(item) => item.key}
+                // renderItem={({ item }) =>
+                //     item?.type === 'header' ? (
+                //         renderSectionHeader(item.key)
+                //     ) : (
+                //         <Card item={item} />
+                //     )
+                // }
                 renderItem={({ item }) =>
-                    item.type === 'header' ? (
-                        renderSectionHeader(item.key)
-                    ) : (
-                        <Card item={item} />
-                    )
+
+                    <Card item={item} />
+
                 }
                 contentContainerStyle={{ paddingBottom: 20 }}
             />

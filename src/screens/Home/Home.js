@@ -1,13 +1,18 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { FlatList, Image, ImageBackground, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Animated } from "react-native";
 import CustomText from "../../components/TextComponent";
 import IMG from "../../assets/Images";
 import Row from "../../components/wrapper/row";
-import { AddStoryIcon, Back, BookMarkIcon, BookMarkWhite, BottomIndicator, CameraButton, CommentIcon, CommentWhite, EmailIcon, EyeIcon, LikeIcon, LikeWhite, LockIcon, LoginBtn, NotiFication, PostShareWhite, ShareIcon, ThreeDotIcon, ThreeDotWhite, WhiteThreeDot } from "../../assets/SVGs";
+import { AddStoryIcon, Back, BookMarkIcon, BookMarkWhite, BottomIndicator, CameraButton, CommentIcon, CommentWhite, EmailIcon, EyeIcon, LikeIcon, LikeWhite, LockIcon, LoginBtn, NotiFication, PostShareWhite, ShareIcon, SpeakerOff, ThreeDotIcon, ThreeDotWhite, WhiteThreeDot } from "../../assets/SVGs";
 import { FONTS_FAMILY } from "../../assets/Fonts";
 import CustomInputField from "../../components/CustomInputField";
 import SpaceBetweenRow from "../../components/wrapper/spacebetween";
 import { useSelector } from "react-redux";
+
+import Video from "react-native-video";
+import { apiGet } from "../../utils/Apis";
+import urls from "../../config/urls";
+import { white } from "../../common/Colors/colors";
 
 
 const Home = ({ navigation }) => {
@@ -17,6 +22,10 @@ const Home = ({ navigation }) => {
     const feedTranslateY = useRef(new Animated.Value(20)).current;
 
     const animatedValues = useRef(feedData.map(() => new Animated.Value(0))).current;
+    const [loading, setLoading] = useState(false)
+    const [allPosts, setAllPosts] = useState([])
+    const [isMuted, setIsMuted] = useState(false);
+
 
     const handleAnimation = (index) => {
         Animated.timing(animatedValues[index], {
@@ -42,6 +51,22 @@ const Home = ({ navigation }) => {
             useNativeDriver: true,
         }).start();
     }, []);
+
+    useEffect(() => {
+        fetchData()
+    }, [])
+
+
+
+    const fetchData = async () => {
+        setLoading(true)
+        const res = await apiGet(urls.getAllPost)
+        console.log("-----------------", res.data);
+
+        setAllPosts(res?.data)
+        setLoading(false)
+
+    }
 
     const renderHeader = () => {
         return (
@@ -89,12 +114,12 @@ const Home = ({ navigation }) => {
         );
     };
 
-    const renderFeeds = () => {
-     
+    
 
+    const renderFeeds = () => {
         return (
             <FlatList
-                data={feedData}
+                data={allPosts}
                 style={{ marginBottom: 90 }}
                 keyExtractor={(item) => item.id}
                 showsVerticalScrollIndicator={false}
@@ -112,6 +137,8 @@ const Home = ({ navigation }) => {
                             },
                         ],
                     };
+                    const mediaUrl = item.media; // Use a consistent key for media
+                    const isVideo = typeof mediaUrl === "string" && (mediaUrl.endsWith(".mp4") || mediaUrl.endsWith(".mov"));
 
                     return (
                         <Animated.View style={[styles.feedContainer, animatedStyle]}>
@@ -120,7 +147,7 @@ const Home = ({ navigation }) => {
                                 <View style={styles.userInfo}>
                                     <Image source={item.profileImage} style={styles.profileImage} />
                                     <View>
-                                        <Text style={styles.username}>{item.username}</Text>
+                                        <Text style={styles.username}>{'spacex'}</Text>
                                         <Text style={styles.audio}>Original audio</Text>
                                     </View>
                                 </View>
@@ -129,8 +156,29 @@ const Home = ({ navigation }) => {
                                 </TouchableOpacity>
                             </View>
 
-                            {/* Post Image */}
-                            <Image source={item.postImage} style={styles.postImage} />
+                            {/* Post Media (Image or Video) */}
+                            {isVideo ? (
+                                <View>
+                                    <Video
+                                        source={{ uri: item?.media }}
+                                        style={styles.postImage}
+                                        resizeMode="cover"
+                                        // controls // Show Play/Pause controls
+                                        repeat // Loop the video
+                                        // muted // Auto-play muted
+                                        muted={isMuted}
+                                    />
+                                    <TouchableOpacity
+                                        style={styles.soundButton}
+                                        onPress={() => setIsMuted(!isMuted)}
+                                    >
+                                        {isMuted ? <SpeakerOff/> : <CustomText>On</CustomText>}
+                                    </TouchableOpacity>
+
+                                </View>
+                            ) : (
+                                <Image source={item?.media} style={styles.postImage} />
+                            )}
 
                             {/* Actions */}
                             <View style={styles.actions}>
@@ -151,29 +199,35 @@ const Home = ({ navigation }) => {
                             </View>
 
                             {/* Likes */}
-                            <Text style={styles.likes}>{item.likes} likes</Text>
+                            <Text style={styles.likes}>{item?.TotalLikes} likes</Text>
 
                             {/* Caption */}
                             <Text style={styles.caption}>
-                                <Text style={styles.username}>{item.username} </Text>
+                                <Text style={styles.username}>{item?.caption || 'View from Falcon 9’s second stage during an orbital sunset'} </Text>
                                 {item.caption}
                             </Text>
 
                             {/* Comments */}
-                            <Text style={styles.comments}>{item.comments}</Text>
+                            <Text style={styles.comments}>View all{item?.TotalComents}comments</Text>
 
                             {/* Time */}
-                            <Text style={styles.time}>{item.time}</Text>
+                            <Text style={styles.time}>{item?.createdAt}</Text>
                         </Animated.View>
                     );
                 }}
+                ListEmptyComponent={<CustomText style={{
+                    color: isDarkMode ? 'white' : 'black',
+                    alignSelf: 'center',
+                    marginTop: 50,
+                    fontFamily: FONTS_FAMILY.OpenSans_Condensed_Medium
+                }}>No Post Found!</CustomText>}
             />
         );
     };
-
     const styles = StyleSheet.create({
         container: {
-            flex: 1
+            flex: 1,
+            backgroundColor: isDarkMode ? 'black' : white
         },
         storyContainer: {
             alignItems: 'center',
@@ -190,6 +244,14 @@ const Home = ({ navigation }) => {
         },
         ownStoryBorder: {
             borderColor: 'transparent',
+        },
+        soundButton: {
+            position: "absolute",
+            bottom: 20,
+            right: 20,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            padding: 10,
+            borderRadius: 20,
         },
         storyImage: {
             width: 55,
@@ -331,7 +393,7 @@ const feedData = [
         id: '1',
         username: 'spacex',
         profileImage: IMG.ProfileImagePost,
-        postImage: IMG.PostImage,
+        postImage: 'https://res.cloudinary.com/dwewlzhdz/video/upload/v1743501862/Story/Video/gw9kaoshcsqij0ysabol.mp4',
         likes: '112,099',
         caption: 'View from Falcon 9’s second stage during an orbital sunset',
         comments: 'View all 534 comments',

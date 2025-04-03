@@ -23,13 +23,13 @@ const OnBoarding = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const flatListRef = useRef(null);
     const navigation = useNavigation();
-const { isDarkMode } = useSelector(state => state.theme);
+    const { isDarkMode } = useSelector(state => state.theme);
 
-const slides = [
-    { id: '1', image:isDarkMode? IMG.OnBoardinDark: IMG.Onboarding1 },
-    { id: '2', image:isDarkMode? IMG.OnBoardinDark: IMG.Onboarding1 },
-    { id: '3', image:isDarkMode? IMG.OnBoardinDark: IMG.Onboarding1 },
-];
+    const slides = [
+        { id: '1', image: isDarkMode ? IMG.OnBoardinDark : IMG.Onboarding1 },
+        { id: '2', image: isDarkMode ? IMG.OnBoardinDark : IMG.Onboarding1 },
+        { id: '3', image: isDarkMode ? IMG.OnBoardinDark : IMG.Onboarding1 },
+    ];
 
     const handleScroll = event => {
         const index = Math.round(event.nativeEvent.contentOffset.x / width);
@@ -47,7 +47,7 @@ const slides = [
             <StatusBar
                 translucent={true}
                 backgroundColor="transparent"
-                barStyle={isDarkMode?'light-content' :"dark-content"}
+                barStyle={isDarkMode ? 'light-content' : "dark-content"}
             />
             <FlatList
                 ref={flatListRef}
@@ -61,7 +61,7 @@ const slides = [
                 renderItem={({ item }) => (
                     <>
                         <Image source={item.image} style={styles.image} />
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             style={styles.hiddenTouchable}
                             onPress={goToNextSlide}  // Move to the next slide on press
                         />
@@ -72,7 +72,7 @@ const slides = [
             {/* Pagination Dots */}
             <View style={styles.pagination}>
                 {slides.map((_, index) => (
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         key={index}
                         onPress={() => flatListRef.current.scrollToIndex({ index, animated: true })}
                         style={[styles.dot, currentIndex === index && styles.activeDot]}
@@ -82,10 +82,10 @@ const slides = [
 
             {/* Continue Button (Only on Last Slide) */}
             {currentIndex === slides.length - 1 && (
-                <TouchableOpacity 
-                style={styles.hiddenTouchable}
-                onPress={()=>navigation.navigate('Login')}  // Move to the next slide on press
-            />
+                <TouchableOpacity
+                    style={styles.hiddenTouchable}
+                    onPress={() => navigation.navigate('Login')}  // Move to the next slide on press
+                />
             )}
         </View>
     );
