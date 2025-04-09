@@ -19,13 +19,6 @@ const OtherUserDetail = ({ navigation }) => {
     const [UserDetails, setUserDetails]=useState(null)
     const [loading, setLoading] = useState(false)
 
-  let selector = useSelector(state => state?.user?.userData);
-    if (Object.keys(selector).length != 0) {
-        selector = JSON.parse(selector);
-    }
-
-    // console.log('UserDtails from selector::::', selector);
-    
 
     useEffect(() => {
         fetchData()
@@ -236,7 +229,7 @@ const OtherUserDetail = ({ navigation }) => {
                 />
                 <View>
                     <Row style={{ marginBottom: 10, gap: 50 }}>
-                        <CustomText style={{ color: isDarkMode ? "white" : 'black', fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold }}>{UserDetails?.UserName}</CustomText>
+                        <CustomText style={{ color: isDarkMode ? "white" : 'black', fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold }}>{UserDetails?.FullName}</CustomText>
                         {/* <TouchableOpacity>
                             <ThreeDotIcon />
                         </TouchableOpacity> */}
@@ -257,7 +250,7 @@ const OtherUserDetail = ({ navigation }) => {
                         <TouchableOpacity style={styles.messageButton}
                             onPress={() => navigation.navigate('Chat')}
                         >
-                            <Text style={{ ...styles.buttonText, color: 'black' }}>Edit Profile</Text>
+                            <Text style={{ ...styles.buttonText, color: 'black' }}>Message</Text>
                         </TouchableOpacity>
                         <TouchableOpacity>
                             <AddUserIcon />
@@ -268,9 +261,9 @@ const OtherUserDetail = ({ navigation }) => {
 
             {/* BIO SECTION */}
             <View style={styles.bioContainer}>
-                {/* <Text style={styles.bioName}>Dyniza <Text style={styles.bioPronoun}>she</Text></Text> */}
+                <Text style={styles.bioName}>Dyniza <Text style={styles.bioPronoun}>she</Text></Text>
                 <Text style={styles.bioDescription}>
-                    ✨ {UserDetails?.Bio}✨{'\n'}
+                    ✨ UX designer✨{'\n'}
                     🎯 Freelance Design • Lifestyle • Tech{'\n'}
                     📩 DM me for projects and collab{'\n'}
                     🌐 Grab your UX/UI Design guide below{'\n'}
@@ -294,17 +287,17 @@ const OtherUserDetail = ({ navigation }) => {
             {/* STATS SECTION */}
             <View style={styles.statsContainer}>
                 <View style={styles.statItem}>
-                    <Text style={styles.statNumber}>0</Text>
+                    <Text style={styles.statNumber}>569</Text>
                     <Text style={styles.statLabel}>Posts</Text>
                 </View>
                 <TouchableOpacity style={styles.statItem}
                     onPress={() => navigation.navigate("Followers")}
                 >
-                    <Text style={styles.statNumber}>{UserDetails?.Follower?.length}</Text>
+                    <Text style={styles.statNumber}>16.7M</Text>
                     <Text style={styles.statLabel}>Followers</Text>
                 </TouchableOpacity>
                 <View style={styles.statItem}>
-                    <Text style={styles.statNumber}>{UserDetails?.Following?.length}</Text>
+                    <Text style={styles.statNumber}>3</Text>
                     <Text style={styles.statLabel}>Following</Text>
                 </View>
             </View>

@@ -6,7 +6,7 @@ import { App_Primary_color } from '../common/Colors/colors';
 import { FONTS_FAMILY } from '../assets/Fonts';
 import { useSelector } from 'react-redux';
 
-const CustomInputField = ({ icon, value, onChangeText, Lefticon, editable, secureTextEntry, keyboardType, placeholder, label, ...props }) => {
+const CustomInputField = ({ icon, lableStyle, value, onChangeText, Lefticon, editable, secureTextEntry, keyboardType, placeholder, label, ...props }) => {
   const { isDarkMode } = useSelector(state => state.theme);
 
   const styles = StyleSheet.create({
@@ -25,7 +25,7 @@ const CustomInputField = ({ icon, value, onChangeText, Lefticon, editable, secur
       flex: 1,
       minWidth: 0,
       fontSize: 16,
-      color: '#333',
+      color:isDarkMode?'white': '#333',
       fontFamily: FONTS_FAMILY.SourceSans3_Regular,
       //  fontSize: 16, 
     },
@@ -39,7 +39,8 @@ const CustomInputField = ({ icon, value, onChangeText, Lefticon, editable, secur
       <CustomText style={{
         color: 'rgba(151, 150, 161, 1)',
         fontFamily: FONTS_FAMILY.Alatsi_Regular, fontSize: 16,
-        alignSelf: 'flex-start'
+        alignSelf: 'flex-start',
+        bottom:lableStyle?10:0
       }}>{label}</CustomText>
       <View style={styles.container}>
         {Lefticon}

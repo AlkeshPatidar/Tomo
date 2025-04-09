@@ -88,6 +88,28 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
             onClose()
             
         }
+
+        if (label == 'Request to become Seller') {
+            navigation.navigate('RequestBecomSeller')
+            onClose()
+            
+        }
+
+        if (label == 'Saved') {
+            navigation.navigate('SavedPosts')
+            onClose()
+            
+        }
+
+        
+
+        if (label == 'All Shops') {
+            navigation.navigate('Shops')
+            onClose()
+            
+        }
+
+        
         
 
         if (label == 'Invite a Freind') {
@@ -270,11 +292,17 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
 
                     <View style={styles.options}>
                         <OptionItem label="Followers" nav={'Followers'} />
+                        <OptionItem label="Request to become Seller" />
+                        <OptionItem label="All Shops" />
+                        <OptionItem label="Saved" />
+
+
                         <OptionItem label="Privacy Policy"  />
                         <OptionItem label="Terms & Conditions" />
                         <OptionItem label="Help Center"  />
                         <OptionItem label="Invite a Freind"  />
                         <OptionItem label="FAQ" />
+
                         <OptionItem label="Log Out" />
 
                         <View

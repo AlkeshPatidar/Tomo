@@ -6,7 +6,7 @@ import Home from '../../screens/Home/Home';
 
 import { TouchableOpacity, View } from 'react-native';
 
-import { ActiveHome, ActiveMessage, ActiveSearch, DeActiveHomeWhite, DeActiveSearch, DeactiveWhiteMsg, DeActiveWhiteSearch, TabBottomLine } from '../../assets/SVGs';
+import { ActiveHome, ActiveMessage, ActiveSearch, DeActiveHomeWhite, DeActiveSearch, DeactiveWhiteMsg, DeActiveWhiteSearch, MarkeActive, MarketDeactive, MarketDeactiveForLite, TabBottomLine } from '../../assets/SVGs';
 import { MidIcon } from '../../assets/SVGs';
 import { DeActiveMsg } from '../../assets/SVGs';
 import { DeActiveLast } from '../../assets/SVGs';
@@ -17,6 +17,7 @@ import Followers from '../../screens/Followers/Followers';
 import OptionModal from '../AddPostModel';
 import UserDetail from '../../screens/UserDetail/UserDetail';
 import { useSelector } from 'react-redux';
+import MarketPlace from '../../MarketPlace/MarketPlace';
 
 const Tab = createBottomTabNavigator();
 function TabNavigation() {
@@ -65,6 +66,26 @@ function TabNavigation() {
               ),
           }}
         />
+          <Tab.Screen
+          name="MarketPlace"
+          component={MarketPlace}
+          options={{
+            tabBarLabel: () => null,
+            tabBarIcon: ({ focused }) =>
+              focused ? (
+                <View style={{ alignItems: 'center', top: 16, width: 100 }}>
+                  <MarkeActive />
+                  <TabBottomLine style={{ top: 30 }} />
+
+                </View>
+              ) : (
+                <View style={{ alignItems: 'center', top: 16, width: 100 }}>
+                  {isDarkMode ? <MarketDeactive /> : <MarketDeactiveForLite />}
+                </View>
+              ),
+          }}
+        />
+
         <Tab.Screen
           name="Search"
           component={SearchScreen}
@@ -85,7 +106,7 @@ function TabNavigation() {
           }}
         />
 
-        <Tab.Screen
+        {/* <Tab.Screen
           name="Mid"
           component={Home}
           options={{
@@ -105,8 +126,7 @@ function TabNavigation() {
                 </TouchableOpacity>
               ),
           }}
-        />
-
+        /> */}
         <Tab.Screen
           name="Msg"
           component={MessageList}
@@ -126,6 +146,7 @@ function TabNavigation() {
               ),
           }}
         />
+      
         <Tab.Screen
           name="last"
           // component={Followers}

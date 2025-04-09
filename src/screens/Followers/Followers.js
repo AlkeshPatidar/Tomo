@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar, Text, Animated } from 'react-native';
-import { PrimaryBackArrow, PrimaryBackWhite, Search } from '../../assets/SVGs';
+import { BackBlackSimple, PrimaryBackArrow, PrimaryBackWhite, Search } from '../../assets/SVGs';
 import Row from '../../components/wrapper/row';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import IMG from '../../assets/Images';
@@ -46,7 +46,7 @@ const Followers = ({ navigation }) => {
     const renderHeader = () => (
         <Row style={styles.header}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
-                {isDarkMode ? <PrimaryBackWhite /> : <PrimaryBackArrow />}
+                {isDarkMode ? <BackBlackSimple /> : <PrimaryBackArrow />}
 
             </TouchableOpacity>
             <Text style={styles.headerText}>

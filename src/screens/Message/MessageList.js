@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar, Text } from 'react-native';
 import { Editsq, Mic, PrimaryBackArrow, PrimaryBackWhite, Search } from '../../assets/SVGs';
 import SpaceBetweenRow from '../../components/wrapper/spacebetween';
@@ -7,6 +7,9 @@ import { FONTS_FAMILY } from '../../assets/Fonts';
 import IMG from '../../assets/Images';
 import LinearGradient from "react-native-linear-gradient";
 import { useSelector } from 'react-redux';
+import { apiGet } from '../../utils/Apis';
+import urls from '../../config/urls';
+import useLoader from '../../utils/LoaderHook';
 
 const searchData = [
     { id: '1', image: 'https://picsum.photos/id/237/200/300' },
@@ -32,6 +35,22 @@ const searchData = [
 const MessageList = ({ navigation }) => {
 
     const { isDarkMode } = useSelector(state => state.theme);
+    const [allUser, setAllUsers] = useState([])
+    const {showLoader, hideLoader}=useLoader()
+
+    useEffect(() => {
+        fetchData()
+    }, [])
+
+
+
+    const fetchData = async () => {
+        showLoader()
+        const res = await apiGet(urls.getAllChattedUsers)
+        // console.log("-----------------", res.data);
+        setAllUsers(res?.data)
+        hideLoader()
+    }
 
     const styles = StyleSheet.create({
         container: {
@@ -227,7 +246,7 @@ export default MessageList;
 const messages = [
     {
         id: "1",
-        name: "Jessica Smith",
+        name: "Vikas Kohli",
         message: "Thanks I really appreciate it",
         time: "2m ago",
         isOnline: true,
@@ -236,7 +255,7 @@ const messages = [
     },
     {
         id: "2",
-        name: "John Doe",
+        name: "Akash Prajapat",
         message: "Let's catch up later",
         time: "10m ago",
         isOnline: false,
@@ -255,67 +274,13 @@ const messages = [
 
     {
         id: "4",
-        name: "John Doe",
+        name: "Smith",
         message: "Let's catch up later",
         time: "10m ago",
         isOnline: false,
         unreadCount: 1,
         avatar: IMG.MessageProfile
     },
-    {
-        id: "5",
-        name: "John Doe",
-        message: "Let's catch up later",
-        time: "10m ago",
-        isOnline: false,
-        unreadCount: 1,
-        avatar: IMG.MessageProfile
-    },
-    {
-        id: "6",
-        name: "John Doe",
-        message: "Let's catch up later",
-        time: "10m ago",
-        isOnline: false,
-        unreadCount: 1,
-        avatar: IMG.MessageProfile
-    },
-    {
-        id: "7",
-        name: "John Doe",
-        message: "Let's catch up later",
-        time: "10m ago",
-        isOnline: false,
-        unreadCount: 1,
-        avatar: IMG.MessageProfile
-    },
-
-    {
-        id: "8",
-        name: "John Doe",
-        message: "Let's catch up later",
-        time: "10m ago",
-        isOnline: false,
-        unreadCount: 1,
-        avatar: IMG.MessageProfile
-    },
-
-    {
-        id: "9",
-        name: "John Doe",
-        message: "Let's catch up later",
-        time: "10m ago",
-        isOnline: false,
-        unreadCount: 1,
-        avatar: IMG.MessageProfile
-    },
-    {
-        id: "10",
-        name: "John Doe",
-        message: "Let's catch up later",
-        time: "10m ago",
-        isOnline: false,
-        unreadCount: 1,
-        avatar: IMG.MessageProfile
-    },
+ 
+   
 ];

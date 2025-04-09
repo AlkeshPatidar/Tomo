@@ -11,6 +11,13 @@ import ChatScreen from '../../screens/Message/ChatScreen';
 import Activity from '../../screens/Activity/Activity';
 import UserDetail from '../../screens/UserDetail/UserDetail';
 import Followers from '../../screens/Followers/Followers';
+import OtherUserDetail from '../../screens/UserDetail/OtherUserDetail';
+import StoryScreen from '../../screens/Home/StoryScreen';
+import RequestBecomSeller from '../../screens/Seller/RequestBecomSeller';
+import Shops from '../../screens/Shops/Shops';
+import AddShops from '../../screens/Shops/AddShops';
+import SavedPosts from '../../screens/Saved/SavedPosts';
+import GalleryPickerScreen from '../../screens/Home/GalleryPicker';
 
 
 
@@ -36,6 +43,22 @@ const StackNavigation = () => {
 
         <Stack.Screen name={'UserDetail'} component={UserDetail} />
         <Stack.Screen name={'Followers'} component={Followers} />
+        <Stack.Screen name={'OtherUserDetail'} component={OtherUserDetail} />
+        <Stack.Screen name={'StoryScreen'} component={StoryScreen} />
+
+        <Stack.Screen name={'RequestBecomSeller'} component={RequestBecomSeller} />
+        <Stack.Screen name={'Shops'} component={Shops} />
+        <Stack.Screen name={'AddShops'} component={AddShops} />
+        <Stack.Screen name={'SavedPosts'} component={SavedPosts} />
+        <Stack.Screen name={'GalleryPickerScreen'} component={GalleryPickerScreen} />
+
+
+        
+        
+
+
+
+        
 
 
         

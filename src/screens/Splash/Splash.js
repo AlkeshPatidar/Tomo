@@ -25,7 +25,7 @@ const Splash = ({ navigation }) => {
         setLoading(true)
         if (token) {
             const getUserDetails = await apiGet(urls.userProfile)
-            console.log(getUserDetails?.data, '---------------');
+            // console.log(getUserDetails?.data, '---------------');
             dispatch(setUser(JSON.stringify(getUserDetails?.data)));
             navigation.navigate('Tab');
             setLoading(false)

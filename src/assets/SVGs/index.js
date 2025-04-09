@@ -58,14 +58,16 @@ import CommentWhite from './CommentWhite.svg';
 import LikeWhite from './LikeWhite.svg';
 import BackOuterWhite from './BackOuterWhite.svg';
 import SpeakerOff from './SpeakerOff.svg';
-
-
-
-
-
-
-
-
+import MarketDeactive from './marketDeactive.svg';
+import MarketDeactiveForLite from './marketDeactiveForLite.svg';
+import MarkeActive from "./MarkeActive.svg"
+import BackIcon from './BackIcon.svg'
+import SubmitBtn from './SubmitBtn.svg'
+import Upload from './Upload.svg'
+import BellIcon from './BellIcon.svg'
+import LocationIcon from './LocationIcon.svg'
+import BackBlackSimple from './BackBlackSimple.svg'
+import AddShopBtn from './AddShopBtn.svg'
 
 
 
@@ -122,5 +124,16 @@ export {
     BookMarkWhite,
     WhiteThreeDot,
     BackOuterWhite,
-    SpeakerOff
+    SpeakerOff,
+    MarketDeactive,
+    MarketDeactiveForLite,
+    MarkeActive,
+    BackIcon,
+    SubmitBtn,
+    Upload,
+    BellIcon,
+    LocationIcon,
+    BackBlackSimple,
+    AddShopBtn
+
 };
