@@ -9,6 +9,7 @@ export default {
     likeUnlike: '/api/user/LikeUnlikePost',
     getCurrentStories: '/api/user/GetCurrentStories',
     getAllShops:'/api/user/GetUserAllShop',
+    getAllProductsOfAShop:'/api/user/GetAllProductsOfShop',
     getAllChattedUsers:'/api/user/GetAllChatedUser',
     getAllSavedPosts:'/api/user/GetAllSavedPosts',
     followedUserStories:'/api/user/GetFollowedUserStories',

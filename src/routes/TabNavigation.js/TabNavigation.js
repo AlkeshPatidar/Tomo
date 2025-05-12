@@ -18,6 +18,7 @@ import OptionModal from '../AddPostModel';
 import UserDetail from '../../screens/UserDetail/UserDetail';
 import { useSelector } from 'react-redux';
 import MarketPlace from '../../MarketPlace/MarketPlace';
+import Shops from '../../screens/Shops/Shops';
 
 const Tab = createBottomTabNavigator();
 function TabNavigation() {
@@ -68,7 +69,8 @@ function TabNavigation() {
         />
           <Tab.Screen
           name="MarketPlace"
-          component={MarketPlace}
+          // component={MarketPlace}
+          component={Shops}
           options={{
             tabBarLabel: () => null,
             tabBarIcon: ({ focused }) =>

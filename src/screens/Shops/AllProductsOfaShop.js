@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
+import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar, Text } from 'react-native';
 
 import { useSelector } from 'react-redux';
 import { AddShopBtn, BackBlackSimple, BackIcon, BackOuterWhite, BellIcon, CameraButton, LocationIcon, Mic, NotiFication, Search } from '../../assets/SVGs';
@@ -12,18 +12,19 @@ import useLoader from '../../utils/LoaderHook';
 import { apiGet } from '../../utils/Apis';
 import urls from '../../config/urls';
 import { useIsFocused } from '@react-navigation/native';
-
-   
-
+import LinearGradient from 'react-native-linear-gradient';
 
 
-const Shops = ({navigation}) => {
 
-    const [allShops, setAllShops] = useState([])
+
+
+const AllProductsOfAShops = ({ navigation, route }) => {
+
+    const [allProducts, setAllProducts] = useState([])
     const { showLoader, hideLoader } = useLoader()
-const isFocused=useIsFocused()
+    const isFocused = useIsFocused()
 
-   useEffect(() => {
+    useEffect(() => {
         fetchData()
     }, [isFocused])
 
@@ -31,9 +32,9 @@ const isFocused=useIsFocused()
 
     const fetchData = async () => {
         showLoader()
-        const res = await apiGet(urls.getAllShops)
+        const res = await apiGet(`${urls.getAllProductsOfAShop}/${route?.params?.shopId}`)
         console.log("------------Notifications-----", res.data);
-        setAllShops(res?.data)
+        setAllProducts(res?.data)
         hideLoader()
 
     }
@@ -76,8 +77,8 @@ const isFocused=useIsFocused()
             height: 120,
             resizeMode: 'cover',
         },
-        cardContainer:{
-            backgroundColor: isDarkMode?'#252525': '#fff',
+        cardContainer: {
+            backgroundColor: isDarkMode ? '#252525' : '#fff',
             borderRadius: 10,
             margin: 8,
             flex: 1,
@@ -88,20 +89,32 @@ const isFocused=useIsFocused()
             shadowRadius: 3,
             borderWidth: 1,
             padding: 7,
-            borderColor:isDarkMode?'gray':'#E4E4E4'
-        }
+            borderColor: isDarkMode ? 'gray' : '#E4E4E4'
+        },
+        followButton: {
+            paddingVertical: 15,
+            paddingHorizontal: 16,
+            borderRadius: 8,
+            marginHorizontal:20
+        },
+        followText: {
+            fontSize: 16,
+            fontWeight: '600',
+            fontFamily:FONTS_FAMILY.SourceSans3_Bold
+        },
+
     });
 
     const renderHeader = () => {
         return (
             <SpaceBetweenRow style={{ paddingTop: 50, paddingHorizontal: 20, backgroundColor: isDarkMode ? '#252525' : 'white', paddingBottom: 15 }}>
-                <TouchableOpacity onPress={()=>navigation.goBack()}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
                     {isDarkMode ? <BackIcon /> : <BackBlackSimple />}
                 </TouchableOpacity>
                 <CustomText style={{
                     fontSize: 20,
                     fontFamily: FONTS_FAMILY.SourceSans3_Bold
-                }}>Market Place</CustomText>
+                }}>Products</CustomText>
 
                 <TouchableOpacity onPress={() => navigation.navigate('Activity')}>
                     <BellIcon />
@@ -132,7 +145,7 @@ const isFocused=useIsFocused()
             {/* Grid View */}
             <FlatList
                 style={{}}
-                data={allShops}
+                data={allProducts}
                 keyExtractor={(item) => item?._id.toString()}
                 numColumns={2}
 
@@ -140,12 +153,12 @@ const isFocused=useIsFocused()
                 showsVerticalScrollIndicator={false}
                 renderItem={({ item }) => (
                     <TouchableOpacity style={styles.cardContainer}
-                    onPress={()=>navigation.navigate('AllProductsOfAShops',{shopId:item?._id})}
+                        onPress={() => navigation.navigate('ProductDetail')}
                     >
                         {console.log('+++++++++++++++++>', item)
                         }
                         <Image
-                            source={item?.Image?{uri:item?.Image}:IMG.PostImage}
+                            source={item?.Image ? { uri: item?.Image } : IMG.PostImage}
                             style={{
                                 height: 100,
                                 width: '100%',
@@ -159,12 +172,12 @@ const isFocused=useIsFocused()
                                 fontFamily: FONTS_FAMILY.SourceSans3_Bold,
                                 marginBottom: 5,
                             }}>
-                               {item?.Name}
+                                {item?.ProductName}
                             </CustomText>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                 <LocationIcon />
-                                <CustomText style={{ fontSize: 10, color:isDarkMode?'white': '#7d7d7d', flex: 1 }}>
-                                   {item?.Address}
+                                <CustomText style={{ fontSize: 10, color: isDarkMode ? 'white' : '#7d7d7d', flex: 1 }}>
+                                    {item?.ProductDetails}
                                 </CustomText>
                             </View>
                         </View>
@@ -172,11 +185,28 @@ const isFocused=useIsFocused()
                 )}
             />
 
-            <TouchableOpacity onPress={()=>navigation?.navigate('AddShops')}>
+            {/* <TouchableOpacity onPress={()=>navigation?.navigate('CreateProducts',{shopId:route?.params?.shopId})}>
                 <AddShopBtn/>
+            </TouchableOpacity> */}
+            <TouchableOpacity
+                onPress={() => navigation?.navigate('CreateProducts', { shopId: route?.params?.shopId })}            >
+                <LinearGradient
+                    colors={['#ff00ff', '#6a5acd']}
+                    start={{ x: 1, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.followButton}
+                >
+                    <Text style={[
+                        styles.followText,
+                        { color: isDarkMode ? '#fff' : '#000' }
+
+                    ]}>
+                        {'Create Product'}
+                    </Text>
+                </LinearGradient>
             </TouchableOpacity>
 
-            <View style={{height:100}}/>
+            <View style={{ height: 100 }} />
 
         </View>
     );
@@ -184,4 +214,4 @@ const isFocused=useIsFocused()
 
 
 
-export default Shops;
+export default AllProductsOfAShops;

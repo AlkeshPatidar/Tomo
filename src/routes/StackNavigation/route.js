@@ -24,6 +24,8 @@ import MarketplaceBuyer from '../../screens/Buyer/BuyerItemList';
 import ProductDetail from '../../screens/Buyer/ProductDetail';
 import PrivacyPolicy from '../../screens/PrivacyPolicy/PrivacyPolicy';
 import TermsAndConditions from '../../screens/PrivacyPolicy/Terms&Conditions';
+import AllProductsOfAShops from '../../screens/Shops/AllProductsOfaShop';
+import CreateProducts from '../../screens/Shops/CreateProduct';
 
 
 
@@ -56,6 +58,11 @@ const StackNavigation = () => {
 
         <Stack.Screen name={'RequestBecomSeller'} component={RequestBecomSeller} />
         <Stack.Screen name={'Shops'} component={Shops} />
+        <Stack.Screen name={'AllProductsOfAShops'} component={AllProductsOfAShops} />
+        <Stack.Screen name={'CreateProducts'} component={CreateProducts} />
+
+        
+        
         <Stack.Screen name={'AddShops'} component={AddShops} />
         <Stack.Screen name={'SavedPosts'} component={SavedPosts} />
         <Stack.Screen name={'GalleryPickerScreen'} component={GalleryPickerScreen} />
