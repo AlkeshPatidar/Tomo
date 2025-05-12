@@ -1,40 +1,50 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FlatList, Image, ImageBackground, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Animated } from "react-native";
+import { FlatList, Image, ImageBackground, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Animated, TouchableWithoutFeedback, TextInput } from "react-native";
 import CustomText from "../../components/TextComponent";
 import IMG from "../../assets/Images";
 import Row from "../../components/wrapper/row";
-import { AddStoryIcon, Back, BookMarkIcon, BookMarkWhite, BottomIndicator, CameraButton, CommentIcon, CommentWhite, EmailIcon, EyeIcon, LikeIcon, LikeWhite, LockIcon, LoginBtn, NotiFication, PostShareWhite, ShareIcon, SpeakerOff, ThreeDotIcon, ThreeDotWhite, WhiteThreeDot } from "../../assets/SVGs";
+import { AddStoryIcon, CameraButton, CommentIcon, CommentWhite, NotiFication, PostShareWhite, ShareIcon, SpeakerOff, ThreeDotIcon, WhiteThreeDot } from "../../assets/SVGs";
 import { FONTS_FAMILY } from "../../assets/Fonts";
-import CustomInputField from "../../components/CustomInputField";
 import SpaceBetweenRow from "../../components/wrapper/spacebetween";
 import { useSelector } from "react-redux";
-
 import Video from "react-native-video";
-import { apiGet } from "../../utils/Apis";
+import { apiDelete, apiGet, apiPost } from "../../utils/Apis";
 import urls from "../../config/urls";
 import { white } from "../../common/Colors/colors";
-
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import useLoader from "../../utils/LoaderHook";
 import { useIsFocused } from "@react-navigation/native";
-
-
-
+import CommentModal from "./CommentModel";
 
 
 const Home = ({ navigation }) => {
     const { isDarkMode } = useSelector(state => state.theme);
-    const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
+    // const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
     const storyOpacity = useRef(new Animated.Value(0)).current;
     const feedTranslateY = useRef(new Animated.Value(20)).current;
 
-    const animatedValues = useRef(feedData.map(() => new Animated.Value(0))).current;
+    // const animatedValues = useRef(feedData.map(() => new Animated.Value(0))).current;
+    // Ensure feedData is available and has valid items
+
     const [loading, setLoading] = useState(false)
     const [allPosts, setAllPosts] = useState([])
     const [allStories, setAllStories] = useState([])
     const [followedStories, setFollowedStories] = useState([])
+
+    const [doubleTapIndex, setDoubleTapIndex] = useState(null);
+    const heartOpacity = useRef(new Animated.Value(0)).current;
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const [postId, setPostId] = useState(null);
+
+    const [commentText, setCommentText] = useState('');
+
+    const animatedValues = useRef(feedData?.map(() => new Animated.Value(0)) ?? []).current;
+
+
+    const [comments, setComments] = useState([])
 
 
     const [isMuted, setIsMuted] = useState(false);
@@ -55,6 +65,31 @@ const Home = ({ navigation }) => {
             useNativeDriver: true,
         }).start();
     };
+    const triggerHeartAnimation = (index) => {
+        setDoubleTapIndex(index);
+        heartOpacity.setValue(1);
+
+        Animated.timing(heartOpacity, {
+            toValue: 0,
+            duration: 800,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    let lastTap = null;
+    const handleDoubleTap = (item, index) => {
+        const now = Date.now();
+        const DOUBLE_PRESS_DELAY = 300;
+
+        if (lastTap && (now - lastTap) < DOUBLE_PRESS_DELAY) {
+            triggerHeartAnimation(index);
+            onLikeUnlike(item);
+        } else {
+            lastTap = now;
+        }
+    };
+
+
 
     const isFocused = useIsFocused()
 
@@ -81,75 +116,37 @@ const Home = ({ navigation }) => {
     }, [isFocused])
 
 
+    const fetchCommentDataOfaPost = async (id) => {
+        console.log('--------------', id);
+
+        const res = await apiGet(`${urls.getAllCommentofaPost}/${id}`)
+        setComments(res?.data)
+        console.log(res, 'Coemments data');
+
+    }
+
+    const sendComments = async (id, text) => {
+        console.log('---------___++++++++++++-----', id);
+
+        const data = {
+            Post: id,
+            text: text
+        }
+        const res = await apiPost(`${urls.sendCommentOnPost}`, data)
+        fetchCommentDataOfaPost(id)
+
+    }
+
+
 
     const fetchData = async () => {
         showLoader()
         const res = await apiGet(urls.getAllPost)
-        // console.log("-----------------", res.data);
-
+        console.log(res,'=================');
+        
         setAllPosts(res?.data)
         hideLoader()
     }
-
-    // const getCurrentStories = async () => {
-    //     console.log("Selector", selector?._id);
-
-    //     setLoading(true);
-    //     try {
-    //         const res = await apiGet(urls.getCurrentStories);
-    //         console.log("Fetched Stories:::::::::::", res.data);
-
-    //         if (res?.data?.length > 0) {
-    //             const loggedInUserId = selector?._id; // Get logged-in user's ID
-    //             let userStory = null;
-    //             let otherStories = [];
-
-    //             // 🔥 Loop through `res.data.data`, not `res.data`
-    //             res.data.forEach((story) => {
-    //                 if (story.User == loggedInUserId) {
-    //                     userStory = { ...story, isOwn: true };
-    //                 } else {
-    //                     otherStories.push({ ...story, isOwn: false });
-    //                 }
-    //             });
-
-    //             let finalStories = [];
-
-    //             if (userStory) {
-    //                 // If user has a story, put it at index 0
-    //                 finalStories = [userStory, ...otherStories];
-    //             } else {
-    //                 // If user doesn't have a story, add "Add Story" at index 0
-    //                 const addStoryPlaceholder = {
-    //                     _id: "add_story",
-    //                     isOwn: true,
-    //                     media: null, // No media
-    //                     name: "Your Story",
-    //                     type: "add",
-    //                 };
-    //                 finalStories = [addStoryPlaceholder, ...otherStories];
-    //             }
-
-    //             // ✅ Set the final processed list
-    //             setAllStories(finalStories);
-    //         } else {
-    //             // No stories exist, show only "Add Story"
-    //             setAllStories([
-    //                 {
-    //                     _id: "add_story",
-    //                     isOwn: true,
-    //                     media: null,
-    //                     name: "Your Story",
-    //                     type: "add",
-    //                 },
-    //             ]);
-    //         }
-    //     } catch (error) {
-    //         console.error("Error fetching stories:", error);
-    //     }
-    //     setLoading(false);
-    // };
-
 
     const getCurrentStories = async () => {
         console.log("Selector", selector?._id);
@@ -178,9 +175,6 @@ const Home = ({ navigation }) => {
             console.log("Fetched Stories:::::::::::", res.data);
             setFollowedStories(res?.data)
 
-
-
-
         } catch (error) {
             console.error("Error fetching stories:", error);
         }
@@ -188,33 +182,127 @@ const Home = ({ navigation }) => {
     };
 
 
-    const SavePost = async (item) => {
-        console.log('Item,', item?._id);
 
-        setLoading(true)
-        const endPoint = item?.SavedBy?.includes(selector?._id) ? `${urls.removeSavedPost}/${item?._id}` : `${urls.SavePost}/${item?._id}`
-        const res = await apiGet(endPoint)
-        console.log("-------------SAVE----", res.data);
-        setLoading(false)
-        fetchData()
-    }
+
+    const SavePost = async (item) => {
+        const postId = item._id;
+        const userId = selector?._id;
+        setAllPosts(prevPosts => {
+            return prevPosts.map(post => {
+                if (post._id === postId) {
+                    const alreadySaved = post.SavedBy.includes(userId);
+                    const updatedSavedBy = alreadySaved
+                        ? post.SavedBy.filter(id => id !== userId)
+                        : [...post.SavedBy, userId];
+
+                    return {
+                        ...post,
+                        SavedBy: updatedSavedBy
+                    };
+                }
+                return post;
+            });
+        });
+
+        // Call API in background
+        try {
+            const endPoint = item?.SavedBy?.includes(userId)
+                ? `${urls.removeSavedPost}/${postId}`
+                : `${urls.SavePost}/${postId}`;
+
+            const res = await apiGet(endPoint);
+            console.log("-------------SAVE API SUCCESS----", res.data);
+        } catch (error) {
+            console.log("Save Post Error:", error);
+
+            // Revert UI on error
+            setAllPosts(prevPosts => {
+                return prevPosts.map(post => {
+                    if (post._id === postId) {
+                        const wasSaved = item.SavedBy.includes(userId);
+                        const revertedSavedBy = wasSaved
+                            ? [...post.SavedBy, userId]
+                            : post.SavedBy.filter(id => id !== userId);
+
+                        return {
+                            ...post,
+                            SavedBy: revertedSavedBy
+                        };
+                    }
+                    return post;
+                });
+            });
+        }
+    };
+
 
     const onLikeUnlike = async (item) => {
+        const postId = item._id;
+        const userId = selector?._id;
+        setAllPosts(prevPosts => {
+            return prevPosts.map(post => {
+                if (post._id === postId) {
+                    const alreadyLiked = post.likes.includes(userId);
+                    const updatedLikes = alreadyLiked
+                        ? post.likes.filter(id => id !== userId)
+                        : [...post.likes, userId];
 
-        console.log(item?._id, 'ITEM ITDD');
+                    return {
+                        ...post,
+                        likes: updatedLikes,
+                        TotalLikes: alreadyLiked ? post.TotalLikes - 1 : post.TotalLikes + 1
+                    };
+                }
+                return post;
+            });
+        });
+        try {
+            await apiGet(`${urls.likeUnlike}/${postId}`);
+            console.log("Like/Unlike updated on server");
+        } catch (error) {
+            console.log("Error in like/unlike", error);
 
-        setLoading(true)
-        const endPoint = item?.likes?.includes(selector?._id) ? `${urls.likeUnlike}/${item?._id}` : `${urls.likeUnlike}/${item?._id}`
-        const res = await apiGet(`${urls.likeUnlike}/${item?._id}`)
-        console.log("------------LIKE UNLOINE-----", res.data);
-        setLoading(false)
-        fetchData()
-    }
+            setAllPosts(prevPosts => {
+                return prevPosts.map(post => {
+                    if (post._id === postId) {
+                        const wasLiked = item.likes.includes(userId);
+                        const revertedLikes = wasLiked
+                            ? [...post.likes, userId]
+                            : post.likes.filter(id => id !== userId);
+
+                        return {
+                            ...post,
+                            likes: revertedLikes,
+                            TotalLikes: wasLiked ? post.TotalLikes + 1 : post.TotalLikes - 1
+                        };
+                    }
+                    return post;
+                });
+            });
+        }
+    };
+
+    const onDeleteComments = async (id) => {
+        try {
+            showLoader();
+            const response = await apiDelete(`/api/user/DeleteComment/${id}`);
+            console.log('DeletePost::', response);
+            fetchCommentDataOfaPost(postId);
+        } catch (error) {
+            console.log('DeleteComment Error:', error?.response?.data || error.message);
+        } finally {
+            hideLoader();
+        }
+    };
+
+
 
     const renderHeader = () => {
         return (
             <SpaceBetweenRow style={{ paddingTop: 50, paddingHorizontal: 20, backgroundColor: isDarkMode ? '#252525' : 'white', paddingBottom: 15 }}>
-                <TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => navigation.navigate('GalleryForAddPost')}
+                >
                     <CameraButton />
                 </TouchableOpacity>
                 <CustomText style={{
@@ -229,115 +317,6 @@ const Home = ({ navigation }) => {
             </SpaceBetweenRow>
         )
     }
-    // const renderStories = () => {
-    //     return (
-    //         <Animated.View style={{
-    //             paddingVertical: 10, backgroundColor: isDarkMode ? 'black' : 'rgba(245, 245, 248, 1)', borderBottomWidth: 1, borderTopWidth: 1, borderColor: 'rgba(219, 219, 219, 1)',
-    //             opacity: storyOpacity,
-    //         }}>
-    //             <FlatList
-    //                 data={storiesData}
-    //                 style={{}}
-    //                 horizontal
-    //                 showsHorizontalScrollIndicator={false}
-    //                 keyExtractor={(item) => item.id}
-    //                 contentContainerStyle={{ paddingHorizontal: 10 }}
-    //                 renderItem={({ item }) => (
-    //                     <TouchableOpacity style={styles.storyContainer}>
-    //                         <View style={[styles.storyBorder, item.isOwn && styles.ownStoryBorder]}>
-    //                             <Image source={item.image} style={styles.storyImage} />
-    //                         </View>
-    //                         <Text style={styles.storyText} numberOfLines={1}>{item.name}</Text>
-    //                         {item.isOwn && <AddStoryIcon style={{ position: 'absolute', bottom: 20, right: 10 }} />}
-    //                     </TouchableOpacity>
-    //                 )}
-    //             />
-
-    //         </Animated.View>
-    //     );
-    // };
-
-    // const renderStories = () => {
-    //     return (
-    //         <Row style={{
-    //             borderBottomWidth: 1,
-    //             borderTopWidth: 1,
-    //             borderColor: 'rgba(219, 219, 219, 1)',
-
-    //         }}>
-    //             <View style={styles.storyContainer}
-    //             // onPress={()=>navigation.navigate('StoryScreen',{storyImage: item  })}
-    //             >
-    //                 <TouchableOpacity style={[styles.storyBorder, styles.ownStoryBorder]}
-    //                     onPress={() => navigation.navigate('StoryScreen', { storyImage: allStories })}
-    //                 >
-    //                     <Image
-    //                         source={
-    //                             allStories[0]?.media ? { uri: allStories[0]?.media } : IMG.AddStoryImage
-    //                         }
-    //                         style={styles.storyImage}
-    //                     />
-    //                 </TouchableOpacity>
-    //                 <Text style={styles.storyText} numberOfLines={1}>{'Your Story'}</Text>
-    //                 <TouchableOpacity style={{ position: 'absolute', bottom: 20, right: 10 }}
-    //                     onPress={() => navigation.navigate('GalleryPickerScreen')}>
-    //                     <AddStoryIcon />
-    //                 </TouchableOpacity>
-    //             </View>
-
-    //             <Animated.View
-    //                 style={{
-    //                     paddingVertical: 10,
-    //                     backgroundColor: isDarkMode ? 'black' : 'rgba(245, 245, 248, 1)',
-    //                     opacity: storyOpacity,
-    //                 }}
-    //             >
-    //                 <FlatList
-    //                     data={[...followedStories, ...followedStories,
-    //                         ...followedStories,
-    //                         ...followedStories,
-    //                         ...followedStories,
-    //                         ...followedStories,
-    //                         ...followedStories,
-    //                         ...followedStories,
-    //                         ...followedStories
-    //                     ]}
-    //                     horizontal
-    //                     showsHorizontalScrollIndicator={false}
-    //                     keyExtractor={(item) => item.id}
-    //                     contentContainerStyle={{ paddingHorizontal: 10 }}
-    //                     renderItem={({ item }) => {
-    //                         if (item?.User?.Stories?.length > 0) {
-    //                             return (
-    //                                 <View style={styles.storyContainer}>
-    //                                     <TouchableOpacity
-    //                                         style={[styles.storyBorder, item.isOwn && styles.ownStoryBorder]}
-    //                                         onPress={() => navigation.navigate('StoryScreen', { storyImage: item.User?.Stories })}
-    //                                     >
-    //                                         <Image
-    //                                             source={
-    //                                                 item.User?.Stories?.length > 0
-    //                                                     ? { uri: item.User?.Stories[0]?.media }
-    //                                                     : IMG.AddStoryImage
-    //                                             }
-    //                                             style={styles.storyImage}
-    //                                         />
-    //                                     </TouchableOpacity>
-    //                                     <Text style={styles.storyText} numberOfLines={1}>
-    //                                         {item?.User?.UserName}
-    //                                     </Text>
-    //                                 </View>
-    //                             );
-    //                         } else {
-    //                             return null;
-    //                         }
-    //                     }}
-    //                 />
-    //             </Animated.View>
-    //         </Row>
-    //     );
-    // };
-
     const renderStories = () => {
         return (
             <Row style={{
@@ -378,7 +357,7 @@ const Home = ({ navigation }) => {
                                 <AddStoryIcon />
                             </TouchableOpacity>
                         </View>
-    
+
                         {/* Followed Stories */}
                         {followedStories?.map((item) => {
                             if (item?.User?.Stories?.length > 0) {
@@ -386,7 +365,7 @@ const Home = ({ navigation }) => {
                                     <View key={item.id} style={styles.storyContainer}>
                                         <TouchableOpacity
                                             style={[styles.storyBorder, item.isOwn && styles.ownStoryBorder]}
-                                            onPress={() => navigation.navigate('StoryScreen', { storyImage: item.User?.Stories , User:item?.User})}
+                                            onPress={() => navigation.navigate('StoryScreen', { storyImage: item.User?.Stories, User: item?.User })}
                                         >
                                             <Image
                                                 source={
@@ -411,7 +390,170 @@ const Home = ({ navigation }) => {
             </Row>
         );
     };
-    
+
+    // const renderFeeds = () => {
+    //     return (
+    //         <FlatList
+    //             data={allPosts}
+    //             style={{ marginBottom: 90 }}
+    //             keyExtractor={(item) => item.id}
+    //             showsVerticalScrollIndicator={false}
+    //             renderItem={({ item, index }) => {
+    //                 handleAnimation(index);
+
+    //                 const animatedStyle = {
+    //                     opacity: animatedValues[index],
+    //                     transform: [
+    //                         {
+    //                             translateY: animatedValues[index].interpolate({
+    //                                 inputRange: [0, 1],
+    //                                 outputRange: [20, 0], // Slide up effect
+    //                             }),
+    //                         },
+    //                     ],
+    //                 };
+    //                 const mediaUrl = item.media; // Use a consistent key for media
+    //                 const isVideo = typeof mediaUrl === "string" && (mediaUrl.endsWith(".mp4") || mediaUrl.endsWith(".mov"));
+
+    //                 return (
+    //                     <Animated.View style={[styles.feedContainer, animatedStyle]}>
+    //                         {/* Header */}
+    //                         <View style={styles.header}>
+    //                             <View style={styles.userInfo}>
+    //                                 <Image source={item?.User?.Image ? { uri: item?.User?.Image } : IMG.MessageProfile} style={styles.profileImage} />
+    //                                 <TouchableOpacity onPress={() => navigation.navigate('OtherUserDetail')}>
+    //                                     <Text style={styles.username}>{item?.User?.UserName}</Text>
+    //                                     <Text style={styles.audio}>{isVideo ? 'Original audio' : ''}</Text>
+    //                                 </TouchableOpacity>
+    //                             </View>
+    //                             <TouchableOpacity>
+    //                                 {isDarkMode ? <WhiteThreeDot /> : <ThreeDotIcon />}
+    //                             </TouchableOpacity>
+    //                         </View>
+    //                         <TouchableWithoutFeedback onPress={() => handleDoubleTap(item, index)}>
+    //                             <View style={{ position: 'relative' }}>
+    //                                 {isVideo ? (
+    //                                     <Video
+    //                                         source={{ uri: item?.media }}
+    //                                         style={styles.postImage}
+    //                                         resizeMode="cover"
+    //                                         repeat
+    //                                         muted={isMuted}
+    //                                     />
+    //                                 ) : (
+    //                                     <Image source={{ uri: item?.media }} style={styles.postImage} />
+    //                                 )}
+
+    //                                 <Animated.View
+    //                                     pointerEvents="none"
+    //                                     style={{
+    //                                         position: 'absolute',
+    //                                         top: '40%',
+    //                                         left: '40%',
+    //                                         opacity: doubleTapIndex === index ? heartOpacity : 0,
+    //                                         transform: [{ scale: heartOpacity }],
+    //                                     }}
+    //                                 >
+    //                                     <MaterialIcons name="favorite" size={100} color="red" />
+    //                                 </Animated.View>
+
+    //                                 {isVideo && (
+    //                                     <TouchableOpacity
+    //                                         style={styles.soundButton}
+    //                                         onPress={() => setIsMuted(!isMuted)}
+    //                                     >
+    //                                         {isMuted ? <SpeakerOff /> : (
+    //                                             <AntDesign
+    //                                                 name={'sound'}
+    //                                                 color={isDarkMode ? 'white' : 'black'}
+    //                                                 size={14}
+    //                                             />
+    //                                         )}
+    //                                     </TouchableOpacity>
+    //                                 )}
+    //                             </View>
+    //                         </TouchableWithoutFeedback>
+
+
+    //                         {/* Actions */}
+    //                         <View style={styles.actions}>
+    //                             <View style={styles.leftIcons}>
+
+    //                                 <TouchableOpacity style={{ right: 0 }}
+    //                                     onPress={() => onLikeUnlike(item)}
+    //                                 >
+    //                                     {item?.likes?.includes(selector?._id) ? (
+    //                                         isDarkMode ? <MaterialIcons name={'favorite'} color={'white'}
+    //                                             size={24}
+    //                                         />
+    //                                             : <MaterialIcons name={'favorite-border'} color={'black'}
+    //                                                 size={24} />
+    //                                     ) : (
+    //                                         isDarkMode ? <MaterialIcons name={'favorite-border'} color={'white'} size={24}
+    //                                         /> : <MaterialIcons name={'favorite-border'} color={'black'} size={24}
+    //                                         />
+    //                                     )}
+    //                                 </TouchableOpacity>
+    //                                 <TouchableOpacity
+    //                                     onPress={() => {
+    //                                         // setSelectedPost(item);
+    //                                         setModalVisible(true);
+    //                                         fetchCommentDataOfaPost(item?._id)
+    //                                         setPostId(item?._id)
+
+    //                                     }}
+    //                                 >
+    //                                     {isDarkMode ? <CommentWhite /> : <CommentIcon />}
+    //                                 </TouchableOpacity>
+    //                                 <TouchableOpacity>
+    //                                     {isDarkMode ? <PostShareWhite /> : <ShareIcon />}
+    //                                 </TouchableOpacity>
+    //                             </View>
+
+
+    //                             <TouchableOpacity style={{ right: 0 }}
+    //                                 onPress={() => SavePost(item)}
+    //                             >
+    //                                 {item?.SavedBy?.includes(selector?._id) ? (
+    //                                     isDarkMode ? <FontAwesome name={'bookmark'} color={'white'}
+    //                                         size={24}
+    //                                     />
+    //                                         : <FontAwesome name={'bookmark'} color={'black'}
+    //                                             size={24} />
+    //                                 ) : (
+    //                                     isDarkMode ? <FontAwesome name={'bookmark-o'} color={'white'} size={24}
+    //                                     /> : <FontAwesome name={'bookmark-o'} color={'black'} size={24}
+    //                                     />
+    //                                 )}
+    //                             </TouchableOpacity>
+    //                         </View>
+
+    //                         {/* Likes */}
+    //                         <Text style={styles.likes}>{item?.TotalLikes} likes</Text>
+
+    //                         {/* Caption */}
+    //                         <Text style={styles.caption}>
+    //                             <Text style={styles.username}>{item?.caption || 'View from Falcon 9’s second stage during an orbital sunset'} </Text>
+    //                             {item.caption}
+    //                         </Text>
+
+    //                         {/* Comments */}
+    //                         <Text style={styles.comments}>View all{item?.TotalComents}comments</Text>
+
+    //                         {/* Time */}
+    //                         <Text style={styles.time}>{item?.createdAt}</Text>
+    //                     </Animated.View>
+    //                 );
+    //             }}
+    //             ListEmptyComponent={!loaderVisible && <CustomText style={{
+    //                 color: isDarkMode ? 'white' : 'black',
+    //                 alignSelf: 'center',
+    //                 marginTop: 50,
+    //                 fontFamily: FONTS_FAMILY.OpenSans_Condensed_Medium
+    //             }}>No Post Found!</CustomText>}
+    //         />
+    //     );
+    // };
 
     const renderFeeds = () => {
         return (
@@ -421,24 +563,11 @@ const Home = ({ navigation }) => {
                 keyExtractor={(item) => item.id}
                 showsVerticalScrollIndicator={false}
                 renderItem={({ item, index }) => {
-                    handleAnimation(index);
-
-                    const animatedStyle = {
-                        opacity: animatedValues[index],
-                        transform: [
-                            {
-                                translateY: animatedValues[index].interpolate({
-                                    inputRange: [0, 1],
-                                    outputRange: [20, 0], // Slide up effect
-                                }),
-                            },
-                        ],
-                    };
                     const mediaUrl = item.media; // Use a consistent key for media
                     const isVideo = typeof mediaUrl === "string" && (mediaUrl.endsWith(".mp4") || mediaUrl.endsWith(".mov"));
-
+    
                     return (
-                        <Animated.View style={[styles.feedContainer, animatedStyle]}>
+                        <View style={styles.feedContainer}>
                             {/* Header */}
                             <View style={styles.header}>
                                 <View style={styles.userInfo}>
@@ -452,100 +581,110 @@ const Home = ({ navigation }) => {
                                     {isDarkMode ? <WhiteThreeDot /> : <ThreeDotIcon />}
                                 </TouchableOpacity>
                             </View>
-
-                            {/* Post Media (Image or Video) */}
-                            {isVideo ? (
-                                <View>
-                                    <Video
-                                        source={{ uri: item?.media }}
-                                        style={styles.postImage}
-                                        resizeMode="cover"
-                                        // controls // Show Play/Pause controls
-                                        repeat // Loop the video
-                                        // muted // Auto-play muted
-                                        muted={isMuted}
-                                    />
-                                    <TouchableOpacity
-                                        style={styles.soundButton}
-                                        onPress={() => setIsMuted(!isMuted)}
+    
+                            <TouchableWithoutFeedback onPress={() => handleDoubleTap(item, index)}>
+                                <View style={{ position: 'relative' }}>
+                                    {isVideo ? (
+                                        <Video
+                                            source={{ uri: item?.media }}
+                                            style={styles.postImage}
+                                            resizeMode="cover"
+                                            repeat
+                                            muted={isMuted}
+                                        />
+                                    ) : (
+                                        <Image source={{ uri: item?.media }} style={styles.postImage} />
+                                    )}
+    
+                                    {/* Heart Animation */}
+                                    <Animated.View
+                                        pointerEvents="none"
+                                        style={{
+                                            position: 'absolute',
+                                            top: '40%',
+                                            left: '40%',
+                                            opacity: doubleTapIndex === index ? heartOpacity : 0,
+                                            transform: [{ scale: heartOpacity }],
+                                        }}
                                     >
-                                        {isMuted ? <SpeakerOff /> : <AntDesign name={'sound'} color={isDarkMode ? 'white' : 'black'}
-                                            size={14}
-                                        />}
-                                    </TouchableOpacity>
-
+                                        <MaterialIcons name="favorite" size={100} color="red" />
+                                    </Animated.View>
+    
+                                    {isVideo && (
+                                        <TouchableOpacity
+                                            style={styles.soundButton}
+                                            onPress={() => setIsMuted(!isMuted)}
+                                        >
+                                            {isMuted ? <SpeakerOff /> : (
+                                                <AntDesign
+                                                    name={'sound'}
+                                                    color={isDarkMode ? 'white' : 'black'}
+                                                    size={14}
+                                                />
+                                            )}
+                                        </TouchableOpacity>
+                                    )}
                                 </View>
-                            ) : (
-                                <Image source={{ uri: item?.media }} style={styles.postImage} />
-                            )}
-
+                            </TouchableWithoutFeedback>
+    
                             {/* Actions */}
                             <View style={styles.actions}>
                                 <View style={styles.leftIcons}>
-
-                                    <TouchableOpacity style={{ right: 0 }}
+                                    <TouchableOpacity
+                                        style={{ right: 0 }}
                                         onPress={() => onLikeUnlike(item)}
                                     >
                                         {item?.likes?.includes(selector?._id) ? (
-                                            isDarkMode ? <MaterialIcons name={'favorite'} color={'white'}
-                                                size={24}
-                                            />
-                                                : <MaterialIcons name={'favorite-border'} color={'black'}
-                                                    size={24} />
+                                            isDarkMode ? <MaterialIcons name={'favorite'} color={'white'} size={24} />
+                                                : <MaterialIcons name={'favorite-border'} color={'black'} size={24} />
                                         ) : (
-                                            isDarkMode ? <MaterialIcons name={'favorite-border'} color={'white'} size={24}
-                                            /> : <MaterialIcons name={'favorite-border'} color={'black'} size={24}
-                                            />
+                                            isDarkMode ? <MaterialIcons name={'favorite-border'} color={'white'} size={24} />
+                                                : <MaterialIcons name={'favorite-border'} color={'black'} size={24} />
                                         )}
                                     </TouchableOpacity>
-
-                                    {/* <TouchableOpacity>
-                                        {isDarkMode ? <LikeWhite /> : <LikeIcon />}
-                                    </TouchableOpacity> */}
-
-
-
-                                    <TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            setModalVisible(true);
+                                            fetchCommentDataOfaPost(item?._id)
+                                            setPostId(item?._id)
+                                        }}
+                                    >
                                         {isDarkMode ? <CommentWhite /> : <CommentIcon />}
                                     </TouchableOpacity>
                                     <TouchableOpacity>
                                         {isDarkMode ? <PostShareWhite /> : <ShareIcon />}
                                     </TouchableOpacity>
                                 </View>
-
-
-                                <TouchableOpacity style={{ right: 0 }}
+    
+                                <TouchableOpacity
+                                    style={{ right: 0 }}
                                     onPress={() => SavePost(item)}
                                 >
                                     {item?.SavedBy?.includes(selector?._id) ? (
-                                        isDarkMode ? <FontAwesome name={'bookmark'} color={'white'}
-                                            size={24}
-                                        />
-                                            : <FontAwesome name={'bookmark'} color={'black'}
-                                                size={24} />
+                                        isDarkMode ? <FontAwesome name={'bookmark'} color={'white'} size={24} />
+                                            : <FontAwesome name={'bookmark'} color={'black'} size={24} />
                                     ) : (
-                                        isDarkMode ? <FontAwesome name={'bookmark-o'} color={'white'} size={24}
-                                        /> : <FontAwesome name={'bookmark-o'} color={'black'} size={24}
-                                        />
+                                        isDarkMode ? <FontAwesome name={'bookmark-o'} color={'white'} size={24} />
+                                            : <FontAwesome name={'bookmark-o'} color={'black'} size={24} />
                                     )}
                                 </TouchableOpacity>
                             </View>
-
+    
                             {/* Likes */}
                             <Text style={styles.likes}>{item?.TotalLikes} likes</Text>
-
+    
                             {/* Caption */}
                             <Text style={styles.caption}>
-                                <Text style={styles.username}>{item?.caption || 'View from Falcon 9’s second stage during an orbital sunset'} </Text>
+                                <Text style={styles.username}>{item?.caption || 'View from Falcon 9’s second stage during an orbital sunset'}</Text>
                                 {item.caption}
                             </Text>
-
+    
                             {/* Comments */}
-                            <Text style={styles.comments}>View all{item?.TotalComents}comments</Text>
-
+                            <Text style={styles.comments}>View all {item?.TotalComents} comments</Text>
+    
                             {/* Time */}
                             <Text style={styles.time}>{item?.createdAt}</Text>
-                        </Animated.View>
+                        </View>
                     );
                 }}
                 ListEmptyComponent={!loaderVisible && <CustomText style={{
@@ -557,6 +696,8 @@ const Home = ({ navigation }) => {
             />
         );
     };
+    
+
     const styles = StyleSheet.create({
         container: {
             flex: 1,
@@ -693,6 +834,31 @@ const Home = ({ navigation }) => {
         },
     })
 
+
+
+
+    const renderCommentModal = () => {
+        return (
+            <>
+                <CommentModal
+                    isVisible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                    comments={comments}
+                    isDarkMode={isDarkMode}
+                    commentText={commentText}
+                    onChangeText={setCommentText}
+                    onSendPress={() => {
+                        console.log('Send:', commentText);
+                        // Add logic to post comment here
+                        setCommentText('');
+                        sendComments(postId, commentText)
+                    }}
+                    onDeleteComments={(id) => { onDeleteComments(id) }}
+                />
+            </>
+        )
+    }
+
     return (
         <View style={styles.container}>
             <StatusBar
@@ -703,6 +869,7 @@ const Home = ({ navigation }) => {
             {renderHeader()}
             {renderStories()}
             {renderFeeds()}
+            {renderCommentModal()}
 
         </View>
     )

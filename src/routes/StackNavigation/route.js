@@ -18,6 +18,12 @@ import Shops from '../../screens/Shops/Shops';
 import AddShops from '../../screens/Shops/AddShops';
 import SavedPosts from '../../screens/Saved/SavedPosts';
 import GalleryPickerScreen from '../../screens/Home/GalleryPicker';
+import GalleryForAddPost from '../../screens/Home/GalleryForAddPost';
+import Follwing from '../../screens/Followers/Following';
+import MarketplaceBuyer from '../../screens/Buyer/BuyerItemList';
+import ProductDetail from '../../screens/Buyer/ProductDetail';
+import PrivacyPolicy from '../../screens/PrivacyPolicy/PrivacyPolicy';
+import TermsAndConditions from '../../screens/PrivacyPolicy/Terms&Conditions';
 
 
 
@@ -43,6 +49,8 @@ const StackNavigation = () => {
 
         <Stack.Screen name={'UserDetail'} component={UserDetail} />
         <Stack.Screen name={'Followers'} component={Followers} />
+        <Stack.Screen name={'Followings'} component={Follwing} />
+
         <Stack.Screen name={'OtherUserDetail'} component={OtherUserDetail} />
         <Stack.Screen name={'StoryScreen'} component={StoryScreen} />
 
@@ -51,20 +59,15 @@ const StackNavigation = () => {
         <Stack.Screen name={'AddShops'} component={AddShops} />
         <Stack.Screen name={'SavedPosts'} component={SavedPosts} />
         <Stack.Screen name={'GalleryPickerScreen'} component={GalleryPickerScreen} />
+        <Stack.Screen name={'GalleryForAddPost'} component={GalleryForAddPost} />
+        <Stack.Screen name={'MarketplaceBuyer'} component={MarketplaceBuyer} />
+        <Stack.Screen name={'ProductDetail'} component={ProductDetail} />
+        <Stack.Screen name={'PrivacyPolicy'} component={PrivacyPolicy} />
+        <Stack.Screen name={'TermsAndConditions'} component={TermsAndConditions} />
 
 
         
         
-
-
-
-        
-
-
-        
-
-
-
         {/* 
      
         <Stack.Screen name={'OtpScreen'} component={OtpScreen} />

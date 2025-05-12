@@ -61,7 +61,7 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
             onClose()
         }
         if (label == 'Terms & Conditions') {
-            // navigation.navigate('TermsAndCondition')
+            navigation.navigate('TermsAndConditions')
             onClose()
 
         }

@@ -11,5 +11,9 @@ export default {
     getAllShops:'/api/user/GetUserAllShop',
     getAllChattedUsers:'/api/user/GetAllChatedUser',
     getAllSavedPosts:'/api/user/GetAllSavedPosts',
-    followedUserStories:'/api/user/GetFollowedUserStories'
+    followedUserStories:'/api/user/GetFollowedUserStories',
+    getAllCommentofaPost:'/api/user/GetAllCommentofaPost',
+    sendCommentOnPost:'/api/user/CreateComment',
+    getAllFollowers:'/api/user/GetAllfollowers',
+    getAllFollowings:'/api/user/GetAllFollowing'
 };

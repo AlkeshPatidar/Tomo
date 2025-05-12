@@ -16,16 +16,16 @@ import urls from '../../config/urls';
 const OtherUserDetail = ({ navigation }) => {
     const [isDrawerVisible, setDrawerVisible] = useState(false);
     const { isDarkMode } = useSelector(state => state.theme);
-    const [UserDetails, setUserDetails]=useState(null)
+    const [UserDetails, setUserDetails] = useState(null)
     const [loading, setLoading] = useState(false)
 
-  let selector = useSelector(state => state?.user?.userData);
+    let selector = useSelector(state => state?.user?.userData);
     if (Object.keys(selector).length != 0) {
         selector = JSON.parse(selector);
     }
 
     // console.log('UserDtails from selector::::', selector);
-    
+
 
     useEffect(() => {
         fetchData()
@@ -67,7 +67,7 @@ const OtherUserDetail = ({ navigation }) => {
 
 
 
-    
+
 
 
     const styles = StyleSheet.create({
@@ -198,11 +198,11 @@ const OtherUserDetail = ({ navigation }) => {
     );
     const renderHeader = () => (
         <SpaceBetweenRow style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.navigate('Tab',{screen:'Home'})}>
-                    {isDarkMode ? <PrimaryBackWhite /> : <PrimaryBackArrow />}
+            <TouchableOpacity onPress={() => navigation.navigate('Tab', { screen: 'Home' })}>
+                {isDarkMode ? <PrimaryBackWhite /> : <PrimaryBackArrow />}
             </TouchableOpacity>
             <Text style={styles.headerText}>
-              {UserDetails?.FullName}
+                {UserDetails?.FullName}
             </Text>
             <TouchableOpacity onPress={() => setDrawerVisible(true)}>
                 {
@@ -303,10 +303,12 @@ const OtherUserDetail = ({ navigation }) => {
                     <Text style={styles.statNumber}>{UserDetails?.Follower?.length}</Text>
                     <Text style={styles.statLabel}>Followers</Text>
                 </TouchableOpacity>
-                <View style={styles.statItem}>
+                <TouchableOpacity style={styles.statItem}
+                    onPress={() => navigation.navigate('Followings')}
+                >
                     <Text style={styles.statNumber}>{UserDetails?.Following?.length}</Text>
                     <Text style={styles.statLabel}>Following</Text>
-                </View>
+                </TouchableOpacity>
             </View>
 
             <OtionsButtons />
