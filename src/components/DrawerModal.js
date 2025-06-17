@@ -27,6 +27,10 @@ import { useSelector } from 'react-redux';
 
 const CustomDrawer = ({ isVisible, onClose, navigation }) => {
 
+    let selector = useSelector(state => state?.user?.userData);
+    if (Object.keys(selector).length != 0) {
+        selector = JSON.parse(selector);
+    }
     const handleLogout = async () => {
         // console.log("navigationRef", navigationRef);
 
@@ -81,47 +85,47 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
         if (label == 'FAQ') {
             navigation.navigate('FAQs')
             onClose()
-            
+
         }
         if (label == 'Followers') {
             navigation.navigate('Followers')
             onClose()
-            
+
         }
 
         if (label == 'Request to become Seller') {
             navigation.navigate('RequestBecomSeller')
             onClose()
-            
+
         }
 
         if (label == 'Saved') {
             navigation.navigate('SavedPosts')
             onClose()
-            
+
         }
 
-        
+
 
         if (label == 'All Shops') {
             navigation.navigate('Shops')
             onClose()
-            
+
         }
 
-        
-        
+
+
 
         if (label == 'Invite a Freind') {
             const inviteLink = 'https://www.example.com/invite';
-        
+
             try {
                 const result = await Share.share({
                     message: `Hey! Check out this amazing app: ${inviteLink}`,
                     url: inviteLink,
                     title: 'Invite a Friend',
                 });
-        
+
                 if (result.action === Share.sharedAction) {
                     if (result.activityType) {
                         console.log('Shared with activity type:', result.activityType);
@@ -138,7 +142,7 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
                 console.error('Error sharing invite:', error.message);
             }
         }
-        
+
     }
     const { isDarkMode } = useSelector(state => state.theme);
 
@@ -150,7 +154,7 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
         drawerContainer: {
             width: '80%',
             height: '100%',
-            backgroundColor:isDarkMode?'#252525': 'rgba(248, 248, 248, 1)',
+            backgroundColor: isDarkMode ? '#252525' : 'rgba(248, 248, 248, 1)',
             // paddingVertical: 10,
             paddingHorizontal: 15,
             alignSelf: 'flex-end',
@@ -249,14 +253,14 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
             onPress={() => handleOperation(label)}
         >
             <SpaceBetweenRow style={{
-                backgroundColor:isDarkMode?'black': 'white',
-                 borderRadius: 10,
+                backgroundColor: isDarkMode ? 'black' : 'white',
+                borderRadius: 10,
                 width: '100%',
                 padding: 8
             }}>
                 <Row style={{ gap: 18, }}>
                     {icon}
-                    <Text style={{ ...styles.optionText, color:isDarkMode?'white': 'black', fontFamily: FONTS_FAMILY.SourceSans3_Medium, fontSize: 14 }}>
+                    <Text style={{ ...styles.optionText, color: isDarkMode ? 'white' : 'black', fontFamily: FONTS_FAMILY.SourceSans3_Medium, fontSize: 14 }}>
                         {label}
                     </Text>
                 </Row>
@@ -280,27 +284,29 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
                     showsVerticalScrollIndicator={false}
                 >
                     <Image source={IMG.Applogo}
-                    style={{
-                        height:100, 
-                        width:100,
-                        alignSelf:'center',
-                        marginVertical:20
+                        style={{
+                            height: 100,
+                            width: 100,
+                            alignSelf: 'center',
+                            marginVertical: 20
 
-                    }}
+                        }}
                     />
-                      <ThemeToggle />
+                    <ThemeToggle />
 
                     <View style={styles.options}>
                         <OptionItem label="Followers" nav={'Followers'} />
-                        <OptionItem label="Request to become Seller" />
-                        <OptionItem label="All Shops" />
+                        {selector?.
+                            SellerStatus !== 'Approved' && <OptionItem label="Request to become Seller" />}
+                        {selector?.
+                            SellerStatus == 'Approved' && <OptionItem label="All Shops" />}
                         <OptionItem label="Saved" />
 
 
-                        <OptionItem label="Privacy Policy"  />
+                        <OptionItem label="Privacy Policy" />
                         <OptionItem label="Terms & Conditions" />
-                        <OptionItem label="Help Center"  />
-                        <OptionItem label="Invite a Freind"  />
+                        <OptionItem label="Help Center" />
+                        <OptionItem label="Invite a Freind" />
                         <OptionItem label="FAQ" />
 
                         <OptionItem label="Log Out" />

@@ -32,7 +32,7 @@ const isFocused=useIsFocused()
     const fetchData = async () => {
         showLoader()
         const res = await apiGet(urls.getAllShops)
-        console.log("------------Notifications-----", res.data);
+        // console.log("------------Notifications-----", res.data);
         setAllShops(res?.data)
         hideLoader()
 
@@ -164,7 +164,7 @@ const isFocused=useIsFocused()
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                 <LocationIcon />
                                 <CustomText style={{ fontSize: 10, color:isDarkMode?'white': '#7d7d7d', flex: 1 }}>
-                                   {item?.Address}
+                                   {item?.Address[0]?.LocationName}
                                 </CustomText>
                             </View>
                         </View>

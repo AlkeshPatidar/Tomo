@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList, StatusBar } from 'react-native';
+
+
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, FlatList, StatusBar, ScrollView } from 'react-native';
 import SpaceBetweenRow from '../../components/wrapper/spacebetween';
 import { AddUserIcon, Menu, OtionsButtons, PrimaryBackArrow, PrimaryBackWhite, ThreeDotIcon } from '../../assets/SVGs';
 import Row from '../../components/wrapper/row';
@@ -9,32 +11,108 @@ import LinearGradient from 'react-native-linear-gradient';
 import CustomDrawer from '../../components/DrawerModal';
 import { useSelector } from 'react-redux';
 import IMG from '../../assets/Images';
-import { apiGet } from '../../utils/Apis';
+import { apiGet, apiPost } from '../../utils/Apis';
 import urls from '../../config/urls';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import useLoader from '../../utils/LoaderHook';
+import { ToastMsg } from '../../utils/helperFunctions';
 
-
-const OtherUserDetail = ({ navigation }) => {
+const OtherUserDetail = ({ navigation, route }) => {
     const [isDrawerVisible, setDrawerVisible] = useState(false);
     const { isDarkMode } = useSelector(state => state.theme);
-    const [UserDetails, setUserDetails]=useState(null)
-    const [loading, setLoading] = useState(false)
+    const [UserDetails, setUserDetails] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [allPosts, setAllPosts] = useState([]);
+    const { showLoader, hideLoader } = useLoader();
 
+    const isFocused = useIsFocused()
+
+    // console.log('++++++++++++++++++UserId', route?.params?.userId);
+
+
+
+    // console.log('++++++++++++++++++UserId', route?.params?.userId);
+
+
+    // useFocusEffect(
+    //     useCallback(() => {
+    //         // Clear params when leaving the screen
+    //         return () => {
+    //             navigation.setParams({ userId: undefined });
+    //             setUserDetails(null);
+    //             setAllPosts([]);
+    //         };
+    //     }, [navigation])
+    // );
+
+
+
+    let selector = useSelector(state => state?.user?.userData);
+    if (Object.keys(selector).length != 0) {
+        selector = JSON.parse(selector);
+    }
 
     useEffect(() => {
         fetchData()
-        // getCurrentStories()
-    }, [])
-
-
+        fetchMyPost()
+    }, [isFocused])
 
     const fetchData = async () => {
         setLoading(true)
-        const res = await apiGet(urls.userProfile)
-        // console.log("-----------------", res.data);
+        const endPoint = `${urls.getUserById}/${route?.params?.userId}`;
+        const res = await apiGet(endPoint)
         setUserDetails(res?.data)
+        console.log(res?.data, 'UserDetails from api');
+
         setLoading(false)
     }
 
+    const fetchMyPost = async () => {
+        setLoading(true)
+        const res = await apiGet(`${urls.getAllPostsOfAUser}/${route?.params?.userId}`);
+        setAllPosts(res?.data)
+        console.log(res?.data, 'AllMy Posts from api');
+
+        setLoading(false)
+    }
+
+const sendFollowRequest = async (id) => {
+    console.log(id);
+    showLoader();
+    
+    try {
+        const res = await apiPost(`${urls.sendFollowRequest}/${route?.params?.userId}`);
+        console.log(res, '+++++++++++++++++res from follow request');
+        
+        if (res?.status === 200) {
+            fetchData();
+            ToastMsg('Follow request sent successfully');
+        } else {
+            // Handle non-200 status codes
+            ToastMsg(res?.data?.message || 'Something went wrong');
+        }
+    } catch (error) {
+        console.log('Error in follow request:', error);
+        
+        // Handle the 400 error case you're getting
+        if (error?.response?.status === 400) {
+            ToastMsg(error?.message || 'Follow request already sent');
+        } else if (error?.response) {
+            // Server responded with error status
+            console.log('+++++++++++++++++++++++++', error);
+            
+            ToastMsg(error?.message || 'Follow request Already sent');
+        } else if (error?.request) {
+            // Network error
+            ToastMsg('Network error. Please check your connection.');
+        } else {
+            // Other errors
+            ToastMsg('Follow request Already sent');
+        }
+    } finally {
+        hideLoader();
+    }
+};
 
     const highlights = [
         { id: '1', title: 'UX Course', image: 'https://picsum.photos/id/237/200/300' },
@@ -58,128 +136,261 @@ const OtherUserDetail = ({ navigation }) => {
         { id: '12', image: 'https://picsum.photos/seed/picsum/200/300' },
     ];
 
-
-
-    
-
-
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor: isDarkMode ? '#252525' : '#ffffff',
+            backgroundColor: isDarkMode ? '#1b1b1b' : '#f3f2ef',
         },
         header: {
             paddingTop: 50,
             paddingHorizontal: 20,
-            // gap: 90,
+            backgroundColor: isDarkMode ? '#252525' : '#ffffff',
+            elevation: 2,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 2,
+            paddingBottom: 16,
         },
         headerText: {
             fontSize: 20,
             fontFamily: FONTS_FAMILY.SourceSans3_Bold,
             color: isDarkMode ? "white" : 'black',
         },
-        highlightedText: {
-            color: 'rgba(79, 82, 254, 1)',
+        // Cover Photo Section
+        coverPhotoContainer: {
+            height: 200,
+            backgroundColor: isDarkMode ? '#333' : '#ddd',
+            position: 'relative',
         },
-        headerContainer: {
-            flexDirection: 'row',
-            padding: 16,
+        coverPhoto: {
+            width: '100%',
+            height: '100%',
+            resizeMode: 'cover',
+        },
+        addCoverPhotoButton: {
+            position: 'absolute',
+            bottom: 15,
+            right: 15,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: 20,
+        },
+        addCoverPhotoText: {
+            color: 'white',
+            fontSize: 12,
+            fontFamily: FONTS_FAMILY.SourceSans3_Regular,
+        },
+        // Profile Card Section
+        profileCard: {
+            backgroundColor: isDarkMode ? '#252525' : '#ffffff',
+            marginTop: -50,
+            marginHorizontal: 16,
+            borderRadius: 12,
+            padding: 20,
+            elevation: 3,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+        },
+        profileHeader: {
             alignItems: 'center',
-            gap: 18
+            marginBottom: 20,
+        },
+        profileImageContainer: {
+            position: 'relative',
+            marginBottom: 15,
         },
         profileImage: {
-            width: 80,
-            height: 80,
-            borderRadius: 40,
+            width: 120,
+            height: 120,
+            borderRadius: 60,
+            borderWidth: 4,
+            borderColor: isDarkMode ? '#252525' : '#ffffff',
         },
-        headerActions: {
+        editProfileImageButton: {
+            position: 'absolute',
+            bottom: 5,
+            right: 5,
+            backgroundColor: '#0073b1',
+            width: 30,
+            height: 30,
+            borderRadius: 15,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        profileInfo: {
+            alignItems: 'center',
+        },
+        profileName: {
+            fontSize: 24,
+            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+            color: isDarkMode ? 'white' : '#000',
+            marginBottom: 5,
+        },
+        profileTitle: {
+            fontSize: 16,
+            fontFamily: FONTS_FAMILY.SourceSans3_Regular,
+            color: isDarkMode ? '#ccc' : '#666',
+            textAlign: 'center',
+            marginBottom: 8,
+        },
+        profileLocation: {
+            fontSize: 14,
+            fontFamily: FONTS_FAMILY.SourceSans3_Regular,
+            color: isDarkMode ? '#999' : '#666',
+            marginBottom: 15,
+        },
+        // Action Buttons
+        actionButtons: {
             flexDirection: 'row',
-            marginLeft: 'auto',
-            gap: 10
+            justifyContent: 'center',
+            gap: 12,
+            marginBottom: 20,
         },
         followButton: {
-            backgroundColor: '#F20089',
-            paddingVertical: 6,
-            paddingHorizontal: 16,
-            borderRadius: 8,
-            marginRight: 8,
+            backgroundColor: '#0073b1',
+            paddingVertical: 10,
+            paddingHorizontal: 24,
+            borderRadius: 25,
+            minWidth: 100,
+            alignItems: 'center',
         },
         messageButton: {
-            backgroundColor: '#E5E5E5',
-            paddingVertical: 6,
-            paddingHorizontal: 16,
-            borderRadius: 8,
-        },
-        buttonText: {
-            fontSize: 14,
-            color: '#ffffff',
-            fontFamily: FONTS_FAMILY.SourceSans3_Bold
-        },
-        bioContainer: {
-            paddingHorizontal: 16,
-        },
-        bioName: {
-            fontSize: 16,
-            fontWeight: 'bold',
-            color: isDarkMode ? 'white' : '#999999',
-
-        },
-        bioPronoun: {
-            fontSize: 14,
-            color: isDarkMode ? 'white' : '#999999',
-        },
-        bioDescription: {
-            fontSize: 14,
-            marginTop: 4,
-            color: isDarkMode ? 'white' : '#333333',
-        },
-        highlightsList: {
-            paddingVertical: 12,
-            paddingHorizontal: 16,
-        },
-        highlightContainer: {
-            alignItems: 'center',
-            marginRight: 12,
-        },
-        highlightImage: {
-            width: 56,
-            height: 56,
-            borderRadius: 35,
+            backgroundColor: 'transparent',
             borderWidth: 1,
-            borderColor: '#ddd',
+            borderColor: '#0073b1',
+            paddingVertical: 10,
+            paddingHorizontal: 24,
+            borderRadius: 25,
+            minWidth: 100,
+            alignItems: 'center',
         },
-        highlightText: {
-            fontSize: 12,
-            marginTop: 4,
-            fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? 'white' : null
+        moreButton: {
+            backgroundColor: 'transparent',
+            borderWidth: 1,
+            borderColor: isDarkMode ? '#666' : '#ddd',
+            paddingVertical: 10,
+            paddingHorizontal: 16,
+            borderRadius: 25,
+            justifyContent: 'center',
+            alignItems: 'center',
         },
+        followButtonText: {
+            color: 'white',
+            fontSize: 14,
+            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+        },
+        messageButtonText: {
+            color: '#0073b1',
+            fontSize: 14,
+            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+        },
+        // Stats Section
         statsContainer: {
             flexDirection: 'row',
             justifyContent: 'space-around',
-            paddingVertical: 12,
+            paddingVertical: 15,
+            borderTopWidth: 1,
+            borderTopColor: isDarkMode ? '#333' : '#e0e0e0',
         },
         statItem: {
             alignItems: 'center',
         },
         statNumber: {
-            fontSize: 16,
-            fontWeight: 'bold',
-            color: isDarkMode ? 'white' : null
+            fontSize: 18,
+            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+            color: isDarkMode ? 'white' : '#000',
         },
         statLabel: {
             fontSize: 12,
-            color: '#777',
+            fontFamily: FONTS_FAMILY.SourceSans3_Regular,
+            color: isDarkMode ? '#999' : '#666',
+            marginTop: 2,
         },
-        postsContainer: {
-            paddingHorizontal: 4,
-            marginTop: 7
+        // About Section
+        aboutSection: {
+            backgroundColor: isDarkMode ? '#252525' : '#ffffff',
+            marginHorizontal: 16,
+            marginTop: 16,
+            borderRadius: 12,
+            padding: 20,
+            elevation: 2,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.1,
+            shadowRadius: 2,
+        },
+        sectionTitle: {
+            fontSize: 18,
+            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+            color: isDarkMode ? 'white' : '#000',
+            marginBottom: 12,
+        },
+        aboutText: {
+            fontSize: 14,
+            fontFamily: FONTS_FAMILY.SourceSans3_Regular,
+            color: isDarkMode ? '#ccc' : '#333',
+            lineHeight: 20,
+        },
+        // Featured Section (Highlights)
+        featuredSection: {
+            backgroundColor: isDarkMode ? '#252525' : '#ffffff',
+            marginHorizontal: 16,
+            marginTop: 16,
+            borderRadius: 12,
+            padding: 20,
+            elevation: 2,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.1,
+            shadowRadius: 2,
+        },
+        highlightsList: {
+            paddingTop: 10,
+        },
+        highlightContainer: {
+            alignItems: 'center',
+            marginRight: 16,
+            width: 80,
+        },
+        highlightImage: {
+            width: 64,
+            height: 64,
+            borderRadius: 8,
+            marginBottom: 8,
+        },
+        highlightText: {
+            fontSize: 12,
+            fontFamily: FONTS_FAMILY.SourceSans3_Regular,
+            color: isDarkMode ? '#ccc' : '#333',
+            textAlign: 'center',
+        },
+        // Posts Section
+        postsSection: {
+            backgroundColor: isDarkMode ? '#252525' : '#ffffff',
+            marginHorizontal: 16,
+            marginTop: 16,
+            marginBottom: 20,
+            borderRadius: 12,
+            padding: 20,
+            elevation: 2,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.1,
+            shadowRadius: 2,
+            marginBottom: 100,
+        },
+        postsGrid: {
+            paddingTop: 10,
         },
         postImage: {
-            width: '32%',
+            width: '31%',
             height: 100,
-            margin: 1,
-            // borderRadius: 6,
+            margin: '1%',
+            borderRadius: 8,
         },
     });
 
@@ -189,13 +400,14 @@ const OtherUserDetail = ({ navigation }) => {
             <Text style={styles.highlightText}>{item.title}</Text>
         </View>
     );
+
     const renderHeader = () => (
         <SpaceBetweenRow style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.navigate('Tab',{screen:'Home'})}>
-                    {isDarkMode ? <PrimaryBackWhite /> : <PrimaryBackArrow />}
+            <TouchableOpacity onPress={() => navigation.navigate('Tab', { screen: 'Home' })}>
+                {isDarkMode ? <PrimaryBackWhite /> : <PrimaryBackArrow />}
             </TouchableOpacity>
             <Text style={styles.headerText}>
-              {UserDetails?.FullName}
+                {UserDetails?.FullName}
             </Text>
             <TouchableOpacity onPress={() => setDrawerVisible(true)}>
                 {
@@ -212,107 +424,140 @@ const OtherUserDetail = ({ navigation }) => {
         </SpaceBetweenRow>
     );
 
+    const renderCoverPhoto = () => (
+        <View style={styles.coverPhotoContainer}>
+            <Image
+                source={{ uri: UserDetails?.CoverImage ? UserDetails?.CoverImage : 'https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80' }}
+                style={styles.coverPhoto}
+            />
+            <TouchableOpacity style={styles.addCoverPhotoButton}>
+                <Text style={styles.addCoverPhotoText}>Edit cover photo</Text>
+            </TouchableOpacity>
+        </View>
+    );
+
     const renderPost = ({ item }) => (
-        <Image source={{ uri: item.image }} style={styles.postImage} />
+        <>
+            {console.log('++++++++++++++++++++++', item?.media)
+            }
+            <Image source={{ uri: item?.media }} style={styles.postImage} />
+        </>
     );
 
     return (
         <View style={styles.container}>
-            {/* HEADER SECTION */}
-            {renderHeader()}
             <StatusBar translucent={true} backgroundColor="transparent" barStyle={isDarkMode ? "light-content" : "dark-content"} />
 
-            <View style={styles.headerContainer}>
-                <Image
-                    source={{ uri: 'https://picsum.photos/id/237/200/300' }}
-                    style={styles.profileImage}
-                />
-                <View>
-                    <Row style={{ marginBottom: 10, gap: 50 }}>
-                        <CustomText style={{ color: isDarkMode ? "white" : 'black', fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold }}>{UserDetails?.FullName}</CustomText>
-                        {/* <TouchableOpacity>
-                            <ThreeDotIcon />
-                        </TouchableOpacity> */}
-                    </Row>
+            <ScrollView showsVerticalScrollIndicator={false}>
+                {/* HEADER SECTION */}
+                {renderHeader()}
 
-                    <View style={styles.headerActions}>
+                {/* COVER PHOTO SECTION */}
+                {renderCoverPhoto()}
 
-                        <TouchableOpacity >
-                            <LinearGradient
-                                colors={['#ff00ff', '#6a5acd']}
-                                start={{ x: 1, y: 0 }}
-                                end={{ x: 1, y: 1 }}
-                                style={styles.followButton}
+                {/* PROFILE CARD SECTION */}
+                <View style={styles.profileCard}>
+                    <View style={styles.profileHeader}>
+                        <View style={styles.profileImageContainer}>
+                            <Image
+                                source={{ uri: UserDetails?.Image ? UserDetails?.Image : 'https://picsum.photos/id/237/200/300' }}
+                                style={styles.profileImage}
+                            />
+                            <TouchableOpacity style={styles.editProfileImageButton}>
+                                <Text style={{ color: 'white', fontSize: 12 }}>+</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.profileInfo}>
+                            <Text style={styles.profileName}>{UserDetails?.FullName}</Text>
+                            <Text style={styles.profileTitle}>
+                                {/* Yamaha Lover • Rider • Tech Enthusiast */}
+                                {UserDetails?.Bio}
+                            </Text>
+                            <Text style={styles.profileLocation}>📍 San Francisco, CA</Text>
+                        </View>
+
+                        {route?.params?.userId && <View style={styles.actionButtons}>
+                            <TouchableOpacity style={{...styles.followButton,opacity: UserDetails?.Follower?.includes(selector?._id) ? 0.5 : 1}}
+                            disabled={UserDetails?.Follower?.includes(selector?._id)}
+                                onPress={() => sendFollowRequest(route?.params?.userId)}
                             >
-                                <Text style={styles.buttonText}>Follow</Text>
-                            </LinearGradient>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.messageButton}
-                            onPress={() => navigation.navigate('Chat')}
+                                <Text style={styles.followButtonText}>{UserDetails?.
+                                    Follower?.includes(selector?._id) ? 'Follow' : 'Follow'
+                                }</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.messageButton}
+                                onPress={() => navigation.navigate('Chat')}
+                            >
+                                <Text style={styles.messageButtonText}>Message</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.moreButton}>
+                                <Text style={{ color: isDarkMode ? '#ccc' : '#666' }}>•••</Text>
+                            </TouchableOpacity>
+                        </View>}
+                    </View>
+
+                    {/* STATS SECTION */}
+                    <View style={styles.statsContainer}>
+                        <TouchableOpacity
+                            style={styles.statItem}
+                            onPress={() => navigation.navigate("Followers")}
                         >
-                            <Text style={{ ...styles.buttonText, color: 'black' }}>Message</Text>
+                            <Text style={styles.statNumber}>{UserDetails?.Follower?.length || 0}</Text>
+                            <Text style={styles.statLabel}>Followers</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity>
-                            <AddUserIcon />
+                        <TouchableOpacity
+                            style={styles.statItem}
+                            onPress={() => navigation.navigate('Followings')}
+                        >
+                            <Text style={styles.statNumber}>{UserDetails?.Following?.length || 0}</Text>
+                            <Text style={styles.statLabel}>Following</Text>
                         </TouchableOpacity>
+                        {/* <View style={styles.statItem}>
+                            <Text style={styles.statNumber}>500+</Text>
+                            <Text style={styles.statLabel}>Connections</Text>
+                        </View> */}
                     </View>
                 </View>
-            </View>
 
-            {/* BIO SECTION */}
-            <View style={styles.bioContainer}>
-                <Text style={styles.bioName}>Dyniza <Text style={styles.bioPronoun}>she</Text></Text>
-                <Text style={styles.bioDescription}>
-                    ✨ UX designer✨{'\n'}
-                    🎯 Freelance Design • Lifestyle • Tech{'\n'}
-                    📩 DM me for projects and collab{'\n'}
-                    🌐 Grab your UX/UI Design guide below{'\n'}
-                    🔗 drum.io/uxdyniza
-                </Text>
-            </View>
-
-            {/* HIGHLIGHTS SECTION */}
-            <View>
-                <FlatList
-                    data={highlights}
-                    horizontal
-                    renderItem={renderHighlight}
-                    keyExtractor={(item) => item.id}
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.highlightsList}
-                />
-
-            </View>
-
-            {/* STATS SECTION */}
-            <View style={styles.statsContainer}>
-                <View style={styles.statItem}>
-                    <Text style={styles.statNumber}>569</Text>
-                    <Text style={styles.statLabel}>Posts</Text>
+                {/* ABOUT SECTION */}
+                <View style={styles.aboutSection}>
+                    <Text style={styles.sectionTitle}>About</Text>
+                    <Text style={styles.aboutText}>
+                        {UserDetails?.Bio || "Passionate UX/UI Designer with 5+ years of experience creating user-centered digital experiences. I specialize in mobile app design, web interfaces, and design systems. Always eager to collaborate on innovative projects that make a difference."}
+                    </Text>
                 </View>
-                <TouchableOpacity style={styles.statItem}
-                    onPress={() => navigation.navigate("Followers")}
-                >
-                    <Text style={styles.statNumber}>16.7M</Text>
-                    <Text style={styles.statLabel}>Followers</Text>
-                </TouchableOpacity>
-                <View style={styles.statItem}>
-                    <Text style={styles.statNumber}>3</Text>
-                    <Text style={styles.statLabel}>Following</Text>
+
+                {/* FEATURED SECTION */}
+                {/* <View style={styles.featuredSection}>
+                    <Text style={styles.sectionTitle}>Featured</Text>
+                    <FlatList
+                        data={highlights}
+                        horizontal
+                        renderItem={renderHighlight}
+                        keyExtractor={(item) => item.id}
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.highlightsList}
+                    />
+                </View> */}
+
+                {/* POSTS SECTION */}
+                <View style={styles.postsSection}>
+                    <Text style={styles.sectionTitle}>Recent Posts</Text>
+                    <FlatList
+                        data={allPosts}
+                        numColumns={3}
+                        renderItem={renderPost}
+                        keyExtractor={(item) => item?._id}
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.postsGrid}
+                        scrollEnabled={false}
+                    />
+
                 </View>
-            </View>
+            </ScrollView>
 
-            <OtionsButtons />
-
-            {/* POSTS SECTION */}
-            <FlatList
-                data={posts}
-                numColumns={3}
-                renderItem={renderPost}
-                keyExtractor={(item) => item.id}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.postsContainer}
-            />
             <CustomDrawer
                 isVisible={isDrawerVisible}
                 onClose={() => setDrawerVisible(false)}
@@ -321,7 +566,5 @@ const OtherUserDetail = ({ navigation }) => {
         </View>
     );
 };
-
-
 
 export default OtherUserDetail;

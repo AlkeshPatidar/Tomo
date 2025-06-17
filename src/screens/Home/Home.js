@@ -13,6 +13,7 @@ import urls from "../../config/urls";
 import { white } from "../../common/Colors/colors";
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import useLoader from "../../utils/LoaderHook";
 import { useIsFocused } from "@react-navigation/native";
@@ -117,16 +118,16 @@ const Home = ({ navigation }) => {
 
 
     const fetchCommentDataOfaPost = async (id) => {
-        console.log('--------------', id);
+        // console.log('--------------', id);
 
         const res = await apiGet(`${urls.getAllCommentofaPost}/${id}`)
         setComments(res?.data)
-        console.log(res, 'Coemments data');
+        // console.log(res, 'Coemments data');
 
     }
 
     const sendComments = async (id, text) => {
-        console.log('---------___++++++++++++-----', id);
+        // console.log('---------___++++++++++++-----', id);
 
         const data = {
             Post: id,
@@ -142,8 +143,8 @@ const Home = ({ navigation }) => {
     const fetchData = async () => {
         showLoader()
         const res = await apiGet(urls.getAllPost)
-        console.log(res,'=================');
-        
+        // console.log(res, '=================');
+
         setAllPosts(res?.data)
         hideLoader()
     }
@@ -154,7 +155,7 @@ const Home = ({ navigation }) => {
         setLoading(true);
         try {
             const res = await apiGet(urls.getCurrentStories);
-            console.log("Fetched Stories:::::::::::", res.data);
+            // console.log("Fetched Stories:::::::::::", res.data);
             setAllStories(res?.data)
 
 
@@ -172,7 +173,7 @@ const Home = ({ navigation }) => {
         setLoading(true);
         try {
             const res = await apiGet(urls.followedUserStories);
-            console.log("Fetched Stories:::::::::::", res.data);
+            // console.log("Fetched Stories:::::::::::", res.data);
             setFollowedStories(res?.data)
 
         } catch (error) {
@@ -211,7 +212,7 @@ const Home = ({ navigation }) => {
                 : `${urls.SavePost}/${postId}`;
 
             const res = await apiGet(endPoint);
-            console.log("-------------SAVE API SUCCESS----", res.data);
+            // console.log("-------------SAVE API SUCCESS----", res.data);
         } catch (error) {
             console.log("Save Post Error:", error);
 
@@ -258,7 +259,7 @@ const Home = ({ navigation }) => {
         });
         try {
             await apiGet(`${urls.likeUnlike}/${postId}`);
-            console.log("Like/Unlike updated on server");
+            // console.log("Like/Unlike updated on server");
         } catch (error) {
             console.log("Error in like/unlike", error);
 
@@ -282,11 +283,58 @@ const Home = ({ navigation }) => {
         }
     };
 
+
+      const onDisLikes = async (item) => {
+        const postId = item._id;
+        const userId = selector?._id;
+        setAllPosts(prevPosts => {
+            return prevPosts.map(post => {
+                if (post._id === postId) {
+                    const alreadyLiked = post.Unlikes.includes(userId);
+                    const updatedLikes = alreadyLiked
+                        ? post.Unlikes.filter(id => id !== userId)
+                        : [...post.Unlikes, userId];
+
+                    return {
+                        ...post,
+                        Unlikes: updatedLikes,
+                        TotalUnLikes: alreadyLiked ? post.TotalUnLikes - 1 : post.TotalUnLikes + 1
+                    };
+                }
+                return post;
+            });
+        });
+        try {
+            await apiGet(`${urls.disLikePost}/${postId}`);
+            // console.log("Like/Unlike updated on server");
+        } catch (error) {
+            console.log("Error in like/unlike", error);
+
+            setAllPosts(prevPosts => {
+                return prevPosts.map(post => {
+                    if (post._id === postId) {
+                        const wasLiked = item.Unlikes.includes(userId);
+                        const revertedLikes = wasLiked
+                            ? [...post.Unlikes, userId]
+                            : post.Unlikes.filter(id => id !== userId);
+
+                        return {
+                            ...post,
+                            Unlikes: revertedLikes,
+                            TotalUnLikes: wasLiked ? post.TotalUnLikes + 1 : post.TotalUnLikes - 1
+                        };
+                    }
+                    return post;
+                });
+            });
+        }
+    };
+
     const onDeleteComments = async (id) => {
         try {
             showLoader();
             const response = await apiDelete(`/api/user/DeleteComment/${id}`);
-            console.log('DeletePost::', response);
+            // console.log('DeletePost::', response);
             fetchCommentDataOfaPost(postId);
         } catch (error) {
             console.log('DeleteComment Error:', error?.response?.data || error.message);
@@ -361,6 +409,8 @@ const Home = ({ navigation }) => {
                         {/* Followed Stories */}
                         {followedStories?.map((item) => {
                             if (item?.User?.Stories?.length > 0) {
+                                console.log(item, 'Followed Story Item');
+                                
                                 return (
                                     <View key={item.id} style={styles.storyContainer}>
                                         <TouchableOpacity
@@ -565,7 +615,7 @@ const Home = ({ navigation }) => {
                 renderItem={({ item, index }) => {
                     const mediaUrl = item.media; // Use a consistent key for media
                     const isVideo = typeof mediaUrl === "string" && (mediaUrl.endsWith(".mp4") || mediaUrl.endsWith(".mov"));
-    
+
                     return (
                         <View style={styles.feedContainer}>
                             {/* Header */}
@@ -581,7 +631,7 @@ const Home = ({ navigation }) => {
                                     {isDarkMode ? <WhiteThreeDot /> : <ThreeDotIcon />}
                                 </TouchableOpacity>
                             </View>
-    
+
                             <TouchableWithoutFeedback onPress={() => handleDoubleTap(item, index)}>
                                 <View style={{ position: 'relative' }}>
                                     {isVideo ? (
@@ -595,7 +645,7 @@ const Home = ({ navigation }) => {
                                     ) : (
                                         <Image source={{ uri: item?.media }} style={styles.postImage} />
                                     )}
-    
+
                                     {/* Heart Animation */}
                                     <Animated.View
                                         pointerEvents="none"
@@ -609,7 +659,7 @@ const Home = ({ navigation }) => {
                                     >
                                         <MaterialIcons name="favorite" size={100} color="red" />
                                     </Animated.View>
-    
+
                                     {isVideo && (
                                         <TouchableOpacity
                                             style={styles.soundButton}
@@ -626,7 +676,7 @@ const Home = ({ navigation }) => {
                                     )}
                                 </View>
                             </TouchableWithoutFeedback>
-    
+
                             {/* Actions */}
                             <View style={styles.actions}>
                                 <View style={styles.leftIcons}>
@@ -655,33 +705,58 @@ const Home = ({ navigation }) => {
                                         {isDarkMode ? <PostShareWhite /> : <ShareIcon />}
                                     </TouchableOpacity>
                                 </View>
-    
-                                <TouchableOpacity
-                                    style={{ right: 0 }}
-                                    onPress={() => SavePost(item)}
-                                >
-                                    {item?.SavedBy?.includes(selector?._id) ? (
-                                        isDarkMode ? <FontAwesome name={'bookmark'} color={'white'} size={24} />
-                                            : <FontAwesome name={'bookmark'} color={'black'} size={24} />
-                                    ) : (
-                                        isDarkMode ? <FontAwesome name={'bookmark-o'} color={'white'} size={24} />
-                                            : <FontAwesome name={'bookmark-o'} color={'black'} size={24} />
-                                    )}
-                                </TouchableOpacity>
+
+                                <Row style={{ gap: 20 }}>
+                                    <TouchableOpacity>
+                                        {/* <CustomText>DisLike</CustomText> */}
+                                        {
+                                            isDarkMode ?
+                                                <TouchableOpacity style={{alignItems: 'center', gap:5}}
+                                                onPress={() => onDisLikes(item)}
+                                                >
+                                                    <Ionicons name={'heart-dislike'} color={'white'} size={24} />
+                                                      <Text style={styles.likes}>{item?.TotalUnLikes} dislike</Text>
+                                                </TouchableOpacity>
+                                                :
+                                                <TouchableOpacity style={{alignItems: 'center', gap:5}}
+                                                onPress={() => onDisLikes(item)}
+                                                
+                                                >
+                                                    <Ionicons name={'heart-dislike'} color={'black'} size={24} />
+                                                          <Text style={styles.likes}>{item?.TotalUnLikes} dislike</Text>
+                                                </TouchableOpacity>
+                                        }
+
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={{ right: 0 }}
+                                        onPress={() => SavePost(item)}
+                                    >
+                                        {item?.SavedBy?.includes(selector?._id) ? (
+                                            isDarkMode ? <FontAwesome name={'bookmark'} color={'white'} size={24} />
+                                                : <FontAwesome name={'bookmark'} color={'black'} size={24} />
+                                        ) : (
+                                            isDarkMode ? <FontAwesome name={'bookmark-o'} color={'white'} size={24} />
+                                                : <FontAwesome name={'bookmark-o'} color={'black'} size={24} />
+                                        )}
+                                    </TouchableOpacity>
+
+                                </Row>
                             </View>
-    
+
                             {/* Likes */}
                             <Text style={styles.likes}>{item?.TotalLikes} likes</Text>
-    
+
                             {/* Caption */}
                             <Text style={styles.caption}>
                                 <Text style={styles.username}>{item?.caption || 'View from Falcon 9’s second stage during an orbital sunset'}</Text>
                                 {item.caption}
                             </Text>
-    
+
                             {/* Comments */}
                             <Text style={styles.comments}>View all {item?.TotalComents} comments</Text>
-    
+
                             {/* Time */}
                             <Text style={styles.time}>{item?.createdAt}</Text>
                         </View>
@@ -696,7 +771,7 @@ const Home = ({ navigation }) => {
             />
         );
     };
-    
+
 
     const styles = StyleSheet.create({
         container: {

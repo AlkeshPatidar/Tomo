@@ -33,11 +33,13 @@ import { apiGet, apiPost, getItem, setItem } from "../../utils/Apis";
 import urls from "../../config/urls";
 import useLoader from "../../utils/LoaderHook";
 import { setUser } from "../../redux/reducer/user";
+import useKeyboardStatus from "../../utils/KeyBoardHook";
 
 const Login = ({ navigation }) => {
     const { isDarkMode } = useSelector(state => state.theme);
     const { showLoader, hideLoader } = useLoader()
     const dispatch = useDispatch()
+   const { isKeyboardOpen } = useKeyboardStatus();
 
     // Animation Refs
     const slideAnim = useRef(new Animated.Value(100)).current;
@@ -88,7 +90,7 @@ const Login = ({ navigation }) => {
 
     const onLogin = async () => {
         console.log('Isss::::::::::::::::::::::::::::::::::::', userInfo?.Email, userInfo?.Password);
-        
+
         const emailError = inValidEmail(userInfo?.Email);
         if (emailError) {
             // return showWarning(emailError);
@@ -102,14 +104,14 @@ const Login = ({ navigation }) => {
         }
         try {
             showLoader();
-            const data = { 
-                Email: userInfo.Email, 
+            const data = {
+                Email: userInfo.Email,
                 Password: userInfo?.Password
             };
-            console.log(data,'DATA');
-                const response = await apiPost(urls.userLogin, data, {
-                    headers: { 'Content-Type': 'application/json' }
-                });
+            console.log(data, 'DATA');
+            const response = await apiPost(urls.userLogin, data, {
+                headers: { 'Content-Type': 'application/json' }
+            });
             console.log("response", response);
 
             if (response?.statusCode === 200) {
@@ -123,7 +125,7 @@ const Login = ({ navigation }) => {
                     const getUserDetails = await apiGet(urls.userProfile);
                     if (getUserDetails?.statusCode === 200) {
                         dispatch(setUser(JSON.stringify(getUserDetails?.data)));
-                            navigation.navigate('Tab');
+                        navigation.navigate('Tab');
                     }
                     hideLoader();
                     setUserInfor({})
@@ -195,30 +197,30 @@ const Login = ({ navigation }) => {
                             // onPress={() => navigation.navigate('Singnup')}
                             onPress={() => onLogin()}
 
-                            >
+                        >
                             <LoginBtn />
                         </TouchableOpacity>
                     </Animated.View>
 
-                    <CustomText style={styles.signupText}>
+                    {!isKeyboardOpen && <CustomText style={styles.signupText}>
                         Don't you have an account?{' '}
                         <TouchableOpacity
-                        onPress={() => navigation.navigate('Singnup')}
+                            onPress={() => navigation.navigate('Singnup')}
                         >
-                        <CustomText style={styles.signupLink}>Sign up</CustomText>
+                            <CustomText style={styles.signupLink}>Sign up</CustomText>
                         </TouchableOpacity>
-                    </CustomText>
+                    </CustomText>}
                 </View>
 
-                <View style={styles.termsContainer}>
+                {!isKeyboardOpen && <View style={styles.termsContainer}>
                     <CustomText style={styles.termsText}>
                         By creating an account, you agree to our{' '}
                         <CustomText style={styles.linkText}>Terms & Conditions</CustomText> and agree to{' '}
                         <CustomText style={styles.linkText}>Privacy Policy</CustomText>
                     </CustomText>
-                </View>
+                </View>}
 
-                <BottomIndicator style={styles.bottomIndicator} />
+               { !isKeyboardOpen &&<BottomIndicator style={styles.bottomIndicator} />}
             </Animated.ScrollView>
         );
     };
@@ -275,6 +277,7 @@ const Login = ({ navigation }) => {
             fontSize: 16,
             fontFamily: FONTS_FAMILY.SourceSans3_Medium,
             color: 'green',
+            top:5
         },
         termsContainer: {
             alignItems: 'center',

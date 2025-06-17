@@ -25,6 +25,15 @@ function TabNavigation() {
   const [modalVisible, setModalVisible] = React.useState(false);
   const { isDarkMode } = useSelector(state => state.theme);
 
+  let selector = useSelector(state => state?.user?.userData);
+  if (Object.keys(selector).length != 0) {
+    selector = JSON.parse(selector);
+  }
+
+  console.log("selector in tab navigation", selector?.
+          SellerStatus);
+
+
   return (
     <>
       <Tab.Navigator
@@ -67,26 +76,27 @@ function TabNavigation() {
               ),
           }}
         />
-          <Tab.Screen
-          name="MarketPlace"
-          // component={MarketPlace}
-          component={Shops}
-          options={{
-            tabBarLabel: () => null,
-            tabBarIcon: ({ focused }) =>
-              focused ? (
-                <View style={{ alignItems: 'center', top: 16, width: 100 }}>
-                  <MarkeActive />
-                  <TabBottomLine style={{ top: 30 }} />
+        {selector?.
+          SellerStatus == 'Approved' && <Tab.Screen
+            name="MarketPlace"
+            // component={MarketPlace}
+            component={Shops}
+            options={{
+              tabBarLabel: () => null,
+              tabBarIcon: ({ focused }) =>
+                focused ? (
+                  <View style={{ alignItems: 'center', top: 16, width: 100 }}>
+                    <MarkeActive />
+                    <TabBottomLine style={{ top: 30 }} />
 
-                </View>
-              ) : (
-                <View style={{ alignItems: 'center', top: 16, width: 100 }}>
-                  {isDarkMode ? <MarketDeactive /> : <MarketDeactiveForLite />}
-                </View>
-              ),
-          }}
-        />
+                  </View>
+                ) : (
+                  <View style={{ alignItems: 'center', top: 16, width: 100 }}>
+                    {isDarkMode ? <MarketDeactive /> : <MarketDeactiveForLite />}
+                  </View>
+                ),
+            }}
+          />}
 
         <Tab.Screen
           name="Search"
@@ -148,7 +158,7 @@ function TabNavigation() {
               ),
           }}
         />
-      
+
         <Tab.Screen
           name="last"
           // component={Followers}

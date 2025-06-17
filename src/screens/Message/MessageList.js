@@ -47,7 +47,7 @@ const MessageList = ({ navigation }) => {
     const fetchData = async () => {
         showLoader()
         const res = await apiGet(urls.getAllChattedUsers)
-        // console.log("-----------------", res.data);
+        console.log("-----------------", res.data);
         setAllUsers(res?.data)
         hideLoader()
     }
@@ -180,32 +180,32 @@ const MessageList = ({ navigation }) => {
     const MessageCard = ({ item }) => {
         return (
             <TouchableOpacity style={styles.card}
-                onPress={() => navigation.navigate('Chat')}
+                onPress={() => navigation.navigate('Chat', {userId:item?._id, userForChat:item})}
             >
                 {/* Profile Image */}
                 <View style={styles.profileContainer}>
-                    <Image source={item.avatar} style={styles.avatar} />
-                    {item.isOnline && <View style={styles.onlineDot} />}
+                    <Image source={item?.Image?{uri:item?.Image}:IMG.MessageProfile} style={styles.avatar} />
+                    {/* {item.isOnline && <View style={styles.onlineDot} />} */}
                 </View>
 
                 {/* Message Details */}
                 <View style={styles.detailsContainer}>
                     <View style={styles.row}>
-                        <Text style={styles.name}>{item.name}</Text>
-                        <Text style={styles.time}>{item.time}</Text>
+                        <Text style={styles.name}>{item.FullName}</Text>
+                        {/* <Text style={styles.time}>{item.time}</Text> */}
                     </View>
-                    <Text style={styles.message}>{item.message}</Text>
+                    {/* <Text style={styles.message}>{item.message}</Text> */}
                 </View>
 
                 {/* Unread Count */}
-                {item.unreadCount > 0 && (
+                {/* {item.unreadCount > 0 && (
                     <LinearGradient
                         colors={["#4A90E2", "#0039A6"]}
                         style={styles.unreadCount}
                     >
                         <Text style={styles.unreadText}>{item.unreadCount}</Text>
                     </LinearGradient>
-                )}
+                )} */}
             </TouchableOpacity>
         );
     };
@@ -225,7 +225,7 @@ const MessageList = ({ navigation }) => {
 
             <View style={styles.Ftcontainer}>
                 <FlatList
-                    data={messages}
+                    data={allUser}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => <MessageCard item={item} />}
                     style={{ flex: 1 }}

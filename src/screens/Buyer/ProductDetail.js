@@ -115,7 +115,7 @@
 
 // export default ProductDetail;
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     TextInput,
@@ -136,6 +136,10 @@ import { FONTS_FAMILY } from '../../assets/Fonts';
 import { App_Primary_color } from '../../common/Colors/colors';
 import LinearGradient from 'react-native-linear-gradient';
 import { Text } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
+import { apiGet } from '../../utils/Apis';
+import useLoader from '../../utils/LoaderHook';
+import urls from '../../config/urls';
 
 // Sample car images
 const carImages = [
@@ -173,6 +177,26 @@ const windowWidth = Dimensions.get('window').width;
 const ProductDetail = ({ navigation, route }) => {
     const { isDarkMode } = useSelector(state => state.theme);
     const [message, setMessage] = useState('Is this still available? 😊');
+    const isFocused = useIsFocused()
+    const [allProducts, setAllProducts] = useState(null)
+
+    const { showLoader, hideLoader } = useLoader()
+    
+        useEffect(() => {
+            fetchData()
+        }, [isFocused])
+    
+    
+    
+        const fetchData = async () => {
+            showLoader()
+            const res = await apiGet(`${urls.productDetails}/${route?.params?.productId}`)
+            console.log("------------Producat detaulsssss-----", res.data);
+            setAllProducts(res?.data)
+            hideLoader()
+    
+        }
+    
 
     // Sample car data
     const carData = {
@@ -479,7 +503,7 @@ const ProductDetail = ({ navigation, route }) => {
                         <TouchableOpacity onPress={() => navigation.goBack()}>
                             <BackIcon />
                         </TouchableOpacity>
-                        <CustomText style={styles.headerTitle}>{carData.title}</CustomText>
+                        <CustomText style={styles.headerTitle}>{allProducts?.ProductName}</CustomText>
                     </View>
                     <TouchableOpacity>
                         <Search />

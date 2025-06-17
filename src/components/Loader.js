@@ -14,7 +14,7 @@ const Loader = ({visible = false}) => {
             padding: 15,
             backgroundColor: 'transparent',
             borderRadius: 12,
-            elevation: 12,
+            // elevation: 12,
           }}>
           <ActivityIndicator size={'large'} color={isDarkMode?'white':App_Primary_color} />
         </View>

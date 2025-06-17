@@ -153,7 +153,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                 showsVerticalScrollIndicator={false}
                 renderItem={({ item }) => (
                     <TouchableOpacity style={styles.cardContainer}
-                        onPress={() => navigation.navigate('ProductDetail')}
+                        onPress={() => navigation.navigate('ProductDetail',{productId:item?._id})}
                     >
                         {console.log('+++++++++++++++++>', item)
                         }

@@ -3,7 +3,7 @@ import { ActivityIndicator, ImageBackground, StatusBar, StyleSheet, View } from 
 import CustomText from "../../components/TextComponent";
 import IMG from "../../assets/Images";
 import { initializeTheme } from "../../redux/actions/themeActions";
-import { apiGet, getItem } from "../../utils/Apis";
+import { apiGet, apiPut, getItem } from "../../utils/Apis";
 import { setUser } from "../../redux/reducer/user";
 import { useDispatch } from "react-redux";
 import urls from "../../config/urls";
@@ -14,7 +14,10 @@ const Splash = ({ navigation }) => {
     useEffect(() => {
         initializeTheme()
         fetchData()
+        updateLocation()
     }, [])
+
+
 
 
     const dispatch = useDispatch()
@@ -37,6 +40,27 @@ const Splash = ({ navigation }) => {
 
     }
 
+    const updateLocation = async () => {
+        const token = await getItem('token');
+        const data = {
+            "Location": {
+                "type": "Point",
+                "coordinates": [
+                    75.8577,
+                    22.7196
+                ]
+            }
+        }
+        if (token) {
+            const update = await apiPut(urls.updateLocation, data)
+            console.log(update);
+            
+
+        }
+
+
+    }
+
 
 
 
@@ -54,7 +78,7 @@ const Splash = ({ navigation }) => {
                 style={{
                     position: 'absolute',
                     bottom: 40,
-                    alignSelf:'center'
+                    alignSelf: 'center'
                 }}
             />
         </ImageBackground>
