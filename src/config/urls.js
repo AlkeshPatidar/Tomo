@@ -29,6 +29,7 @@ export default {
 
     sendFollowRequest: '/api/user/SendFollowRequest',
     updateLocation: '/api/user/UpdateLocation',
+    acceptFollowReq:'/api/user/ApproveFollowRequest'
 
 
 

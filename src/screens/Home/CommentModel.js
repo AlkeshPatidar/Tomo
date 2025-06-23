@@ -17,7 +17,8 @@ const CommentModal = ({
     onChangeText,
     commentText,
     onSendPress,
-    onDeleteComments
+    onDeleteComments,
+    onBackButtonPress
 }) => {
 
     const [selectedComment, setSelectedComment] = React.useState(null);
@@ -32,6 +33,7 @@ const CommentModal = ({
         <Modal
             isVisible={isVisible}
             onBackdropPress={onClose}
+            onBackButtonPress={onBackButtonPress || onClose}
             onSwipeComplete={onClose}
             swipeDirection="down"
             animationIn="slideInUp"
@@ -43,6 +45,12 @@ const CommentModal = ({
                 margin: 0,
                 alignItems: 'center', // 👈 this is the key to center it during animation
             }}
+            propagateSwipe={true} // 👈 allows swipe inside scroll
+            scrollTo={() => { }} // 👈 prevent warning if not using
+            scrollOffset={0}
+            scrollOffsetMax={400} // 👈 set according to content height
+            swipeThreshold={100}
+        // useNativeDriver={true}
         >
             <View style={{
                 height: '90%',

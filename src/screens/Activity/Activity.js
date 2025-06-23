@@ -5,11 +5,13 @@ import Row from '../../components/wrapper/row';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import IMG from '../../assets/Images';
 import LinearGradient from 'react-native-linear-gradient';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { white } from '../../common/Colors/colors';
-import { apiGet } from '../../utils/Apis';
+import { apiGet, apiPost } from '../../utils/Apis';
 import urls from '../../config/urls';
 import useLoader from '../../utils/LoaderHook';
+import { setUser } from '../../redux/reducer/user';
+import { ToastMsg } from '../../utils/helperFunctions';
 
 const Activity = ({ navigation }) => {
     const [data, setData] = useState(DATA);
@@ -17,9 +19,18 @@ const Activity = ({ navigation }) => {
     const [animatedValue] = useState(new Animated.Value(0));
     const { isDarkMode } = useSelector(state => state.theme);
     const { showLoader, hideLoader } = useLoader()
+    const dispatch = useDispatch()
 
     const [loading, setLoading] = useState(false)
     const [allNotifications, setAllNotifications] = useState([])
+
+    let selector = useSelector(state => state?.user?.userData);
+    if (Object.keys(selector).length != 0) {
+        selector = JSON.parse(selector);
+    }
+
+    // console.log('____Selector____', selector);
+
 
     useEffect(() => {
         // Animation for fade in effect
@@ -34,12 +45,31 @@ const Activity = ({ navigation }) => {
         fetchData()
     }, [])
 
+    const onAcceptReq = async (userId) => {
+        try {
+            showLoader()
+            const res = await apiPost(`${urls?.acceptFollowReq}/${userId}`)
+            console.log(res);
+            
+            const getUserProfile = apiGet(urls?.userProfile)
+            dispatch(setUser(JSON.stringify(getUserProfile?.data)));
+            ToastMsg('Follow Req Accepted')
+            hideLoader()
+
+        } catch (error) {
+            console.log('Something went Wrong');
+           ToastMsg(error?.message);
+            
+            hideLoader()
+        }
+
+    }
+
 
 
     const fetchData = async () => {
         showLoader()
         const res = await apiGet(urls.getAllNotifications)
-        console.log("------------Notifications-----", res.data);
         setAllNotifications(res?.data)
         setLoading(false)
         hideLoader()
@@ -156,35 +186,43 @@ const Activity = ({ navigation }) => {
     // Render card
     const Card = ({ item }) => (
         <Animated.View style={[styles.cardContainer, { opacity: animatedValue }]}>
+
             <Image source={IMG.MessageProfile} style={styles.profileImage} />
             <TouchableOpacity style={styles.textContainer}
                 onPress={() => navigation.navigate('UserDetail')}
             >
-                <Text style={styles.name}>{'Vikash Kohli'}</Text>
+                {/* <Text style={styles.name}>{'Vikash Kohli'}</Text> */}
                 <Row>
 
                     <Text style={styles.action}>{item?.content}</Text>
                     <Text style={styles.time}>{item?.user?.time}</Text>
                 </Row>
             </TouchableOpacity>
-            <TouchableOpacity
+            {item?.type == 'FollowRequest' && <TouchableOpacity
+                disabled={selector?.Follower?.includes(item?.sender)}
+                onPress={()=>onAcceptReq(item?.sender)}
+
             //  onPress={() => handleFollowToggle(item.id)}
             >
                 <LinearGradient
                     colors={item.isFollowing ? [isDarkMode ? '#252525' : '#e0e0e0', isDarkMode ? '#252525' : '#e0e0e0'] : ['#ff00ff', '#6a5acd']}
                     start={{ x: 1, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={styles.followButton}
+                    style={{
+                        ...styles.followButton,
+                        opacity: selector?.Follower?.includes(item?.sender) ? 0.3 : 1,
+                    }}
+
                 >
                     <Text style={[
                         styles.followText,
                         { color: item.isFollowing ? (isDarkMode ? '#fff' : '#000') : '#fff' }
 
                     ]}>
-                        {item.isFollowing ? 'Following' : 'Follow'}
+                        {'Accept'}
                     </Text>
                 </LinearGradient>
-            </TouchableOpacity>
+            </TouchableOpacity>}
 
         </Animated.View>
     );

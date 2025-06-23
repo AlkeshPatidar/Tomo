@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FlatList, Image, ImageBackground, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Animated, TouchableWithoutFeedback, TextInput } from "react-native";
+import { FlatList, Image, ImageBackground, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Animated, TouchableWithoutFeedback, TextInput, BackHandler, Alert } from "react-native";
 import CustomText from "../../components/TextComponent";
 import IMG from "../../assets/Images";
 import Row from "../../components/wrapper/row";
@@ -58,6 +58,34 @@ const Home = ({ navigation }) => {
         selector = JSON.parse(selector);
     }
 
+       useEffect(() => {
+        const backAction = () => {
+            Alert.alert(
+                "Exit App",
+                "Are you sure you want to exit the app?",
+                [
+                    {
+                        text: "Cancel",
+                        onPress: () => null,
+                        style: "cancel"
+                    },
+                    {
+                        text: "EXIT",
+                        onPress: () => BackHandler.exitApp()
+                    }
+                ]
+            );
+            return true;
+        };
+
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        return () => backHandler.remove();
+    }, []);
+
     const handleAnimation = (index) => {
         Animated.timing(animatedValues[index], {
             toValue: 1,
@@ -90,6 +118,7 @@ const Home = ({ navigation }) => {
         }
     };
 
+     
 
 
     const isFocused = useIsFocused()
@@ -284,7 +313,7 @@ const Home = ({ navigation }) => {
     };
 
 
-      const onDisLikes = async (item) => {
+    const onDisLikes = async (item) => {
         const postId = item._id;
         const userId = selector?._id;
         setAllPosts(prevPosts => {
@@ -410,7 +439,7 @@ const Home = ({ navigation }) => {
                         {followedStories?.map((item) => {
                             if (item?.User?.Stories?.length > 0) {
                                 console.log(item, 'Followed Story Item');
-                                
+
                                 return (
                                     <View key={item.id} style={styles.storyContainer}>
                                         <TouchableOpacity
@@ -441,169 +470,6 @@ const Home = ({ navigation }) => {
         );
     };
 
-    // const renderFeeds = () => {
-    //     return (
-    //         <FlatList
-    //             data={allPosts}
-    //             style={{ marginBottom: 90 }}
-    //             keyExtractor={(item) => item.id}
-    //             showsVerticalScrollIndicator={false}
-    //             renderItem={({ item, index }) => {
-    //                 handleAnimation(index);
-
-    //                 const animatedStyle = {
-    //                     opacity: animatedValues[index],
-    //                     transform: [
-    //                         {
-    //                             translateY: animatedValues[index].interpolate({
-    //                                 inputRange: [0, 1],
-    //                                 outputRange: [20, 0], // Slide up effect
-    //                             }),
-    //                         },
-    //                     ],
-    //                 };
-    //                 const mediaUrl = item.media; // Use a consistent key for media
-    //                 const isVideo = typeof mediaUrl === "string" && (mediaUrl.endsWith(".mp4") || mediaUrl.endsWith(".mov"));
-
-    //                 return (
-    //                     <Animated.View style={[styles.feedContainer, animatedStyle]}>
-    //                         {/* Header */}
-    //                         <View style={styles.header}>
-    //                             <View style={styles.userInfo}>
-    //                                 <Image source={item?.User?.Image ? { uri: item?.User?.Image } : IMG.MessageProfile} style={styles.profileImage} />
-    //                                 <TouchableOpacity onPress={() => navigation.navigate('OtherUserDetail')}>
-    //                                     <Text style={styles.username}>{item?.User?.UserName}</Text>
-    //                                     <Text style={styles.audio}>{isVideo ? 'Original audio' : ''}</Text>
-    //                                 </TouchableOpacity>
-    //                             </View>
-    //                             <TouchableOpacity>
-    //                                 {isDarkMode ? <WhiteThreeDot /> : <ThreeDotIcon />}
-    //                             </TouchableOpacity>
-    //                         </View>
-    //                         <TouchableWithoutFeedback onPress={() => handleDoubleTap(item, index)}>
-    //                             <View style={{ position: 'relative' }}>
-    //                                 {isVideo ? (
-    //                                     <Video
-    //                                         source={{ uri: item?.media }}
-    //                                         style={styles.postImage}
-    //                                         resizeMode="cover"
-    //                                         repeat
-    //                                         muted={isMuted}
-    //                                     />
-    //                                 ) : (
-    //                                     <Image source={{ uri: item?.media }} style={styles.postImage} />
-    //                                 )}
-
-    //                                 <Animated.View
-    //                                     pointerEvents="none"
-    //                                     style={{
-    //                                         position: 'absolute',
-    //                                         top: '40%',
-    //                                         left: '40%',
-    //                                         opacity: doubleTapIndex === index ? heartOpacity : 0,
-    //                                         transform: [{ scale: heartOpacity }],
-    //                                     }}
-    //                                 >
-    //                                     <MaterialIcons name="favorite" size={100} color="red" />
-    //                                 </Animated.View>
-
-    //                                 {isVideo && (
-    //                                     <TouchableOpacity
-    //                                         style={styles.soundButton}
-    //                                         onPress={() => setIsMuted(!isMuted)}
-    //                                     >
-    //                                         {isMuted ? <SpeakerOff /> : (
-    //                                             <AntDesign
-    //                                                 name={'sound'}
-    //                                                 color={isDarkMode ? 'white' : 'black'}
-    //                                                 size={14}
-    //                                             />
-    //                                         )}
-    //                                     </TouchableOpacity>
-    //                                 )}
-    //                             </View>
-    //                         </TouchableWithoutFeedback>
-
-
-    //                         {/* Actions */}
-    //                         <View style={styles.actions}>
-    //                             <View style={styles.leftIcons}>
-
-    //                                 <TouchableOpacity style={{ right: 0 }}
-    //                                     onPress={() => onLikeUnlike(item)}
-    //                                 >
-    //                                     {item?.likes?.includes(selector?._id) ? (
-    //                                         isDarkMode ? <MaterialIcons name={'favorite'} color={'white'}
-    //                                             size={24}
-    //                                         />
-    //                                             : <MaterialIcons name={'favorite-border'} color={'black'}
-    //                                                 size={24} />
-    //                                     ) : (
-    //                                         isDarkMode ? <MaterialIcons name={'favorite-border'} color={'white'} size={24}
-    //                                         /> : <MaterialIcons name={'favorite-border'} color={'black'} size={24}
-    //                                         />
-    //                                     )}
-    //                                 </TouchableOpacity>
-    //                                 <TouchableOpacity
-    //                                     onPress={() => {
-    //                                         // setSelectedPost(item);
-    //                                         setModalVisible(true);
-    //                                         fetchCommentDataOfaPost(item?._id)
-    //                                         setPostId(item?._id)
-
-    //                                     }}
-    //                                 >
-    //                                     {isDarkMode ? <CommentWhite /> : <CommentIcon />}
-    //                                 </TouchableOpacity>
-    //                                 <TouchableOpacity>
-    //                                     {isDarkMode ? <PostShareWhite /> : <ShareIcon />}
-    //                                 </TouchableOpacity>
-    //                             </View>
-
-
-    //                             <TouchableOpacity style={{ right: 0 }}
-    //                                 onPress={() => SavePost(item)}
-    //                             >
-    //                                 {item?.SavedBy?.includes(selector?._id) ? (
-    //                                     isDarkMode ? <FontAwesome name={'bookmark'} color={'white'}
-    //                                         size={24}
-    //                                     />
-    //                                         : <FontAwesome name={'bookmark'} color={'black'}
-    //                                             size={24} />
-    //                                 ) : (
-    //                                     isDarkMode ? <FontAwesome name={'bookmark-o'} color={'white'} size={24}
-    //                                     /> : <FontAwesome name={'bookmark-o'} color={'black'} size={24}
-    //                                     />
-    //                                 )}
-    //                             </TouchableOpacity>
-    //                         </View>
-
-    //                         {/* Likes */}
-    //                         <Text style={styles.likes}>{item?.TotalLikes} likes</Text>
-
-    //                         {/* Caption */}
-    //                         <Text style={styles.caption}>
-    //                             <Text style={styles.username}>{item?.caption || 'View from Falcon 9’s second stage during an orbital sunset'} </Text>
-    //                             {item.caption}
-    //                         </Text>
-
-    //                         {/* Comments */}
-    //                         <Text style={styles.comments}>View all{item?.TotalComents}comments</Text>
-
-    //                         {/* Time */}
-    //                         <Text style={styles.time}>{item?.createdAt}</Text>
-    //                     </Animated.View>
-    //                 );
-    //             }}
-    //             ListEmptyComponent={!loaderVisible && <CustomText style={{
-    //                 color: isDarkMode ? 'white' : 'black',
-    //                 alignSelf: 'center',
-    //                 marginTop: 50,
-    //                 fontFamily: FONTS_FAMILY.OpenSans_Condensed_Medium
-    //             }}>No Post Found!</CustomText>}
-    //         />
-    //     );
-    // };
 
     const renderFeeds = () => {
         return (
@@ -622,7 +488,7 @@ const Home = ({ navigation }) => {
                             <View style={styles.header}>
                                 <View style={styles.userInfo}>
                                     <Image source={item?.User?.Image ? { uri: item?.User?.Image } : IMG.MessageProfile} style={styles.profileImage} />
-                                    <TouchableOpacity onPress={() => navigation.navigate('OtherUserDetail')}>
+                                    <TouchableOpacity onPress={() => navigation.navigate('OtherUserDetail', { userId: item?.User?._id })}>
                                         <Text style={styles.username}>{item?.User?.UserName}</Text>
                                         <Text style={styles.audio}>{isVideo ? 'Original audio' : ''}</Text>
                                     </TouchableOpacity>
@@ -711,19 +577,19 @@ const Home = ({ navigation }) => {
                                         {/* <CustomText>DisLike</CustomText> */}
                                         {
                                             isDarkMode ?
-                                                <TouchableOpacity style={{alignItems: 'center', gap:5}}
-                                                onPress={() => onDisLikes(item)}
+                                                <TouchableOpacity style={{ alignItems: 'center', gap: 5 }}
+                                                    onPress={() => onDisLikes(item)}
                                                 >
                                                     <Ionicons name={'heart-dislike'} color={'white'} size={24} />
-                                                      <Text style={styles.likes}>{item?.TotalUnLikes} dislike</Text>
+                                                    <Text style={styles.likes}>{item?.TotalUnLikes} dislike</Text>
                                                 </TouchableOpacity>
                                                 :
-                                                <TouchableOpacity style={{alignItems: 'center', gap:5}}
-                                                onPress={() => onDisLikes(item)}
-                                                
+                                                <TouchableOpacity style={{ alignItems: 'center', gap: 5 }}
+                                                    onPress={() => onDisLikes(item)}
+
                                                 >
                                                     <Ionicons name={'heart-dislike'} color={'black'} size={24} />
-                                                          <Text style={styles.likes}>{item?.TotalUnLikes} dislike</Text>
+                                                    <Text style={styles.likes}>{item?.TotalUnLikes} dislike</Text>
                                                 </TouchableOpacity>
                                         }
 
@@ -750,7 +616,7 @@ const Home = ({ navigation }) => {
 
                             {/* Caption */}
                             <Text style={styles.caption}>
-                                <Text style={styles.username}>{item?.caption || 'View from Falcon 9’s second stage during an orbital sunset'}</Text>
+                                <Text style={styles.username}>{item?.caption || 'No Caption Added'}</Text>
                                 {item.caption}
                             </Text>
 
@@ -915,7 +781,7 @@ const Home = ({ navigation }) => {
     const renderCommentModal = () => {
         return (
             <>
-                <CommentModal
+                {/* <CommentModal
                     isVisible={modalVisible}
                     onClose={() => setModalVisible(false)}
                     comments={comments}
@@ -929,7 +795,23 @@ const Home = ({ navigation }) => {
                         sendComments(postId, commentText)
                     }}
                     onDeleteComments={(id) => { onDeleteComments(id) }}
+                /> */}
+                <CommentModal
+                    isVisible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                    onBackButtonPress={() => setModalVisible(false)} // ✅ handles Android back
+                    comments={comments}
+                    isDarkMode={isDarkMode}
+                    commentText={commentText}
+                    onChangeText={setCommentText}
+                    onSendPress={() => {
+                        console.log('Send:', commentText);
+                        sendComments(postId, commentText);
+                        setCommentText('');
+                    }}
+                    onDeleteComments={(id) => onDeleteComments(id)}
                 />
+
             </>
         )
     }
