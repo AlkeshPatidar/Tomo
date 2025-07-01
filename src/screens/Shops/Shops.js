@@ -12,30 +12,49 @@ import useLoader from '../../utils/LoaderHook';
 import { apiGet } from '../../utils/Apis';
 import urls from '../../config/urls';
 import { useIsFocused } from '@react-navigation/native';
+import useKeyboardStatus from '../../utils/KeyBoardHook';
 
-   
-
-
-
-const Shops = ({navigation}) => {
+const Shops = ({ navigation }) => {
 
     const [allShops, setAllShops] = useState([])
+    const [filteredShops, setFilteredShops] = useState([])
+    const [searchQuery, setSearchQuery] = useState('')
     const { showLoader, hideLoader } = useLoader()
-const isFocused=useIsFocused()
+    const isFocused = useIsFocused()
 
-   useEffect(() => {
+    const { isKeyboardOpen, keyboardHeight }=useKeyboardStatus()
+
+    useEffect(() => {
         fetchData()
-    }, [isFocused])
+    }, [])
 
-
+    // Real-time search filter
+    useEffect(() => {
+        if (searchQuery.trim() === '') {
+            setFilteredShops(allShops)
+        } else {
+            const filtered = allShops.filter(shop => {
+                const shopName = shop?.Name?.toLowerCase() || ''
+                const shopAddress = shop?.Address?.[0]?.LocationName?.toLowerCase() || ''
+                const query = searchQuery.toLowerCase()
+                
+                return shopName.includes(query) || shopAddress.includes(query)
+            })
+            setFilteredShops(filtered)
+        }
+    }, [searchQuery, allShops])
 
     const fetchData = async () => {
         showLoader()
         const res = await apiGet(urls.getAllShops)
         // console.log("------------Notifications-----", res.data);
         setAllShops(res?.data)
+        setFilteredShops(res?.data) // Initialize filtered shops
         hideLoader()
+    }
 
+    const handleSearch = (text) => {
+        setSearchQuery(text)
     }
 
     const { isDarkMode } = useSelector(state => state.theme);
@@ -55,7 +74,8 @@ const isFocused=useIsFocused()
             margin: 10,
             padding: 4,
             marginTop: 10,
-            paddingHorizontal: 15
+            paddingHorizontal: 15,
+            gap: 10
         },
         icon: {
             marginRight: 10,
@@ -63,6 +83,7 @@ const isFocused=useIsFocused()
         searchInput: {
             flex: 1,
             fontSize: 16,
+            color: isDarkMode ? 'white' : 'black',
         },
         imageWrapper: {
             flex: 1,
@@ -76,8 +97,8 @@ const isFocused=useIsFocused()
             height: 120,
             resizeMode: 'cover',
         },
-        cardContainer:{
-            backgroundColor: isDarkMode?'#252525': '#fff',
+        cardContainer: {
+            backgroundColor: isDarkMode ? '#252525' : '#fff',
             borderRadius: 10,
             margin: 8,
             flex: 1,
@@ -88,14 +109,14 @@ const isFocused=useIsFocused()
             shadowRadius: 3,
             borderWidth: 1,
             padding: 7,
-            borderColor:isDarkMode?'gray':'#E4E4E4'
+            borderColor: isDarkMode ? 'gray' : '#E4E4E4'
         }
     });
 
     const renderHeader = () => {
         return (
             <SpaceBetweenRow style={{ paddingTop: 50, paddingHorizontal: 20, backgroundColor: isDarkMode ? '#252525' : 'white', paddingBottom: 15 }}>
-                <TouchableOpacity onPress={()=>navigation.goBack()}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
                     {isDarkMode ? <BackIcon /> : <BackBlackSimple />}
                 </TouchableOpacity>
                 <CustomText style={{
@@ -123,16 +144,22 @@ const isFocused=useIsFocused()
             {renderHeader()}
             <View style={styles.searchContainer}>
                 <Search />
-                <TextInput style={styles.searchInput} placeholder="Search" placeholderTextColor="#A0A0A0" />
-                <TouchableOpacity>
+                <TextInput 
+                    style={styles.searchInput} 
+                    placeholder="Search shops..." 
+                    placeholderTextColor="#A0A0A0"
+                    value={searchQuery}
+                    onChangeText={handleSearch}
+                />
+                {/* <TouchableOpacity>
                     <Mic />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
 
             {/* Grid View */}
             <FlatList
                 style={{}}
-                data={allShops}
+                data={filteredShops}
                 keyExtractor={(item) => item?._id.toString()}
                 numColumns={2}
 
@@ -140,12 +167,11 @@ const isFocused=useIsFocused()
                 showsVerticalScrollIndicator={false}
                 renderItem={({ item }) => (
                     <TouchableOpacity style={styles.cardContainer}
-                    onPress={()=>navigation.navigate('AllProductsOfAShops',{shopId:item?._id})}
+                        onPress={() => navigation.navigate('AllProductsOfAShops', { shopId: item?._id })}
                     >
-                        {console.log('+++++++++++++++++>', item)
-                        }
+                       
                         <Image
-                            source={item?.Image?{uri:item?.Image}:IMG.PostImage}
+                            source={item?.Image ? { uri: item?.Image } : IMG.PostImage}
                             style={{
                                 height: 100,
                                 width: '100%',
@@ -159,12 +185,12 @@ const isFocused=useIsFocused()
                                 fontFamily: FONTS_FAMILY.SourceSans3_Bold,
                                 marginBottom: 5,
                             }}>
-                               {item?.Name}
+                                {item?.Name}
                             </CustomText>
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                                 <LocationIcon />
-                                <CustomText style={{ fontSize: 10, color:isDarkMode?'white': '#7d7d7d', flex: 1 }}>
-                                   {item?.Address[0]?.LocationName}
+                                <CustomText style={{ fontSize: 10, color: isDarkMode ? 'white' : '#7d7d7d', flex: 1 }}>
+                                    {item?.Address[0]?.LocationName}
                                 </CustomText>
                             </View>
                         </View>
@@ -172,11 +198,11 @@ const isFocused=useIsFocused()
                 )}
             />
 
-            <TouchableOpacity onPress={()=>navigation?.navigate('AddShops')}>
-                <AddShopBtn/>
-            </TouchableOpacity>
+           {<TouchableOpacity onPress={() => navigation?.navigate('AddShops')}>
+                <AddShopBtn />
+            </TouchableOpacity>}
 
-            <View style={{height:100}}/>
+          {!isKeyboardOpen &&  <View style={{ height: 100 }} />}
 
         </View>
     );

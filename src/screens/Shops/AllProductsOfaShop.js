@@ -137,9 +137,9 @@ const AllProductsOfAShops = ({ navigation, route }) => {
             <View style={styles.searchContainer}>
                 <Search />
                 <TextInput style={styles.searchInput} placeholder="Search" placeholderTextColor="#A0A0A0" />
-                <TouchableOpacity>
+                {/* <TouchableOpacity>
                     <Mic />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
 
             {/* Grid View */}

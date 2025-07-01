@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Keyboard } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { verticalScale } from 'react-native-size-matters';
 import { white } from '../../common/Colors/colors';
@@ -22,8 +23,9 @@ import Shops from '../../screens/Shops/Shops';
 
 const Tab = createBottomTabNavigator();
 function TabNavigation() {
-  const [modalVisible, setModalVisible] = React.useState(false);
+  // const [modalVisible, setModalVisible] = React.useState(false);
   const { isDarkMode } = useSelector(state => state.theme);
+  const [keyboardVisible, setKeyboardVisible] = React.useState(false);
 
   let selector = useSelector(state => state?.user?.userData);
   if (Object.keys(selector).length != 0) {
@@ -31,18 +33,29 @@ function TabNavigation() {
   }
 
   console.log("selector in tab navigation", selector?.
-          SellerStatus);
+    SellerStatus);
 
+  React.useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
 
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
   return (
     <>
       <Tab.Navigator
         initialRouteName="Home"
         screenOptions={{
           headerShown: false,
-          tabBarStyle: {
+          tabBarStyle: keyboardVisible ? { display: 'none' } : {
             position: 'absolute',
-            // bottom: verticalScale(20),
             height: verticalScale(80),
             justifyContent: 'center',
             alignItems: 'center',
@@ -51,12 +64,27 @@ function TabNavigation() {
             backgroundColor: isDarkMode ? '#252525' : white,
             borderTopRightRadius: 20,
             borderTopLeftRadius: 20,
-            // borderRadius: 16,
             alignSelf: 'center',
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
             elevation: 1
           },
+
+          // tabBarStyle: {
+          //   position: 'absolute',
+          //   // bottom: verticalScale(20),
+          //   height: verticalScale(80),
+          //   justifyContent: 'center',
+          //   alignItems: 'center',
+          //   elevation: 20,
+          //   shadowColor: '#000',
+          //   backgroundColor: isDarkMode ? '#252525' : white,
+          //   borderTopRightRadius: 20,
+          //   borderTopLeftRadius: 20,
+          //   // borderRadius: 16,
+          //   alignSelf: 'center',
+          //   borderTopLeftRadius: 20,
+          //   borderTopRightRadius: 20,
+          //   elevation: 1
+          // },
         }}>
         <Tab.Screen
           name="Home"
@@ -181,10 +209,10 @@ function TabNavigation() {
           }}
         />
       </Tab.Navigator>
-      <OptionModal
+      {/* <OptionModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
-      />
+      /> */}
     </>
   );
 }

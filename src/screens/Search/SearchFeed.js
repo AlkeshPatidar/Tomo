@@ -261,9 +261,9 @@ const SearchScreen = ({ navigation }) => {
                         {/* <X width={16} height={16} color={isDarkMode ? '#888' : '#666'} /> */}
                     </TouchableOpacity>
                 )}
-                <TouchableOpacity style={{ marginLeft: 8 }}>
+                {/* <TouchableOpacity style={{ marginLeft: 8 }}>
                     <Mic width={20} height={20} color={isDarkMode ? '#888' : '#666'} />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
 
             {/* Content */}

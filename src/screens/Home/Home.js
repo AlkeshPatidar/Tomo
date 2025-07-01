@@ -13,22 +13,19 @@ import urls from "../../config/urls";
 import { white } from "../../common/Colors/colors";
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+
+import Foundation from 'react-native-vector-icons/Foundation';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import useLoader from "../../utils/LoaderHook";
-import { useIsFocused } from "@react-navigation/native";
+import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import CommentModal from "./CommentModel";
+import moment from "moment";
 
 
 const Home = ({ navigation }) => {
     const { isDarkMode } = useSelector(state => state.theme);
-    // const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
     const storyOpacity = useRef(new Animated.Value(0)).current;
     const feedTranslateY = useRef(new Animated.Value(20)).current;
-
-    // const animatedValues = useRef(feedData.map(() => new Animated.Value(0))).current;
-    // Ensure feedData is available and has valid items
-
     const [loading, setLoading] = useState(false)
     const [allPosts, setAllPosts] = useState([])
     const [allStories, setAllStories] = useState([])
@@ -41,15 +38,10 @@ const Home = ({ navigation }) => {
     const [postId, setPostId] = useState(null);
 
     const [commentText, setCommentText] = useState('');
-
-    const animatedValues = useRef(feedData?.map(() => new Animated.Value(0)) ?? []).current;
-
-
     const [comments, setComments] = useState([])
-
-
     const [isMuted, setIsMuted] = useState(false);
     const loaderVisible = useSelector(state => state?.loader?.loader);
+
 
     const { showLoader, hideLoader } = useLoader()
 
@@ -58,7 +50,7 @@ const Home = ({ navigation }) => {
         selector = JSON.parse(selector);
     }
 
-       useEffect(() => {
+    useFocusEffect(() => {
         const backAction = () => {
             Alert.alert(
                 "Exit App",
@@ -86,14 +78,7 @@ const Home = ({ navigation }) => {
         return () => backHandler.remove();
     }, []);
 
-    const handleAnimation = (index) => {
-        Animated.timing(animatedValues[index], {
-            toValue: 1,
-            duration: 400, // Duration of animation
-            delay: index * 100, // Staggered delay for each item
-            useNativeDriver: true,
-        }).start();
-    };
+
     const triggerHeartAnimation = (index) => {
         setDoubleTapIndex(index);
         heartOpacity.setValue(1);
@@ -118,7 +103,7 @@ const Home = ({ navigation }) => {
         }
     };
 
-     
+
 
 
     const isFocused = useIsFocused()
@@ -143,7 +128,16 @@ const Home = ({ navigation }) => {
         fetchData()
         getCurrentStories()
         getFollwedStories()
-    }, [isFocused])
+    }, [])
+
+    const onRefresh = async () => {
+        setLoading(true)
+        await fetchData()
+        await getCurrentStories()
+        await getFollwedStories()
+        setLoading(false)
+
+    }
 
 
     const fetchCommentDataOfaPost = async (id) => {
@@ -167,6 +161,44 @@ const Home = ({ navigation }) => {
 
     }
 
+    const formatInstagramDate = (dateString) => {
+        const date = moment(dateString);
+        const now = moment();
+
+        // Calculate difference
+        const diffInSeconds = now.diff(date, 'seconds');
+        const diffInMinutes = now.diff(date, 'minutes');
+        const diffInHours = now.diff(date, 'hours');
+        const diffInDays = now.diff(date, 'days');
+        const diffInWeeks = now.diff(date, 'weeks');
+
+        if (diffInSeconds < 60) {
+            return `${diffInSeconds}s`;
+        }
+
+        if (diffInMinutes < 60) {
+            return `${diffInMinutes}m`;
+        }
+
+        if (diffInHours < 24) {
+            return `${diffInHours}h`;
+        }
+
+        if (diffInDays < 7) {
+            return `${diffInDays}d`;
+        }
+
+        if (diffInWeeks < 4) {
+            return `${diffInWeeks}w`;
+        }
+
+        if (date.year() === now.year()) {
+            return date.format('MMM D');
+        } else {
+            return date.format('MMM D, YYYY');
+        }
+    };
+
 
 
     const fetchData = async () => {
@@ -181,7 +213,7 @@ const Home = ({ navigation }) => {
     const getCurrentStories = async () => {
         console.log("Selector", selector?._id);
 
-        setLoading(true);
+        // setLoading(true);
         try {
             const res = await apiGet(urls.getCurrentStories);
             // console.log("Fetched Stories:::::::::::", res.data);
@@ -193,13 +225,13 @@ const Home = ({ navigation }) => {
         } catch (error) {
             console.error("Error fetching stories:", error);
         }
-        setLoading(false);
+        // setLoading(false);
     };
 
     const getFollwedStories = async () => {
         console.log("Selector", selector?._id);
 
-        setLoading(true);
+        // setLoading(true);
         try {
             const res = await apiGet(urls.followedUserStories);
             // console.log("Fetched Stories:::::::::::", res.data);
@@ -208,7 +240,7 @@ const Home = ({ navigation }) => {
         } catch (error) {
             console.error("Error fetching stories:", error);
         }
-        setLoading(false);
+        // setLoading(false);
     };
 
 
@@ -478,6 +510,8 @@ const Home = ({ navigation }) => {
                 style={{ marginBottom: 90 }}
                 keyExtractor={(item) => item.id}
                 showsVerticalScrollIndicator={false}
+                onRefresh={onRefresh}
+                refreshing={loading}
                 renderItem={({ item, index }) => {
                     const mediaUrl = item.media; // Use a consistent key for media
                     const isVideo = typeof mediaUrl === "string" && (mediaUrl.endsWith(".mp4") || mediaUrl.endsWith(".mov"));
@@ -490,12 +524,12 @@ const Home = ({ navigation }) => {
                                     <Image source={item?.User?.Image ? { uri: item?.User?.Image } : IMG.MessageProfile} style={styles.profileImage} />
                                     <TouchableOpacity onPress={() => navigation.navigate('OtherUserDetail', { userId: item?.User?._id })}>
                                         <Text style={styles.username}>{item?.User?.UserName}</Text>
-                                        <Text style={styles.audio}>{isVideo ? 'Original audio' : ''}</Text>
+                                        {isVideo && <Text style={styles.audio}>{'Original audio'}</Text>}
                                     </TouchableOpacity>
                                 </View>
-                                <TouchableOpacity>
+                                {/* <TouchableOpacity>
                                     {isDarkMode ? <WhiteThreeDot /> : <ThreeDotIcon />}
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
                             </View>
 
                             <TouchableWithoutFeedback onPress={() => handleDoubleTap(item, index)}>
@@ -567,29 +601,28 @@ const Home = ({ navigation }) => {
                                     >
                                         {isDarkMode ? <CommentWhite /> : <CommentIcon />}
                                     </TouchableOpacity>
-                                    <TouchableOpacity>
+                                    {/* <TouchableOpacity>
                                         {isDarkMode ? <PostShareWhite /> : <ShareIcon />}
-                                    </TouchableOpacity>
+                                    </TouchableOpacity> */}
                                 </View>
 
                                 <Row style={{ gap: 20 }}>
                                     <TouchableOpacity>
-                                        {/* <CustomText>DisLike</CustomText> */}
                                         {
                                             isDarkMode ?
-                                                <TouchableOpacity style={{ alignItems: 'center', gap: 5 }}
+                                                <TouchableOpacity style={{ alignItems: 'center', gap: 0, flexDirection: 'row' }}
                                                     onPress={() => onDisLikes(item)}
                                                 >
-                                                    <Ionicons name={'heart-dislike'} color={'white'} size={24} />
-                                                    <Text style={styles.likes}>{item?.TotalUnLikes} dislike</Text>
+                                                    <Foundation name={'dislike'} color={'white'} size={30} />
+                                                    <Text style={styles.likes}>{item?.TotalUnLikes}</Text>
                                                 </TouchableOpacity>
                                                 :
-                                                <TouchableOpacity style={{ alignItems: 'center', gap: 5 }}
+                                                <TouchableOpacity style={{ alignItems: 'center', gap: 0, flexDirection: 'row' }}
                                                     onPress={() => onDisLikes(item)}
 
                                                 >
-                                                    <Ionicons name={'heart-dislike'} color={'black'} size={24} />
-                                                    <Text style={styles.likes}>{item?.TotalUnLikes} dislike</Text>
+                                                    <Foundation name={'dislike'} color={'black'} size={30} />
+                                                    <Text style={styles.likes}>{item?.TotalUnLikes}</Text>
                                                 </TouchableOpacity>
                                         }
 
@@ -610,21 +643,16 @@ const Home = ({ navigation }) => {
 
                                 </Row>
                             </View>
-
-                            {/* Likes */}
-                            <Text style={styles.likes}>{item?.TotalLikes} likes</Text>
-
-                            {/* Caption */}
+                            <Text style={styles.likes}>{item?.TotalLikes} {item?.TotalLikes > 1 ? 'likes' : 'like'}</Text>
                             <Text style={styles.caption}>
                                 <Text style={styles.username}>{item?.caption || 'No Caption Added'}</Text>
                                 {item.caption}
                             </Text>
+                            {/* <SpaceBetweenRow> */}
+                            <Text style={styles.comments}>{item?.TotalComents} comments</Text>
+                            <Text style={styles.time}>{formatInstagramDate(item?.createdAt)}</Text>
 
-                            {/* Comments */}
-                            <Text style={styles.comments}>View all {item?.TotalComents} comments</Text>
-
-                            {/* Time */}
-                            <Text style={styles.time}>{item?.createdAt}</Text>
+                            {/* </SpaceBetweenRow> */}
                         </View>
                     );
                 }}
@@ -739,7 +767,7 @@ const Home = ({ navigation }) => {
         actions: {
             flexDirection: 'row',
             justifyContent: 'space-between',
-            padding: 10,
+            paddingTop: 8,
             // left:15
             marginHorizontal: 10
         },
@@ -835,47 +863,3 @@ const Home = ({ navigation }) => {
 export default Home;
 
 
-
-
-
-
-const storiesData = [
-    { id: '1', name: 'Your story', image: IMG.AddStoryImage, isOwn: true },
-    { id: '2', name: 'mkbhd', image: IMG.StoryImage2 },
-    { id: '3', name: 'lewisham...', image: IMG.StoryImage1 },
-    { id: '4', name: 'defavours', image: IMG.StoryImage2 },
-    { id: '5', name: 'leome', image: IMG.StoryImage1 },
-];
-
-const feedData = [
-    {
-        id: '1',
-        username: 'spacex',
-        profileImage: IMG.ProfileImagePost,
-        postImage: 'https://res.cloudinary.com/dwewlzhdz/video/upload/v1743501862/Story/Video/gw9kaoshcsqij0ysabol.mp4',
-        likes: '112,099',
-        caption: 'View from Falcon 9’s second stage during an orbital sunset',
-        comments: 'View all 534 comments',
-        time: '1 DAY AGO',
-    },
-    {
-        id: '2',
-        username: 'spacex',
-        profileImage: IMG.ProfileImagePost,
-        postImage: IMG.PostImage,
-        likes: '112,099',
-        caption: 'View from Falcon 9’s second stage during an orbital sunset',
-        comments: 'View all 534 comments',
-        time: '1 DAY AGO',
-    },
-    {
-        id: '3',
-        username: 'spacex',
-        profileImage: IMG.ProfileImagePost,
-        postImage: IMG.PostImage,
-        likes: '112,099',
-        caption: 'View from Falcon 9’s second stage during an orbital sunset',
-        comments: 'View all 534 comments',
-        time: '1 DAY AGO',
-    },
-];

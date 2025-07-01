@@ -14,7 +14,11 @@ import { apiGet, apiPost, getItem } from '../../utils/Apis';
 import urls from '../../config/urls';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import useLoader from '../../utils/LoaderHook';
+
+import Feather from 'react-native-vector-icons/Feather';
+
 import { ToastMsg } from '../../utils/helperFunctions';
+import { white } from '../../common/Colors/colors';
 
 const OtherUserDetail = ({ navigation, route }) => {
     const [isDrawerVisible, setDrawerVisible] = useState(false);
@@ -52,7 +56,7 @@ const OtherUserDetail = ({ navigation, route }) => {
     }, [isFocused])
 
     const fetchData = async () => {
-        setLoading(true)
+        // setLoading(true)
         const endPoint = route?.params?.userId ? `${urls.getUserById}/${route?.params?.userId}` : urls.userProfile;
         const res = await apiGet(endPoint)
         setUserDetails(res?.data)
@@ -62,7 +66,7 @@ const OtherUserDetail = ({ navigation, route }) => {
     }
 
     const fetchMyPost = async () => {
-        setLoading(true)
+        // setLoading(true)
         const res = await apiGet(`${urls.getAllPostsOfAUser}/${route?.params?.userId || selector?._id}`);
         setAllPosts(res?.data)
         console.log(res?.data, 'AllMy Posts from api');
@@ -496,12 +500,14 @@ const OtherUserDetail = ({ navigation, route }) => {
             <TouchableOpacity onPress={() => setDrawerVisible(true)}>
                 {
                     isDarkMode ?
-                        <Image source={IMG.menuIcon}
-                            style={{
-                                height: 30,
-                                width: 30
-                            }}
-                        /> :
+                        // <Image source={IMG.menuIcon}
+                        //     style={{
+                        //         height: 30,
+                        //         width: 30
+                        //     }}
+                        // />
+                        <Feather name={'menu'} size={30} color={white}/>
+                         :
                         <Menu fill={'white'} />
                 }
             </TouchableOpacity>
@@ -538,10 +544,8 @@ const OtherUserDetail = ({ navigation, route }) => {
                 {/* HEADER SECTION */}
                 {renderHeader()}
 
-                {/* COVER PHOTO SECTION */}
                 {renderCoverPhoto()}
 
-                {/* PROFILE CARD SECTION */}
                 <View style={styles.profileCard}>
                     <View style={styles.profileHeader}>
                         <View style={styles.profileImageContainer}>

@@ -108,7 +108,7 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
 
 
         if (label == 'All Shops') {
-            navigation.navigate('Shops')
+            navigation.navigate('Tab',{screen:'MarketPlace'})
             onClose()
 
         }

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FlatList, Image, ImageBackground, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Animated } from "react-native";
+import { FlatList, Image, ImageBackground, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Animated, TouchableWithoutFeedback } from "react-native";
 import CustomText from "../../components/TextComponent";
 import IMG from "../../assets/Images";
 import Row from "../../components/wrapper/row";
@@ -10,15 +10,18 @@ import SpaceBetweenRow from "../../components/wrapper/spacebetween";
 import { useSelector } from "react-redux";
 
 import Video from "react-native-video";
-import { apiGet } from "../../utils/Apis";
+import { apiGet, apiPost } from "../../utils/Apis";
 import urls from "../../config/urls";
 import { white } from "../../common/Colors/colors";
 
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
-import AntDesign from 'react-native-vector-icons/AntDesign';
+import Foundation from 'react-native-vector-icons/Foundation';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import useLoader from "../../utils/LoaderHook";
 import { useIsFocused } from "@react-navigation/native";
+import CommentModal from "../Home/CommentModel";
+
+import moment from "moment";
 
 
 
@@ -32,27 +35,29 @@ const SavedPosts = ({ navigation }) => {
     const [loading, setLoading] = useState(false)
     const [allPosts, setAllPosts] = useState([])
     const [allStories, setAllStories] = useState([])
+    const heartOpacity = useRef(new Animated.Value(0)).current;
+    const [doubleTapIndex, setDoubleTapIndex] = useState(null);
+
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const [postId, setPostId] = useState(null);
+
+    const [commentText, setCommentText] = useState('');
+    const [comments, setComments] = useState([])
 
     const [isMuted, setIsMuted] = useState(false);
-  const loaderVisible = useSelector(state => state?.loader?.loader);
+    const loaderVisible = useSelector(state => state?.loader?.loader);
 
-    const {showLoader, hideLoader}=useLoader()
+    const { showLoader, hideLoader } = useLoader()
 
     let selector = useSelector(state => state?.user?.userData);
     if (Object.keys(selector).length != 0) {
         selector = JSON.parse(selector);
     }
 
-    const handleAnimation = (index) => {
-        Animated.timing(animatedValues[index], {
-            toValue: 1,
-            duration: 400, // Duration of animation
-            delay: index * 100, // Staggered delay for each item
-            useNativeDriver: true,
-        }).start();
-    };
 
-    const isFocused=useIsFocused()
+
+    const isFocused = useIsFocused()
 
     useEffect(() => {
         // Animate Stories (Fade-in)
@@ -76,13 +81,35 @@ const SavedPosts = ({ navigation }) => {
 
 
 
+    const fetchCommentDataOfaPost = async (id) => {
+        // console.log('--------------', id);
+
+        const res = await apiGet(`${urls.getAllCommentofaPost}/${id}`)
+        setComments(res?.data)
+        // console.log(res, 'Coemments data');
+
+    }
+
+    const sendComments = async (id, text) => {
+        // console.log('---------___++++++++++++-----', id);
+
+        const data = {
+            Post: id,
+            text: text
+        }
+        const res = await apiPost(`${urls.sendCommentOnPost}`, data)
+        fetchCommentDataOfaPost(id)
+
+    }
+
+
     const fetchData = async () => {
         showLoader()
         const res = await apiGet(urls.getAllSavedPosts)
         console.log("-------SAVED POST DATA----------", res.data);
 
         setAllPosts(res?.data)
-      hideLoader()
+        hideLoader()
     }
 
 
@@ -91,7 +118,7 @@ const SavedPosts = ({ navigation }) => {
 
     const SavePost = async (item) => {
         console.log('Item,', item?._id);
-        
+
         setLoading(true)
         const endPoint = item?.Post?.SavedBy?.includes(selector?._id) ? `${urls.removeSavedPost}/${item?.Post?._id}` : `${urls.SavePost}/${item?.Post?._id}`
         const res = await apiGet(endPoint)
@@ -100,23 +127,90 @@ const SavedPosts = ({ navigation }) => {
         fetchData()
     }
 
-    const onLikeUnlike = async (item) => {
+    // const onLikeUnlike = async (item) => {
 
-        console.log(item?._id, 'ITEM ITDD');
+    //     console.log(item?._id, 'ITEM ITDD');
 
-        setLoading(true)
-        const endPoint = item?.Post?.likes?.includes(selector?._id) ? `${urls.likeUnlike}/${item?.Post?._id}` : `${urls.likeUnlike}/${item?.Post?._id}`
-        const res = await apiGet(`${urls.likeUnlike}/${item?.Post?._id}`)
-        console.log("------------ONLSSSSSSSSSSSSSS-----", res.data);
-        setLoading(false)
-        fetchData()
+    //     setLoading(true)
+    //     const endPoint = item?.Post?.likes?.includes(selector?._id) ? `${urls.likeUnlike}/${item?.Post?._id}` : `${urls.likeUnlike}/${item?.Post?._id}`
+    //     const res = await apiGet(`${urls.likeUnlike}/${item?.Post?._id}`)
+    //     console.log("------------ONLSSSSSSSSSSSSSS-----", res.data);
+    //     setLoading(false)
+    //     fetchData()
+    // }
+
+
+ const onLikeUnlike = async (item) => {
+    const postId = item?.Post?._id;
+    const userId = selector?._id;
+
+    // Optimistic UI Update
+    setAllPosts(prevPosts =>
+        prevPosts.map(post => {
+            if (post.Post?._id === postId) {
+                const alreadyLiked = post.Post?.likes.includes(userId);
+                const updatedLikes = alreadyLiked
+                    ? post.Post.likes.filter(id => id !== userId)
+                    : [...post.Post.likes, userId];
+
+                const updatedTotalLikes = alreadyLiked
+                    ? post.Post.TotalLikes - 1
+                    : post.Post.TotalLikes + 1;
+
+                return {
+                    ...post,
+                    Post: {
+                        ...post.Post,
+                        likes: updatedLikes,
+                        TotalLikes: updatedTotalLikes,
+                    }
+                };
+            }
+            return post;
+        })
+    );
+
+    try {
+        await apiGet(`${urls.likeUnlike}/${postId}`);
+    } catch (error) {
+        console.log("Error in like/unlike", error);
+
+        // Revert optimistic UI change
+        setAllPosts(prevPosts =>
+            prevPosts.map(post => {
+                if (post.Post?._id === postId) {
+                    const originallyLiked = item.Post.likes.includes(userId);
+                    const revertedLikes = originallyLiked
+                        ? [...post.Post.likes, userId]
+                        : post.Post.likes.filter(id => id !== userId);
+
+                    const revertedTotalLikes = originallyLiked
+                        ? post.Post.TotalLikes + 1
+                        : post.Post.TotalLikes - 1;
+
+                    return {
+                        ...post,
+                        Post: {
+                            ...post.Post,
+                            likes: revertedLikes,
+                            TotalLikes: revertedTotalLikes,
+                        }
+                    };
+                }
+                return post;
+            })
+        );
     }
+};
+
+
+
 
     const renderHeader = () => {
         return (
             <SpaceBetweenRow style={{ paddingTop: 50, paddingHorizontal: 20, backgroundColor: isDarkMode ? '#252525' : 'white', paddingBottom: 15 }}>
-                <TouchableOpacity onPress={()=>navigation.goBack()}>
-                  {isDarkMode? <PrimaryBackWhite /> : <PrimaryBackArrow />}
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    {isDarkMode ? <PrimaryBackWhite /> : <PrimaryBackArrow />}
                 </TouchableOpacity>
                 <CustomText style={{
                     fontSize: 20,
@@ -130,7 +224,69 @@ const SavedPosts = ({ navigation }) => {
             </SpaceBetweenRow>
         )
     }
-   
+
+
+    const formatInstagramDate = (dateString) => {
+        const date = moment(dateString);
+        const now = moment();
+
+        // Calculate difference
+        const diffInSeconds = now.diff(date, 'seconds');
+        const diffInMinutes = now.diff(date, 'minutes');
+        const diffInHours = now.diff(date, 'hours');
+        const diffInDays = now.diff(date, 'days');
+        const diffInWeeks = now.diff(date, 'weeks');
+
+        if (diffInSeconds < 60) {
+            return `${diffInSeconds}s`;
+        }
+
+        if (diffInMinutes < 60) {
+            return `${diffInMinutes}m`;
+        }
+
+        if (diffInHours < 24) {
+            return `${diffInHours}h`;
+        }
+
+        if (diffInDays < 7) {
+            return `${diffInDays}d`;
+        }
+
+        if (diffInWeeks < 4) {
+            return `${diffInWeeks}w`;
+        }
+
+        if (date.year() === now.year()) {
+            return date.format('MMM D');
+        } else {
+            return date.format('MMM D, YYYY');
+        }
+    };
+  const triggerHeartAnimation = (index) => {
+        setDoubleTapIndex(index);
+        heartOpacity.setValue(1);
+
+        Animated.timing(heartOpacity, {
+            toValue: 0,
+            duration: 800,
+            useNativeDriver: true,
+        }).start();
+    };
+    let lastTap = null;
+
+     const handleDoubleTap = (item, index) => {
+        const now = Date.now();
+        const DOUBLE_PRESS_DELAY = 300;
+
+        if (lastTap && (now - lastTap) < DOUBLE_PRESS_DELAY) {
+            triggerHeartAnimation(index);
+            onLikeUnlike(item);
+        } else {
+            lastTap = now;
+        }
+    };
+
 
  
 
@@ -140,137 +296,155 @@ const SavedPosts = ({ navigation }) => {
             <FlatList
                 data={allPosts}
                 style={{ marginBottom: 90 }}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item._id}
                 showsVerticalScrollIndicator={false}
+                // onRefresh={onRefresh}
+                // refreshing={loading}
                 renderItem={({ item, index }) => {
-                    handleAnimation(index);
-
-                    const animatedStyle = {
-                        opacity: animatedValues[index],
-                        transform: [
-                            {
-                                translateY: animatedValues[index].interpolate({
-                                    inputRange: [0, 1],
-                                    outputRange: [20, 0], // Slide up effect
-                                }),
-                            },
-                        ],
-                    };
-                    const mediaUrl = item.Post?.media; // Use a consistent key for media
+                    const mediaUrl = item.Post?.media // Use a consistent key for media
                     const isVideo = typeof mediaUrl === "string" && (mediaUrl.endsWith(".mp4") || mediaUrl.endsWith(".mov"));
 
                     return (
-                        <Animated.View style={[styles.feedContainer, animatedStyle]}>
+                        <View style={styles.feedContainer}>
+                            {console.log(item,'++++++++++++++++++++')
+                            }
                             {/* Header */}
                             <View style={styles.header}>
                                 <View style={styles.userInfo}>
-                                    <Image source={item?.Post?.User?.Image ? { uri: item?.Post?.User?.Image } : IMG.MessageProfile} style={styles.profileImage} />
-                                    <TouchableOpacity onPress={()=>navigation.navigate('OtherUserDetail')}>
+                                    <Image source={item?.User?.Image ? { uri: item?.User?.Image } : IMG.MessageProfile} style={styles.profileImage} />
+                                    <TouchableOpacity onPress={() => navigation.navigate('OtherUserDetail', { userId: item?.User?._id })}>
                                         <Text style={styles.username}>{item?.Post?.User?.UserName}</Text>
-                                        <Text style={styles.audio}>{isVideo ? 'Original audio' : ''}</Text>
+                                        {isVideo && <Text style={styles.audio}>{'Original audio'}</Text>}
                                     </TouchableOpacity>
                                 </View>
-                                <TouchableOpacity>
+                                {/* <TouchableOpacity>
                                     {isDarkMode ? <WhiteThreeDot /> : <ThreeDotIcon />}
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
                             </View>
 
-                            {/* Post Media (Image or Video) */}
-                            {isVideo ? (
-                                <View>
-                                    <Video
-                                        source={{ uri: item?.Post?.media }}
-                                        style={styles.postImage}
-                                        resizeMode="cover"
-                                        // controls // Show Play/Pause controls
-                                        repeat // Loop the video
-                                        // muted // Auto-play muted
-                                        muted={isMuted}
-                                    />
-                                    <TouchableOpacity
-                                        style={styles.soundButton}
-                                        onPress={() => setIsMuted(!isMuted)}
-                                    >
-                                        {isMuted ? <SpeakerOff /> : <AntDesign name={'sound'} color={isDarkMode ? 'white' : 'black'}
-                                            size={14}
-                                        />}
-                                    </TouchableOpacity>
+                            <TouchableWithoutFeedback onPress={() => handleDoubleTap(item, index)}>
+                                <View style={{ position: 'relative' }}>
+                                    {isVideo ? (
+                                        <Video
+                                            source={{ uri: item?.media }}
+                                            style={styles.postImage}
+                                            resizeMode="cover"
+                                            repeat
+                                            muted={isMuted}
+                                        />
+                                    ) : (
+                                        <Image source={{ uri: item?.Post?.media }} style={styles.postImage} />
+                                    )}
 
+                                    {/* Heart Animation */}
+                                    <Animated.View
+                                        pointerEvents="none"
+                                        style={{
+                                            position: 'absolute',
+                                            top: '40%',
+                                            left: '40%',
+                                            opacity: doubleTapIndex === index ? heartOpacity : 0,
+                                            transform: [{ scale: heartOpacity }],
+                                        }}
+                                    >
+                                        <MaterialIcons name="favorite" size={100} color="red" />
+                                    </Animated.View>
+
+                                    {isVideo && (
+                                        <TouchableOpacity
+                                            style={styles.soundButton}
+                                            onPress={() => setIsMuted(!isMuted)}
+                                        >
+                                            {isMuted ? <SpeakerOff /> : (
+                                                <AntDesign
+                                                    name={'sound'}
+                                                    color={isDarkMode ? 'white' : 'black'}
+                                                    size={14}
+                                                />
+                                            )}
+                                        </TouchableOpacity>
+                                    )}
                                 </View>
-                            ) : (
-                                <Image source={{ uri: item?.Post?.media }} style={styles.postImage} />
-                            )}
+                            </TouchableWithoutFeedback>
 
                             {/* Actions */}
                             <View style={styles.actions}>
                                 <View style={styles.leftIcons}>
-
-                                    <TouchableOpacity style={{ right: 0 }}
+                                    <TouchableOpacity
+                                        style={{ right: 0 }}
                                         onPress={() => onLikeUnlike(item)}
                                     >
                                         {item?.Post?.likes?.includes(selector?._id) ? (
-                                            isDarkMode ? <MaterialIcons name={'favorite'} color={'white'}
-                                                size={24}
-                                            />
-                                                : <MaterialIcons name={'favorite-border'} color={'black'}
-                                                    size={24} />
+                                            isDarkMode ? <MaterialIcons name={'favorite'} color={'white'} size={24} />
+                                                : <MaterialIcons name={'favorite-border'} color={'black'} size={24} />
                                         ) : (
-                                            isDarkMode ? <MaterialIcons name={'favorite-border'} color={'white'} size={24}
-                                            /> : <MaterialIcons name={'favorite-border'} color={'black'} size={24}
-                                            />
+                                            isDarkMode ? <MaterialIcons name={'favorite-border'} color={'white'} size={24} />
+                                                : <MaterialIcons name={'favorite-border'} color={'black'} size={24} />
+                                        )}
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            setModalVisible(true);
+                                            fetchCommentDataOfaPost(item?.Post?._id)
+                                            setPostId(item?.Post?._id)
+                                        }}
+                                    >
+                                        {isDarkMode ? <CommentWhite /> : <CommentIcon />}
+                                    </TouchableOpacity>
+                                    {/* <TouchableOpacity>
+                                        {isDarkMode ? <PostShareWhite /> : <ShareIcon />}
+                                    </TouchableOpacity> */}
+                                </View>
+
+                                <Row style={{ gap: 20 }}>
+                                    {/* <TouchableOpacity>
+                                        {
+                                            isDarkMode ?
+                                                <TouchableOpacity style={{ alignItems: 'center', gap: 0, flexDirection: 'row' }}
+                                                    onPress={() => onDisLikes(item)}
+                                                >
+                                                    <Foundation name={'dislike'} color={'white'} size={30} />
+                                                    <Text style={styles.likes}>{item?.TotalUnLikes}</Text>
+                                                </TouchableOpacity>
+                                                :
+                                                <TouchableOpacity style={{ alignItems: 'center', gap: 0, flexDirection: 'row' }}
+                                                    onPress={() => onDisLikes(item)}
+
+                                                >
+                                                    <Foundation name={'dislike'} color={'black'} size={30} />
+                                                    <Text style={styles.likes}>{item?.TotalUnLikes}</Text>
+                                                </TouchableOpacity>
+                                        }
+
+                                    </TouchableOpacity> */}
+
+                                    <TouchableOpacity
+                                        style={{ right: 0 }}
+                                        onPress={() => SavePost(item)}
+                                    >
+                                        {item?.Post?.SavedBy?.includes(selector?._id) ? (
+                                            isDarkMode ? <FontAwesome name={'bookmark'} color={'white'} size={24} />
+                                                : <FontAwesome name={'bookmark'} color={'black'} size={24} />
+                                        ) : (
+                                            isDarkMode ? <FontAwesome name={'bookmark-o'} color={'white'} size={24} />
+                                                : <FontAwesome name={'bookmark-o'} color={'black'} size={24} />
                                         )}
                                     </TouchableOpacity>
 
-                                    {/* <TouchableOpacity>
-                                        {isDarkMode ? <LikeWhite /> : <LikeIcon />}
-                                    </TouchableOpacity> */}
-
-
-
-                                    <TouchableOpacity>
-                                        {isDarkMode ? <CommentWhite /> : <CommentIcon />}
-                                    </TouchableOpacity>
-                                    <TouchableOpacity>
-                                        {isDarkMode ? <PostShareWhite /> : <ShareIcon />}
-                                    </TouchableOpacity>
-                                </View>
-
-
-                                <TouchableOpacity style={{ right: 0 }}
-                                    onPress={() => SavePost(item)}
-                                >
-                                    {item?.Post?.SavedBy?.includes(selector?._id) ? (
-                                        isDarkMode ? <FontAwesome name={'bookmark'} color={'white'}
-                                            size={24}
-                                        />
-                                            : <FontAwesome name={'bookmark'} color={'black'}
-                                                size={24} />
-                                    ) : (
-                                        isDarkMode ? <FontAwesome name={'bookmark-o'} color={'white'} size={24}
-                                        /> : <FontAwesome name={'bookmark-o'} color={'black'} size={24}
-                                        />
-                                    )}
-                                </TouchableOpacity>
+                                </Row>
                             </View>
-
-                            {/* Likes */}
-                            <Text style={styles.likes}>{item?.Post?.TotalLikes} likes</Text>
-
-                            {/* Caption */}
+                            <Text style={styles.likes}>{item?.Post?.TotalLikes} {item?.Post?.TotalLikes > 1 ? 'likes' : 'like'}</Text>
                             <Text style={styles.caption}>
-                                <Text style={styles.username}>{item?.caption || 'View from Falcon 9’s second stage during an orbital sunset'} </Text>
+                                <Text style={styles.username}>{item?.caption || 'No Caption Added'}</Text>
                                 {item.caption}
                             </Text>
+                            <Text style={styles.comments}>{item?.Post?.TotalComents} comments</Text>
+                            <Text style={styles.time}>{formatInstagramDate(item?.createdAt)}</Text>
 
-                            {/* Comments */}
-                            <Text style={styles.comments}>View all{item?.TotalComents}comments</Text>
-
-                            {/* Time */}
-                            <Text style={styles.time}>{item?.createdAt}</Text>
-                        </Animated.View>
+                        </View>
                     );
                 }}
-                ListEmptyComponent={!loaderVisible &&<CustomText style={{
+                ListEmptyComponent={!loaderVisible && <CustomText style={{
                     color: isDarkMode ? 'white' : 'black',
                     alignSelf: 'center',
                     marginTop: 50,
@@ -279,6 +453,7 @@ const SavedPosts = ({ navigation }) => {
             />
         );
     };
+
     const styles = StyleSheet.create({
         container: {
             flex: 1,
@@ -340,80 +515,120 @@ const SavedPosts = ({ navigation }) => {
             fontWeight: 'bold',
         },
 
-        feedContainer: {
-            // marginBottom: 20,
-            borderBottomWidth: 0.5,
-            borderBottomColor: '#ccc',
-            paddingBottom: 10,
-            backgroundColor: isDarkMode ? 'black' : 'white'
-        },
-        header: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: 10,
-        },
-        userInfo: {
-            flexDirection: 'row',
-            alignItems: 'center',
-        },
-        profileImage: {
-            width: 40,
-            height: 40,
-            borderRadius: 20,
-            marginRight: 10,
-        },
-        username: {
-            fontWeight: 'bold',
-            color: isDarkMode ? 'white' : 'black'
-        },
-        audio: {
-            color: isDarkMode ? 'white' : 'gray',
-            fontSize: 12,
-        },
-        postImage: {
-            width: '100%',
-            height: 210,
-            resizeMode: 'cover',
-        },
-        actions: {
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            padding: 10,
-            // left:15
-            marginHorizontal: 10
-        },
-        leftIcons: {
-            flexDirection: 'row',
-            gap: 15,
-        },
-        likes: {
-            fontWeight: 'bold',
-            paddingHorizontal: 10,
-            color: isDarkMode ? 'white' : 'black'
-        },
-        caption: {
-            paddingHorizontal: 10,
-            fontSize: 14,
-            fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-            color: isDarkMode ? 'white' : 'black'
-
-        },
-        comments: {
-            paddingHorizontal: 10,
-            color: isDarkMode ? 'white' : 'gray',
-            fontFamily: FONTS_FAMILY.SourceSans3_Regular
-
-        },
-        time: {
-            paddingHorizontal: 10,
-            color: 'gray',
-            fontSize: 12,
-            marginTop: 5,
-            fontFamily: FONTS_FAMILY.SourceSans3_Regular
-
-        },
+      
+              feedContainer: {
+                  // marginBottom: 20,
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: '#ccc',
+                  paddingBottom: 10,
+                  backgroundColor: isDarkMode ? 'black' : 'white'
+              },
+              header: {
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  padding: 10,
+              },
+              userInfo: {
+                  flexDirection: 'row',
+                  alignItems: 'center',
+              },
+              profileImage: {
+                  width: 40,
+                  height: 40,
+                  borderRadius: 20,
+                  marginRight: 10,
+              },
+              username: {
+                  fontWeight: 'bold',
+                  color: isDarkMode ? 'white' : 'black'
+              },
+              audio: {
+                  color: isDarkMode ? 'white' : 'gray',
+                  fontSize: 12,
+              },
+              postImage: {
+                  width: '100%',
+                  height: 210,
+                  resizeMode: 'cover',
+              },
+              actions: {
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  paddingTop: 8,
+                  // left:15
+                  marginHorizontal: 10
+              },
+              leftIcons: {
+                  flexDirection: 'row',
+                  gap: 15,
+              },
+              likes: {
+                  fontWeight: 'bold',
+                  paddingHorizontal: 10,
+                  color: isDarkMode ? 'white' : 'black'
+              },
+              caption: {
+                  paddingHorizontal: 10,
+                  fontSize: 14,
+                  fontFamily: FONTS_FAMILY.SourceSans3_Regular,
+                  color: isDarkMode ? 'white' : 'black'
+      
+              },
+              comments: {
+                  paddingHorizontal: 10,
+                  color: isDarkMode ? 'white' : 'gray',
+                  fontFamily: FONTS_FAMILY.SourceSans3_Regular
+      
+              },
+              time: {
+                  paddingHorizontal: 10,
+                  color: 'gray',
+                  fontSize: 12,
+                  marginTop: 5,
+                  fontFamily: FONTS_FAMILY.SourceSans3_Regular
+      
+              },
     })
+
+
+    const renderCommentModal = () => {
+        return (
+            <>
+                {/* <CommentModal
+                    isVisible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                    comments={comments}
+                    isDarkMode={isDarkMode}
+                    commentText={commentText}
+                    onChangeText={setCommentText}
+                    onSendPress={() => {
+                        console.log('Send:', commentText);
+                        // Add logic to post comment here
+                        setCommentText('');
+                        sendComments(postId, commentText)
+                    }}
+                    onDeleteComments={(id) => { onDeleteComments(id) }}
+                /> */}
+                <CommentModal
+                    isVisible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                    onBackButtonPress={() => setModalVisible(false)} // ✅ handles Android back
+                    comments={comments}
+                    isDarkMode={isDarkMode}
+                    commentText={commentText}
+                    onChangeText={setCommentText}
+                    onSendPress={() => {
+                        console.log('Send:', commentText);
+                        sendComments(postId, commentText);
+                        setCommentText('');
+                    }}
+                    onDeleteComments={(id) => onDeleteComments(id)}
+                />
+
+            </>
+        )
+    }
 
     return (
         <View style={styles.container}>
@@ -425,6 +640,7 @@ const SavedPosts = ({ navigation }) => {
             {renderHeader()}
             {/* {renderStories()} */}
             {renderFeeds()}
+            {renderCommentModal()}
 
         </View>
     )
