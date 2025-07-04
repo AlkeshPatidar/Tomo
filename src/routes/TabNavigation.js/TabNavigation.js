@@ -95,7 +95,7 @@ function TabNavigation() {
               focused ? (
                 <View style={{ alignItems: 'center', top: 16, width: 100 }}>
                   <ActiveHome />
-                  <TabBottomLine style={{ top: 30 }} />
+                  <TabBottomLine style={{ top: 15 }} />
                 </View>
               ) : (
                 <View style={{ alignItems: 'center', top: 16, width: 100 }}>
@@ -115,7 +115,7 @@ function TabNavigation() {
                 focused ? (
                   <View style={{ alignItems: 'center', top: 16, width: 100 }}>
                     <MarkeActive />
-                    <TabBottomLine style={{ top: 30 }} />
+                    <TabBottomLine style={{  top: 15 }} />
 
                   </View>
                 ) : (
@@ -135,7 +135,7 @@ function TabNavigation() {
               focused ? (
                 <View style={{ alignItems: 'center', top: 16, width: 100 }}>
                   <ActiveSearch />
-                  <TabBottomLine style={{ top: 30 }} />
+                  <TabBottomLine style={{  top: 15 }} />
 
                 </View>
               ) : (
@@ -176,7 +176,7 @@ function TabNavigation() {
               focused ? (
                 <View style={{ alignItems: 'center', top: 16, width: 100 }}>
                   <ActiveMessage />
-                  <TabBottomLine style={{ top: 30 }} />
+                  <TabBottomLine style={{  top: 15 }} />
 
                 </View>
               ) : (
@@ -198,7 +198,7 @@ function TabNavigation() {
               focused ? (
                 <View style={{ alignItems: 'center', top: 16, width: 100 }}>
                   <DeActiveLast />
-                  <TabBottomLine style={{ top: 30 }} />
+                  <TabBottomLine style={{  top: 15 }} />
 
                 </View>
               ) : (

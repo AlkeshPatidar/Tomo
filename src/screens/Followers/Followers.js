@@ -10,6 +10,7 @@ import useLoader from '../../utils/LoaderHook';
 import { apiGet } from '../../utils/Apis';
 import urls from '../../config/urls';
 import CustomText from '../../components/TextComponent';
+import MessageListShimmer from '../../components/Skeletons/MessageListShimmer';
 
 const Followers = ({ navigation }) => {
     const [data, setData] = useState(DATA);
@@ -17,7 +18,9 @@ const Followers = ({ navigation }) => {
     const [animatedValue] = useState(new Animated.Value(0));
     const { isDarkMode } = useSelector(state => state.theme);
     const { showLoader, hideLoader } = useLoader()
-    const [Allfollowers, setAllFollowers]=useState([])
+    const [Allfollowers, setAllFollowers] = useState([])
+    const [loading, setLoading] = useState(false)
+
 
     useEffect(() => {
         // Animation for fade in effect
@@ -29,15 +32,15 @@ const Followers = ({ navigation }) => {
         fetchData()
     }, []);
 
-    
-        const fetchData = async () => {
-            showLoader()
-            const res = await apiGet(urls.getAllFollowers)
-            console.log(res,'===FOLLOWRS==============');
-            
-            setAllFollowers(res?.data)
-            hideLoader()
-        }
+
+    const fetchData = async () => {
+        setLoading(true)
+        const res = await apiGet(urls.getAllFollowers)
+        console.log(res, '===FOLLOWRS==============');
+
+        setAllFollowers(res?.data)
+        setLoading(false)
+    }
 
 
     // Grouping data
@@ -74,7 +77,7 @@ const Followers = ({ navigation }) => {
     // Render card
     const Card = ({ item }) => (
         <Animated.View style={[styles.cardContainer, { opacity: animatedValue }]}>
-            <Image source={{uri:item?.Image}} style={styles.profileImage} />
+            <Image source={{ uri: item?.Image }} style={styles.profileImage} />
             <TouchableOpacity style={styles.textContainer}
                 onPress={() => navigation.navigate('UserDetail')}
             >
@@ -111,11 +114,11 @@ const Followers = ({ navigation }) => {
         <Text style={styles.sectionHeader}>{title}</Text>
     );
 
-    
+
     const styles = StyleSheet.create({
         container: {
             flex: 1,
-            backgroundColor:isDarkMode?'black': '#fff',
+            backgroundColor: isDarkMode ? 'black' : '#fff',
         },
         header: {
             paddingTop: 50,
@@ -125,12 +128,12 @@ const Followers = ({ navigation }) => {
         headerText: {
             fontSize: 20,
             fontFamily: FONTS_FAMILY.SourceSans3_Bold,
-            
+
         },
         highlightedText: {
             color: 'rgba(79, 82, 254, 1)',
         },
-    
+
         icon: {
             marginRight: 10,
         },
@@ -150,8 +153,8 @@ const Followers = ({ navigation }) => {
             flexDirection: 'row',
             alignItems: 'center',
             padding: 12,
-            backgroundColor:isDarkMode?'#252525':null,
-            marginBottom:5,
+            backgroundColor: isDarkMode ? '#252525' : null,
+            marginBottom: 5,
 
             // borderBottomWidth: 1,
             // borderBottomColor: '#e0e0e0',
@@ -190,9 +193,13 @@ const Followers = ({ navigation }) => {
         },
     });
 
+    if (loading) {
+        return <MessageListShimmer />;
+
+    }
     return (
         <View style={styles.container}>
-            <StatusBar translucent={true} backgroundColor="transparent" barStyle= {isDarkMode?'light-content':'dark-content'} />
+            <StatusBar translucent={true} backgroundColor="transparent" barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
             {renderHeader()}
             <FlatList
                 style={{ marginTop: 20, paddingHorizontal: 10 }}

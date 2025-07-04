@@ -39,7 +39,7 @@ const Login = ({ navigation }) => {
     const { isDarkMode } = useSelector(state => state.theme);
     const { showLoader, hideLoader } = useLoader()
     const dispatch = useDispatch()
-   const { isKeyboardOpen } = useKeyboardStatus();
+    const { isKeyboardOpen } = useKeyboardStatus();
 
     // Animation Refs
     const slideAnim = useRef(new Animated.Value(100)).current;
@@ -198,7 +198,7 @@ const Login = ({ navigation }) => {
                             onPress={() => onLogin()}
 
                         >
-                            <LoginBtn />
+                            <LoginBtn width={320} />
                         </TouchableOpacity>
                     </Animated.View>
 
@@ -215,12 +215,13 @@ const Login = ({ navigation }) => {
                 {!isKeyboardOpen && <View style={styles.termsContainer}>
                     <CustomText style={styles.termsText}>
                         By creating an account, you agree to our{' '}
-                        <CustomText style={styles.linkText}>Terms & Conditions</CustomText> and agree to{' '}
-                        <CustomText style={styles.linkText}>Privacy Policy</CustomText>
+                            <CustomText style={styles.linkText} onPress={()=>navigation.navigate('TermsAndConditions')}>Terms & Conditions  </CustomText>
+                        and agree to{'  '}
+                            <CustomText style={styles.linkText} onPress={()=>navigation.navigate('PrivacyPolicy')}>Privacy Policy</CustomText>
                     </CustomText>
                 </View>}
 
-               { !isKeyboardOpen &&<BottomIndicator style={styles.bottomIndicator} />}
+                {/* { !isKeyboardOpen &&<BottomIndicator style={styles.bottomIndicator} />} */}
             </Animated.ScrollView>
         );
     };
@@ -272,12 +273,13 @@ const Login = ({ navigation }) => {
         signupText: {
             fontSize: 16,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
+            bottom: 10
         },
         signupLink: {
             fontSize: 16,
             fontFamily: FONTS_FAMILY.SourceSans3_Medium,
             color: 'green',
-            top:5
+            top: 5
         },
         termsContainer: {
             alignItems: 'center',
@@ -286,12 +288,12 @@ const Login = ({ navigation }) => {
             alignSelf: 'center',
         },
         termsText: {
-            fontSize: 15,
+            fontSize: 13,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
             textAlign: 'center',
         },
         linkText: {
-            fontSize: 15,
+            fontSize: 13,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
             textAlign: 'center',
             color: 'green',

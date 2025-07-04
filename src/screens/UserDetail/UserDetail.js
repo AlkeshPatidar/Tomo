@@ -19,6 +19,7 @@ import Feather from 'react-native-vector-icons/Feather';
 
 import { ToastMsg } from '../../utils/helperFunctions';
 import { white } from '../../common/Colors/colors';
+import ProfileShimmer from '../../components/Skeletons/ProfilePageShimmer';
 
 const OtherUserDetail = ({ navigation, route }) => {
     const [isDrawerVisible, setDrawerVisible] = useState(false);
@@ -50,13 +51,14 @@ const OtherUserDetail = ({ navigation, route }) => {
         selector = JSON.parse(selector);
     }
 
+
     useEffect(() => {
         fetchData()
         fetchMyPost()
     }, [isFocused])
 
     const fetchData = async () => {
-        // setLoading(true)
+        setLoading(true)
         const endPoint = route?.params?.userId ? `${urls.getUserById}/${route?.params?.userId}` : urls.userProfile;
         const res = await apiGet(endPoint)
         setUserDetails(res?.data)
@@ -66,7 +68,7 @@ const OtherUserDetail = ({ navigation, route }) => {
     }
 
     const fetchMyPost = async () => {
-        // setLoading(true)
+        setLoading(true)
         const res = await apiGet(`${urls.getAllPostsOfAUser}/${route?.params?.userId || selector?._id}`);
         setAllPosts(res?.data)
         console.log(res?.data, 'AllMy Posts from api');
@@ -530,12 +532,25 @@ const OtherUserDetail = ({ navigation, route }) => {
     );
 
     const renderPost = ({ item }) => (
-        <>
-            {console.log('++++++++++++++++++++++', item?.media)}
-            <Image source={{ uri: item?.media }} style={styles.postImage} />
-        </>
-    );
+        <TouchableOpacity onPress={()=>navigation.navigate('AllPostOfAUser', {userId:item?.User?._id})}
+        style={{
+                width: '31%',
+            height: 100,
+            margin: '1%',
+        }}
+        >
+            {console.log('++++++++++++++++++ITEM++++', item,)}
+            <Image source={{ uri: item?.media }} style={{
+                height:100,
+                width:'100%',
+            borderRadius: 8,
 
+            }} />
+        </TouchableOpacity>
+    );
+    if (loading) {
+        return <ProfileShimmer />;
+    }
     return (
         <View style={styles.container}>
             <StatusBar translucent={true} backgroundColor="transparent" barStyle={isDarkMode ? "light-content" : "dark-content"} />

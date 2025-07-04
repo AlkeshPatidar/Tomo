@@ -99,7 +99,7 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
 
         }
 
-        if (label == 'Saved') {
+        if (label == 'Saved Posts') {
             navigation.navigate('SavedPosts')
             onClose()
 
@@ -300,12 +300,12 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
                             SellerStatus !== 'Approved' && <OptionItem label="Request to become Seller" />}
                         {selector?.
                             SellerStatus == 'Approved' && <OptionItem label="All Shops" />}
-                        <OptionItem label="Saved" />
+                        <OptionItem label="Saved Posts" />
 
 
                         <OptionItem label="Privacy Policy" />
                         <OptionItem label="Terms & Conditions" />
-                        <OptionItem label="Help Center" />
+                        {/* <OptionItem label="Help Center" /> */}
                         <OptionItem label="Invite a Freind" />
                         <OptionItem label="FAQ" />
 

@@ -10,6 +10,7 @@ import useLoader from '../../utils/LoaderHook';
 import { apiGet } from '../../utils/Apis';
 import urls from '../../config/urls';
 import CustomText from '../../components/TextComponent';
+import MessageListShimmer from '../../components/Skeletons/MessageListShimmer';
 
 const Follwing = ({ navigation }) => {
     const [data, setData] = useState(DATA);
@@ -18,6 +19,8 @@ const Follwing = ({ navigation }) => {
     const { isDarkMode } = useSelector(state => state.theme);
     const { showLoader, hideLoader } = useLoader()
     const [Allfollowers, setAllFollowers] = useState([])
+        const [loading, setLoading] = useState(false)
+    
 
     useEffect(() => {
         // Animation for fade in effect
@@ -31,11 +34,11 @@ const Follwing = ({ navigation }) => {
 
 
     const fetchData = async () => {
-        showLoader()
+        setLoading(true)
         const res = await apiGet(urls.getAllFollowings)
         console.log(res, '===FOwlings==============');
         setAllFollowers(res?.data)
-        hideLoader()
+        setLoading(false)
     }
 
 
@@ -188,6 +191,11 @@ const Follwing = ({ navigation }) => {
             fontWeight: '600',
         },
     });
+
+            if (loading) {
+    return <MessageListShimmer/>;
+
+}
 
     return (
         <View style={styles.container}>

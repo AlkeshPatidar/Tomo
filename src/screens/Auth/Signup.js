@@ -33,7 +33,7 @@ const SignUp = ({ navigation }) => {
     const { showLoader, hideLoader } = useLoader()
 
     const onSignup = async () => {
-        console.log('Isss::::::::::::::::::::::::::::::::::::', userInfo?.Email, userInfo?.Password);
+        // console.log('Isss::::::::::::::::::::::::::::::::::::', userInfo?.Email, userInfo?.Password);
 
         const emailError = inValidEmail(userInfo?.Email);
         if (emailError) {
@@ -172,11 +172,12 @@ const SignUp = ({ navigation }) => {
                             fontFamily: FONTS_FAMILY.SourceSans3_Regular
                         }}>
                             Already have an account?{" "}
+                            
                             <CustomText style={{
                                 fontSize: 16,
                                 fontFamily: FONTS_FAMILY.SourceSans3_Medium,
                                 color: 'green'
-                            }}>
+                            }} onPress={()=>navigation.goBack()}>
                                 Sign In
                             </CustomText>
                         </CustomText>
@@ -193,14 +194,17 @@ const SignUp = ({ navigation }) => {
                                 fontSize: 15,
                                 fontFamily: FONTS_FAMILY.SourceSans3_Regular,
                                 color: 'green'
-                            }}>
+                            }} onPress={()=>navigation.navigate('TermsAndConditions')}>
                                 Terms & Conditions
                             </CustomText>{" "}and agree to{" "}
+
                             <CustomText style={{
                                 fontSize: 15,
                                 fontFamily: FONTS_FAMILY.SourceSans3_Regular,
                                 color: 'green'
-                            }}>
+                            }}
+                            onPress={()=>navigation.navigate('PrivacyPolicy')}
+                            >
                                 Privacy Policy
                             </CustomText>
                         </CustomText>

@@ -10,33 +10,14 @@ import { useSelector } from 'react-redux';
 import { apiGet } from '../../utils/Apis';
 import urls from '../../config/urls';
 import useLoader from '../../utils/LoaderHook';
-
-const searchData = [
-    { id: '1', image: 'https://picsum.photos/id/237/200/300' },
-    { id: '2', image: 'https://picsum.photos/seed/picsum/200/300' },
-    { id: '3', image: 'https://picsum.photos/200/300?grayscale' },
-    { id: '4', image: 'https://picsum.photos/200/300/?blur=2' },
-    { id: '5', image: 'https://picsum.photos/id/870/200/300?grayscale&blur=2' },
-    { id: '6', image: 'https://picsum.photos/200/300?grayscale' },
-    { id: '7', image: 'https://picsum.photos/id/237/200/300' },
-    { id: '8', image: 'https://picsum.photos/seed/picsum/200/300' },
-    { id: '9', image: 'https://picsum.photos/200/300?grayscale' },
-    { id: '10', image: 'https://picsum.photos/seed/picsum/200/300' },
-    { id: '11', image: 'https://picsum.photos/200/300/?blur=2' },
-    { id: '12', image: 'https://picsum.photos/id/237/200/300' },
-    { id: '13', image: 'https://picsum.photos/seed/picsum/200/300' },
-    { id: '14', image: 'https://picsum.photos/200/300/?blur=2' },
-    { id: '15', image: 'https://picsum.photos/id/237/200/300' },
-    { id: '16', image: 'https://picsum.photos/seed/picsum/200/300' },
-    { id: '17', image: 'https://picsum.photos/200/300/?blur=2' },
-    { id: '18', image: 'https://picsum.photos/id/237/200/300' },
-];
+import MessageListShimmer from '../../components/Skeletons/MessageListShimmer';
 
 const MessageList = ({ navigation }) => {
 
     const { isDarkMode } = useSelector(state => state.theme);
     const [allUser, setAllUsers] = useState([])
     const {showLoader, hideLoader}=useLoader()
+    const [loading, setLoading]=useState(false)
 
     useEffect(() => {
         fetchData()
@@ -45,11 +26,11 @@ const MessageList = ({ navigation }) => {
 
 
     const fetchData = async () => {
-        showLoader()
+        setLoading(true)
         const res = await apiGet(urls.getAllChattedUsers)
         console.log("-----------------", res.data);
         setAllUsers(res?.data)
-        hideLoader()
+        setLoading(false)
     }
 
     const styles = StyleSheet.create({
@@ -209,6 +190,11 @@ const MessageList = ({ navigation }) => {
             </TouchableOpacity>
         );
     };
+
+    if (loading) {
+    return <MessageListShimmer/>;
+
+}
     return (
         <View style={styles.container}>
             {/* Search Bar */}
@@ -242,45 +228,3 @@ const MessageList = ({ navigation }) => {
 
 export default MessageList;
 
-
-const messages = [
-    {
-        id: "1",
-        name: "Vikas Kohli",
-        message: "Thanks I really appreciate it",
-        time: "2m ago",
-        isOnline: true,
-        unreadCount: 2,
-        avatar: IMG.MessageProfile
-    },
-    {
-        id: "2",
-        name: "Akash Prajapat",
-        message: "Let's catch up later",
-        time: "10m ago",
-        isOnline: false,
-        unreadCount: 1,
-        avatar: IMG.MessageProfile
-    },
-    {
-        id: "3",
-        name: "John Doe",
-        message: "Let's catch up later",
-        time: "10m ago",
-        isOnline: false,
-        unreadCount: 1,
-        avatar: IMG.MessageProfile
-    },
-
-    {
-        id: "4",
-        name: "Smith",
-        message: "Let's catch up later",
-        time: "10m ago",
-        isOnline: false,
-        unreadCount: 1,
-        avatar: IMG.MessageProfile
-    },
- 
-   
-];

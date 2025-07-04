@@ -26,14 +26,16 @@ const AllProductsOfAShops = ({ navigation, route }) => {
 
     useEffect(() => {
         fetchData()
-    }, [isFocused])
+    }, [
+        // isFocused
+    ])
 
 
 
     const fetchData = async () => {
         showLoader()
         const res = await apiGet(`${urls.getAllProductsOfAShop}/${route?.params?.shopId}`)
-        console.log("------------Notifications-----", res.data);
+        // console.log("------------Notifications-----", res.data);
         setAllProducts(res?.data)
         hideLoader()
 
@@ -137,9 +139,6 @@ const AllProductsOfAShops = ({ navigation, route }) => {
             <View style={styles.searchContainer}>
                 <Search />
                 <TextInput style={styles.searchInput} placeholder="Search" placeholderTextColor="#A0A0A0" />
-                {/* <TouchableOpacity>
-                    <Mic />
-                </TouchableOpacity> */}
             </View>
 
             {/* Grid View */}
@@ -148,7 +147,6 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                 data={allProducts}
                 keyExtractor={(item) => item?._id.toString()}
                 numColumns={2}
-
                 contentContainerStyle={{ paddingHorizontal: 10 }}
                 showsVerticalScrollIndicator={false}
                 renderItem={({ item }) => (
@@ -183,6 +181,11 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                         </View>
                     </TouchableOpacity>
                 )}
+                ListEmptyComponent={<CustomText style={{
+                    fontFamily:FONTS_FAMILY.SourceSans3_Medium,
+                    alignSelf:'center',
+                    paddingVertical:20
+                }}>No Products found!</CustomText>}
             />
 
             {/* <TouchableOpacity onPress={()=>navigation?.navigate('CreateProducts',{shopId:route?.params?.shopId})}>

@@ -13,6 +13,7 @@ import { apiGet } from '../../utils/Apis';
 import urls from '../../config/urls';
 import { useIsFocused } from '@react-navigation/native';
 import useKeyboardStatus from '../../utils/KeyBoardHook';
+import ShopsShimmerLoader from '../../components/Skeletons/ShopsShimmer';
 
 const Shops = ({ navigation }) => {
 
@@ -22,7 +23,8 @@ const Shops = ({ navigation }) => {
     const { showLoader, hideLoader } = useLoader()
     const isFocused = useIsFocused()
 
-    const { isKeyboardOpen, keyboardHeight }=useKeyboardStatus()
+    const [loading, setLoading] = useState(false)
+    const { isKeyboardOpen, keyboardHeight } = useKeyboardStatus()
 
     useEffect(() => {
         fetchData()
@@ -37,7 +39,7 @@ const Shops = ({ navigation }) => {
                 const shopName = shop?.Name?.toLowerCase() || ''
                 const shopAddress = shop?.Address?.[0]?.LocationName?.toLowerCase() || ''
                 const query = searchQuery.toLowerCase()
-                
+
                 return shopName.includes(query) || shopAddress.includes(query)
             })
             setFilteredShops(filtered)
@@ -45,12 +47,12 @@ const Shops = ({ navigation }) => {
     }, [searchQuery, allShops])
 
     const fetchData = async () => {
-        showLoader()
+        setLoading(true)
         const res = await apiGet(urls.getAllShops)
         // console.log("------------Notifications-----", res.data);
         setAllShops(res?.data)
         setFilteredShops(res?.data) // Initialize filtered shops
-        hideLoader()
+        setLoading(false)
     }
 
     const handleSearch = (text) => {
@@ -142,67 +144,79 @@ const Shops = ({ navigation }) => {
                 barStyle={isDarkMode ? "light-content" : "dark-content"}
             />
             {renderHeader()}
-            <View style={styles.searchContainer}>
-                <Search />
-                <TextInput 
-                    style={styles.searchInput} 
-                    placeholder="Search shops..." 
-                    placeholderTextColor="#A0A0A0"
-                    value={searchQuery}
-                    onChangeText={handleSearch}
-                />
-                {/* <TouchableOpacity>
+            {
+                loading ? <ShopsShimmerLoader isDarkMode={isDarkMode} shopCount={8} /> :
+                    <>
+
+                        (
+
+
+                        <View style={styles.searchContainer}>
+                            <Search />
+                            <TextInput
+                                style={styles.searchInput}
+                                placeholder="Search shops..."
+                                placeholderTextColor="#A0A0A0"
+                                value={searchQuery}
+                                onChangeText={handleSearch}
+                            />
+                            {/* <TouchableOpacity>
                     <Mic />
                 </TouchableOpacity> */}
-            </View>
-
-            {/* Grid View */}
-            <FlatList
-                style={{}}
-                data={filteredShops}
-                keyExtractor={(item) => item?._id.toString()}
-                numColumns={2}
-
-                contentContainerStyle={{ paddingHorizontal: 10 }}
-                showsVerticalScrollIndicator={false}
-                renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.cardContainer}
-                        onPress={() => navigation.navigate('AllProductsOfAShops', { shopId: item?._id })}
-                    >
-                       
-                        <Image
-                            source={item?.Image ? { uri: item?.Image } : IMG.PostImage}
-                            style={{
-                                height: 100,
-                                width: '100%',
-                                borderRadius: 10
-                            }}
-                            resizeMode="cover"
-                        />
-                        <View style={{ marginTop: 6 }}>
-                            <CustomText style={{
-                                fontSize: 16,
-                                fontFamily: FONTS_FAMILY.SourceSans3_Bold,
-                                marginBottom: 5,
-                            }}>
-                                {item?.Name}
-                            </CustomText>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                <LocationIcon />
-                                <CustomText style={{ fontSize: 10, color: isDarkMode ? 'white' : '#7d7d7d', flex: 1 }}>
-                                    {item?.Address[0]?.LocationName}
-                                </CustomText>
-                            </View>
                         </View>
-                    </TouchableOpacity>
-                )}
-            />
 
-           {<TouchableOpacity onPress={() => navigation?.navigate('AddShops')}>
-                <AddShopBtn />
-            </TouchableOpacity>}
+                        {/* Grid View */}
+                        <FlatList
+                            style={{}}
+                            data={filteredShops}
+                            keyExtractor={(item) => item?._id.toString()}
+                            numColumns={2}
 
-          {!isKeyboardOpen &&  <View style={{ height: 100 }} />}
+                            contentContainerStyle={{ paddingHorizontal: 10 }}
+                            showsVerticalScrollIndicator={false}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity style={styles.cardContainer}
+                                    onPress={() => navigation.navigate('AllProductsOfAShops', { shopId: item?._id })}
+                                >
+
+                                    <Image
+                                        source={item?.Image ? { uri: item?.Image } : IMG.PostImage}
+                                        style={{
+                                            height: 100,
+                                            width: '100%',
+                                            borderRadius: 10
+                                        }}
+                                        resizeMode="cover"
+                                    />
+                                    <View style={{ marginTop: 6 }}>
+                                        <CustomText style={{
+                                            fontSize: 16,
+                                            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+                                            marginBottom: 5,
+                                        }}>
+                                            {item?.Name}
+                                        </CustomText>
+                                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                                            <LocationIcon />
+                                            <CustomText style={{ fontSize: 10, color: isDarkMode ? 'white' : '#7d7d7d', flex: 1 }}>
+                                                {item?.Address[0]?.LocationName}
+                                            </CustomText>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                            )}
+                        />
+
+                        {<TouchableOpacity onPress={() => navigation?.navigate('AddShops')}>
+                            <AddShopBtn />
+                        </TouchableOpacity>}
+
+                        {!isKeyboardOpen && <View style={{ height: 100 }} />}
+                        )
+                    </>
+
+            }
+
 
         </View>
     );

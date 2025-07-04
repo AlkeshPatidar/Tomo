@@ -1,13 +1,13 @@
 import React from 'react';
-import { View, Text, TextInput, FlatList, Image, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, FlatList, Image, TouchableOpacity, Dimensions, Keyboard } from 'react-native';
 import Modal from 'react-native-modal';
 import IMG from '../../assets/Images';
 import CustomText from '../../components/TextComponent';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-import { apiDelete } from '../../utils/Apis';
-import EmojiSelector from 'react-native-emoji-selector';
+import Feather from 'react-native-vector-icons/Feather';
 
+const { height: screenHeight } = Dimensions.get('window');
 
 const CommentModal = ({
     isVisible,
@@ -18,16 +18,70 @@ const CommentModal = ({
     commentText,
     onSendPress,
     onDeleteComments,
+    onEditComment, // New prop for edit functionality
     onBackButtonPress
 }) => {
 
     const [selectedComment, setSelectedComment] = React.useState(null);
     const [isDeleteModalVisible, setDeleteModalVisible] = React.useState(false);
     const [commentId, setCommentId] = React.useState(false);
-    const [deleteModalPosition, setDeleteModalPosition] = React.useState(0);
-    const [showEmojiPicker, setShowEmojiPicker] = React.useState(false);
+    const [deleteModalPosition, setDeleteModalPosition] = React.useState({ x: 0, y: 0 });
+    const [isEditing, setIsEditing] = React.useState(false);
+    const [editingCommentId, setEditingCommentId] = React.useState(null);
+    const [editText, setEditText] = React.useState('');
 
+    const handleEditPress = (comment) => {
+        Keyboard.dismiss();
+        setTimeout(() => {
+            setIsEditing(true);
+            setEditingCommentId(comment._id);
+            setEditText(comment.text);
+            setDeleteModalVisible(false);
+        }, 100); // Small delay to ensure keyboard is dismissed
+    };
 
+    const handleEditCancel = () => {
+        Keyboard.dismiss();
+        setIsEditing(false);
+        setEditingCommentId(null);
+        setEditText('');
+    };
+
+    const handleEditSave = async () => {
+        if (onEditComment && editText.trim()) {
+            try {
+                Keyboard.dismiss();
+                await onEditComment(editingCommentId, editText.trim());
+                setIsEditing(false);
+                setEditingCommentId(null);
+                setEditText('');
+            } catch (error) {
+                console.error('Error editing comment:', error);
+            }
+        }
+    };
+
+    const handleLongPress = (event, item) => {
+        // Dismiss keyboard first
+        Keyboard.dismiss();
+        
+        const { pageY } = event.nativeEvent;
+        // Calculate position relative to modal
+        const modalTop = screenHeight * 0.1; // 10% from top (since modal height is 90%)
+        const relativeY = pageY - modalTop;
+        
+        // Ensure the modal doesn't go off screen
+        const maxY = screenHeight * 0.7; // Keep some margin from bottom
+        const finalY = Math.min(relativeY, maxY);
+        
+        setSelectedComment(item);
+        setCommentId(item?._id);
+        setDeleteModalPosition({ 
+            x: 50, // Fixed horizontal position 
+            y: finalY 
+        });
+        setDeleteModalVisible(true);
+    };
 
     return (
         <Modal
@@ -43,14 +97,13 @@ const CommentModal = ({
             style={{
                 justifyContent: 'flex-end',
                 margin: 0,
-                alignItems: 'center', // 👈 this is the key to center it during animation
+                alignItems: 'center',
             }}
-            propagateSwipe={true} // 👈 allows swipe inside scroll
-            scrollTo={() => { }} // 👈 prevent warning if not using
+            propagateSwipe={true}
+            scrollTo={() => { }}
             scrollOffset={0}
-            scrollOffsetMax={400} // 👈 set according to content height
+            scrollOffsetMax={400}
             swipeThreshold={100}
-        // useNativeDriver={true}
         >
             <View style={{
                 height: '90%',
@@ -69,13 +122,15 @@ const CommentModal = ({
                     alignSelf: 'center',
                     marginBottom: 10
                 }} />
+                
                 <View style={{
                     alignItems: 'center'
                 }}>
                     <CustomText
                         style={{
                             alignSelf: 'center',
-                            fontFamily: FONTS_FAMILY.SourceSans3_Bold
+                            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+                            color: isDarkMode ? 'white' : 'black'
                         }}
                     >Comments</CustomText>
                     <View style={{
@@ -84,9 +139,7 @@ const CommentModal = ({
                         width: '100%',
                         marginBottom: 20,
                         marginTop: 10
-
                     }} />
-
                 </View>
 
                 {/* Comments List */}
@@ -94,51 +147,14 @@ const CommentModal = ({
                     data={comments}
                     keyExtractor={(item, index) => index.toString()}
                     removeClippedSubviews={false}
-
-                    // renderItem={({ item }) => (
-                    //     <TouchableOpacity
-                    //         onLongPress={() => {
-                    //             setSelectedComment(item);
-                    //             setDeleteModalVisible(true);
-                    //             setCommentId(item?._id)
-                    //         }}
-                    //         activeOpacity={1}
-                    //         style={{ flexDirection: 'row', marginBottom: 20 }}
-                    //     >
-                    //         {console.log('Item:::::::::::::::::::::::',item)
-                    //         }
-                    //         <Image
-                    //             source={item?.profile || IMG.MessageProfile}
-                    //             style={{ width: 40, height: 40, borderRadius: 20, marginRight: 10 }}
-                    //         />
-                    //         <View style={{ flex: 1 }}>
-                    //             <Text style={{ fontWeight: 'bold', color: isDarkMode ? 'white' : 'black' }}>
-                    //                 {item?.User?.UserName || 'User'}
-                    //             </Text>
-                    //             <Text style={{ color: isDarkMode ? '#aaa' : '#333' }}>
-                    //                 {item?.text || ''}
-                    //             </Text>
-                    //         </View>
-                    //     </TouchableOpacity>
-                    // )}
-
                     renderItem={({ item, index }) => (
                         <TouchableOpacity
-                            onLayout={(event) => {
-                                const { y } = event.nativeEvent.layout;
-                                item.layoutY = y; // store Y position in item
-                            }}
-                            onLongPress={(event) => {
-                                setSelectedComment(item);
-                                setCommentId(item?._id);
-                                setDeleteModalPosition(item.layoutY); // set modal Y position
-                                setDeleteModalVisible(true);
-                            }}
+                            onLongPress={(event) => handleLongPress(event, item)}
                             activeOpacity={1}
                             style={{ flexDirection: 'row', marginBottom: 20 }}
                         >
                             <Image
-                                source={item?.profile || IMG.MessageProfile}
+                                source={item?.User?.Image ? { uri: item?.User?.Image } : IMG.MessageProfile}
                                 style={{ width: 40, height: 40, borderRadius: 20, marginRight: 10 }}
                             />
                             <View style={{ flex: 1 }}>
@@ -151,73 +167,79 @@ const CommentModal = ({
                             </View>
                         </TouchableOpacity>
                     )}
-
-
                     contentContainerStyle={{ paddingBottom: 80 }}
+                    ListEmptyComponent={<CustomText style={{
+                        alignSelf:'center',
+                        fontFamily:FONTS_FAMILY.SourceSans3_Medium
+                    }}>No Comments Yet!</CustomText>}
                 />
 
-                {/* <Modal
-                    isVisible={isDeleteModalVisible}
-                    onBackdropPress={() => setDeleteModalVisible(false)}
-                    style={{ justifyContent: 'center', alignItems: 'center', margin: 0 }}
-                >
-                    <View style={{
-                        backgroundColor: isDarkMode ? '#333' : '#fff',
-                        // padding: 20,
-                        borderRadius: 16,
-                        width: '30%',
-                        alignItems: 'center',
-                    }}>
-                        <TouchableOpacity
-                            style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                backgroundColor: 'rgba(255,0,0,0.1)',
-                                paddingVertical: 12,
-                                paddingHorizontal: 20,
-                                borderRadius: 12,
-                                gap:10
-                            }}
-                            onPress={() => {
-                                // 👇 implement your delete logic here
-                                console.log("Delete comment:", selectedComment);
-                                onDeleteComments(commentId)
-                                setDeleteModalVisible(false);
-                            }}
-                        >
-                            <AntDesign
-                                name={'delete'}
-                                color={isDarkMode ? 'red' : 'black'}
-                                size={14}
-                            />
-                            <Text style={{ color: 'red', fontWeight: 'bold' }}>Delete</Text>
-                        </TouchableOpacity>
-                    </View>
-                </Modal> */}
-
+                {/* Action Modal (Delete/Edit) */}
                 <Modal
                     isVisible={isDeleteModalVisible}
                     onBackdropPress={() => setDeleteModalVisible(false)}
                     style={{
                         position: 'absolute',
-                        top: deleteModalPosition + 100, // adjust +100 based on padding and scroll
-                        left: 30,
+                        top: deleteModalPosition.y,
+                        left: deleteModalPosition.x,
                         margin: 0,
                     }}
+                    animationIn="fadeIn"
+                    animationOut="fadeOut"
+                    animationInTiming={200}
+                    animationOutTiming={200}
                 >
                     <View style={{
                         backgroundColor: isDarkMode ? '#333' : '#fff',
                         borderRadius: 16,
-                        alignItems: 'center',
+                        paddingVertical: 8,
+                        paddingHorizontal: 4,
+                        minWidth: 140,
+                        shadowColor: '#000',
+                        shadowOffset: {
+                            width: 0,
+                            height: 2,
+                        },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 3.84,
+                        elevation: 5,
                     }}>
+                        {/* Edit Option */}
                         <TouchableOpacity
                             style={{
                                 flexDirection: 'row',
                                 alignItems: 'center',
-                                backgroundColor: 'rgba(255,0,0,0.1)',
                                 paddingVertical: 12,
-                                paddingHorizontal: 20,
-                                borderRadius: 12,
+                                paddingHorizontal: 16,
+                                gap: 10,
+                            }}
+                            onPress={() => handleEditPress(selectedComment)}
+                        >
+                            <Feather
+                                name="edit-3"
+                                color={isDarkMode ? '#0A84FF' : '#0A84FF'}
+                                size={16}
+                            />
+                            <Text style={{ 
+                                color: isDarkMode ? 'white' : 'black', 
+                                fontWeight: '500' 
+                            }}>Edit</Text>
+                        </TouchableOpacity>
+
+                        {/* Separator */}
+                        <View style={{
+                            height: 0.5,
+                            backgroundColor: isDarkMode ? '#555' : '#ddd',
+                            marginHorizontal: 16,
+                        }} />
+
+                        {/* Delete Option */}
+                        <TouchableOpacity
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                paddingVertical: 12,
+                                paddingHorizontal: 16,
                                 gap: 10,
                             }}
                             onPress={() => {
@@ -226,16 +248,14 @@ const CommentModal = ({
                             }}
                         >
                             <AntDesign
-                                name={'delete'}
-                                color={isDarkMode ? 'red' : 'black'}
-                                size={14}
+                                name="delete"
+                                color="red"
+                                size={16}
                             />
-                            <Text style={{ color: 'red', fontWeight: 'bold' }}>Delete</Text>
+                            <Text style={{ color: 'red', fontWeight: '500' }}>Delete</Text>
                         </TouchableOpacity>
                     </View>
                 </Modal>
-
-
 
                 {/* Input Box */}
                 <View style={{
@@ -247,47 +267,42 @@ const CommentModal = ({
                     alignItems: 'center',
                     padding: 10,
                     borderTopWidth: 1,
-                    borderColor: '#ddd',
+                    borderColor: isDarkMode ? '#444' : '#ddd',
                     backgroundColor: isDarkMode ? '#252525' : '#fff',
                 }}>
                     <TextInput
-                        placeholder="Add a comment..."
-                        placeholderTextColor="#999"
+                        placeholder={isEditing ? "Edit comment..." : "Add a comment..."}
+                        placeholderTextColor={isDarkMode ? '#777' : '#999'}
                         style={{
                             flex: 1,
                             paddingHorizontal: 10,
-                            color: isDarkMode ? 'white' : '#252525'
+                            color: isDarkMode ? 'white' : '#252525',
+                            borderWidth: isEditing ? 1 : 0,
+                            borderColor: isEditing ? '#0A84FF' : 'transparent',
+                            borderRadius: 8,
+                            paddingVertical: 8,
                         }}
-                        value={commentText}
-                        onChangeText={onChangeText}
+                        value={isEditing ? editText : commentText}
+                        onChangeText={isEditing ? setEditText : onChangeText}
+                        multiline={true}
+                        maxLength={500}
                     />
-                    <TouchableOpacity onPress={onSendPress}>
-                        <Text style={{ color: '#0A84FF', fontWeight: 'bold' }}>Post</Text>
-                    </TouchableOpacity>
+                    
+                    {isEditing ? (
+                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                            <TouchableOpacity onPress={handleEditCancel}>
+                                <Text style={{ color: '#999', fontWeight: 'bold' }}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={handleEditSave}>
+                                <Text style={{ color: '#0A84FF', fontWeight: 'bold' }}>Save</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <TouchableOpacity onPress={onSendPress}>
+                            <Text style={{ color: '#0A84FF', fontWeight: 'bold' }}>Post</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
-                {showEmojiPicker && (
-                    <View style={{
-                        position: 'absolute',
-                        bottom: 50, // just above the input
-                        left: 0,
-                        right: 0,
-                        height: 250,
-                        backgroundColor: isDarkMode ? '#252525' : '#fff'
-                    }}>
-                        <EmojiSelector
-                            onEmojiSelected={emoji => {
-                                onChangeText(commentText + emoji);
-                            }}
-                            showSearchBar={false}
-                            showTabs={true}
-                            showHistory={true}
-                            columns={8}
-                            theme={isDarkMode ? 'dark' : 'light'}
-                        />
-                    </View>
-                )}
-
-
             </View>
         </Modal>
     );

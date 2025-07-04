@@ -1,50 +1,45 @@
 import React, { useEffect, useRef, useState } from "react";
-import { FlatList, Image, ImageBackground, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Animated, TouchableWithoutFeedback } from "react-native";
+import { FlatList, Image, ImageBackground, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View, Animated, TouchableWithoutFeedback, TextInput, BackHandler, Alert } from "react-native";
 import CustomText from "../../components/TextComponent";
 import IMG from "../../assets/Images";
 import Row from "../../components/wrapper/row";
-import { AddStoryIcon, Back, BackBlackSimple, BackIcon, BookMarkIcon, BookMarkWhite, BottomIndicator, CameraButton, CommentIcon, CommentWhite, EmailIcon, EyeIcon, LikeIcon, LikeWhite, LockIcon, LoginBtn, NotiFication, PostShareWhite, PrimaryBackArrow, PrimaryBackWhite, ShareIcon, SpeakerOff, ThreeDotIcon, ThreeDotWhite, WhiteThreeDot } from "../../assets/SVGs";
+import { AddStoryIcon, CameraButton, CommentIcon, CommentWhite, NotiFication, PostShareWhite, PrimaryBackArrow, PrimaryBackWhite, ShareIcon, SpeakerOff, ThreeDotIcon, WhiteThreeDot } from "../../assets/SVGs";
 import { FONTS_FAMILY } from "../../assets/Fonts";
-import CustomInputField from "../../components/CustomInputField";
 import SpaceBetweenRow from "../../components/wrapper/spacebetween";
 import { useSelector } from "react-redux";
-
 import Video from "react-native-video";
-import { apiGet, apiPost, apiPut } from "../../utils/Apis";
+import { apiDelete, apiGet, apiPost, apiPut } from "../../utils/Apis";
 import urls from "../../config/urls";
 import { white } from "../../common/Colors/colors";
-
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+
 import Foundation from 'react-native-vector-icons/Foundation';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import useLoader from "../../utils/LoaderHook";
-import { useIsFocused } from "@react-navigation/native";
-import CommentModal from "../Home/CommentModel";
-
+import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import moment from "moment";
 import FeedShimmerLoader from "../../components/Skeletons/FeedsShimmer";
+import CommentModal from "../Home/CommentModel";
 
 
-
-const SavedPosts = ({ navigation }) => {
+const AllPostOfAUser = ({ navigation , route}) => {
     const { isDarkMode } = useSelector(state => state.theme);
     const storyOpacity = useRef(new Animated.Value(0)).current;
     const feedTranslateY = useRef(new Animated.Value(20)).current;
-
     const [loading, setLoading] = useState(false)
     const [allPosts, setAllPosts] = useState([])
-    const heartOpacity = useRef(new Animated.Value(0)).current;
+    const [allStories, setAllStories] = useState([])
+    const [followedStories, setFollowedStories] = useState([])
     const [doubleTapIndex, setDoubleTapIndex] = useState(null);
-
-
+    const heartOpacity = useRef(new Animated.Value(0)).current;
     const [modalVisible, setModalVisible] = useState(false);
     const [postId, setPostId] = useState(null);
-
     const [commentText, setCommentText] = useState('');
     const [comments, setComments] = useState([])
-
     const [isMuted, setIsMuted] = useState(false);
     const loaderVisible = useSelector(state => state?.loader?.loader);
+
 
     const { showLoader, hideLoader } = useLoader()
 
@@ -52,6 +47,58 @@ const SavedPosts = ({ navigation }) => {
     if (Object.keys(selector).length != 0) {
         selector = JSON.parse(selector);
     }
+
+    useFocusEffect(() => {
+        const backAction = () => {
+            Alert.alert(
+                "Exit App",
+                "Are you sure you want to exit the app?",
+                [
+                    {
+                        text: "Cancel",
+                        onPress: () => null,
+                        style: "cancel"
+                    },
+                    {
+                        text: "EXIT",
+                        onPress: () => BackHandler.exitApp()
+                    }
+                ]
+            );
+            return true;
+        };
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+        return () => backHandler.remove();
+    });
+
+
+    const triggerHeartAnimation = (index) => {
+        setDoubleTapIndex(index);
+        heartOpacity.setValue(1);
+
+        Animated.timing(heartOpacity, {
+            toValue: 0,
+            duration: 800,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    let lastTap = null;
+    const handleDoubleTap = (item, index) => {
+        const now = Date.now();
+        const DOUBLE_PRESS_DELAY = 300;
+
+        if (lastTap && (now - lastTap) < DOUBLE_PRESS_DELAY) {
+            triggerHeartAnimation(index);
+            onLikeUnlike(item);
+        } else {
+            lastTap = now;
+        }
+    };
+
 
 
 
@@ -75,8 +122,24 @@ const SavedPosts = ({ navigation }) => {
 
     useEffect(() => {
         fetchData()
+        getCurrentStories()
+        getFollwedStories()
     }, [])
 
+    useEffect(() => {
+        // fetchData()
+        getCurrentStories()
+        getFollwedStories()
+    }, [isFocused])
+
+    const onRefresh = async () => {
+        setLoading(true)
+        await fetchData()
+        await getCurrentStories()
+        await getFollwedStories()
+        setLoading(false)
+
+    }
 
 
     const fetchCommentDataOfaPost = async (id) => {
@@ -99,141 +162,19 @@ const SavedPosts = ({ navigation }) => {
         fetchCommentDataOfaPost(id)
 
     }
-      const editComments = async (id, text) => {
-            console.log('---------___++++++++++++-----', id, text);
-    
-            const data = {
-                text: text
-            }
-            const res = await apiPut(`${urls.editComment}/${id}`, data)
-            console.log(res,'+++++++++++++++++++++++++++res Of edit');
-            
-            fetchCommentDataOfaPost(postId)
-    
+
+    const editComments = async (id, text) => {
+        console.log('---------___++++++++++++-----', id, text);
+
+        const data = {
+            text: text
         }
+        const res = await apiPut(`${urls.editComment}/${id}`, data)
+        console.log(res,'+++++++++++++++++++++++++++res Of edit');
+        
+        fetchCommentDataOfaPost(postId)
 
-
-    const fetchData = async () => {
-        setLoading(true)
-        const res = await apiGet(urls.getAllSavedPosts)
-        console.log("-------SAVED POST DATA----------", res.data);
-
-        setAllPosts(res?.data)
-        setLoading(false)
     }
-
-
-
-
-
-    const SavePost = async (item) => {
-        console.log('Item,', item?._id);
-
-        setLoading(true)
-        const endPoint = item?.Post?.SavedBy?.includes(selector?._id) ? `${urls.removeSavedPost}/${item?.Post?._id}` : `${urls.SavePost}/${item?.Post?._id}`
-        const res = await apiGet(endPoint)
-        fetchData()
-        setLoading(false)
-    }
-
-    // const onLikeUnlike = async (item) => {
-
-    //     console.log(item?._id, 'ITEM ITDD');
-
-    //     setLoading(true)
-    //     const endPoint = item?.Post?.likes?.includes(selector?._id) ? `${urls.likeUnlike}/${item?.Post?._id}` : `${urls.likeUnlike}/${item?.Post?._id}`
-    //     const res = await apiGet(`${urls.likeUnlike}/${item?.Post?._id}`)
-    //     console.log("------------ONLSSSSSSSSSSSSSS-----", res.data);
-    //     setLoading(false)
-    //     fetchData()
-    // }
-
-
-    const onLikeUnlike = async (item) => {
-        const postId = item?.Post?._id;
-        const userId = selector?._id;
-
-        // Optimistic UI Update
-        setAllPosts(prevPosts =>
-            prevPosts.map(post => {
-                if (post.Post?._id === postId) {
-                    const alreadyLiked = post.Post?.likes.includes(userId);
-                    const updatedLikes = alreadyLiked
-                        ? post.Post.likes.filter(id => id !== userId)
-                        : [...post.Post.likes, userId];
-
-                    const updatedTotalLikes = alreadyLiked
-                        ? post.Post.TotalLikes - 1
-                        : post.Post.TotalLikes + 1;
-
-                    return {
-                        ...post,
-                        Post: {
-                            ...post.Post,
-                            likes: updatedLikes,
-                            TotalLikes: updatedTotalLikes,
-                        }
-                    };
-                }
-                return post;
-            })
-        );
-
-        try {
-            await apiGet(`${urls.likeUnlike}/${postId}`);
-        } catch (error) {
-            console.log("Error in like/unlike", error);
-
-            // Revert optimistic UI change
-            setAllPosts(prevPosts =>
-                prevPosts.map(post => {
-                    if (post.Post?._id === postId) {
-                        const originallyLiked = item.Post.likes.includes(userId);
-                        const revertedLikes = originallyLiked
-                            ? [...post.Post.likes, userId]
-                            : post.Post.likes.filter(id => id !== userId);
-
-                        const revertedTotalLikes = originallyLiked
-                            ? post.Post.TotalLikes + 1
-                            : post.Post.TotalLikes - 1;
-
-                        return {
-                            ...post,
-                            Post: {
-                                ...post.Post,
-                                likes: revertedLikes,
-                                TotalLikes: revertedTotalLikes,
-                            }
-                        };
-                    }
-                    return post;
-                })
-            );
-        }
-    };
-
-
-
-
-    const renderHeader = () => {
-        return (
-            <SpaceBetweenRow style={{ paddingTop: 50, paddingHorizontal: 20, backgroundColor: isDarkMode ? '#252525' : 'white', paddingBottom: 15 }}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    {isDarkMode ? <PrimaryBackWhite /> : <PrimaryBackArrow />}
-                </TouchableOpacity>
-                <CustomText style={{
-                    fontSize: 20,
-                    fontFamily: FONTS_FAMILY.SourceSans3_Bold
-                }}>Saved Posts</CustomText>
-
-                <TouchableOpacity onPress={{}}>
-                    {/* <NotiFication /> */}
-                </TouchableOpacity>
-
-            </SpaceBetweenRow>
-        )
-    }
-
 
     const formatInstagramDate = (dateString) => {
         const date = moment(dateString);
@@ -272,52 +213,326 @@ const SavedPosts = ({ navigation }) => {
             return date.format('MMM D, YYYY');
         }
     };
-    const triggerHeartAnimation = (index) => {
-        setDoubleTapIndex(index);
-        heartOpacity.setValue(1);
 
-        Animated.timing(heartOpacity, {
-            toValue: 0,
-            duration: 800,
-            useNativeDriver: true,
-        }).start();
+
+
+    const fetchData = async () => {
+        setLoading(true)
+        const res = await apiGet(`/api/user/GetAllPostofaUser/${route?.params?.userId}`)
+        // console.log(res, '=================');
+        setAllPosts(res?.data)
+        setLoading(false)
+    }
+
+    const getCurrentStories = async () => {
+        console.log("Selector", selector?._id);
+        // setLoading(true);
+        try {
+            const res = await apiGet(urls.getCurrentStories);
+            // console.log("Fetched Stories:::::::::::", res.data);
+            setAllStories(res?.data)
+        } catch (error) {
+            console.error("Error fetching stories:", error);
+        }
+        // setLoading(false);
     };
-    let lastTap = null;
 
-    const handleDoubleTap = (item, index) => {
-        const now = Date.now();
-        const DOUBLE_PRESS_DELAY = 300;
+    const getFollwedStories = async () => {
+        console.log("Selector", selector?._id);
+        // setLoading(true);
+        try {
+            const res = await apiGet(urls.followedUserStories);
+            // console.log("Fetched Stories:::::::::::", res.data);
+            setFollowedStories(res?.data)
 
-        if (lastTap && (now - lastTap) < DOUBLE_PRESS_DELAY) {
-            triggerHeartAnimation(index);
-            onLikeUnlike(item);
-        } else {
-            lastTap = now;
+        } catch (error) {
+            console.error("Error fetching stories:", error);
+        }
+        // setLoading(false);
+    };
+
+
+
+
+    const SavePost = async (item) => {
+        const postId = item._id;
+        const userId = selector?._id;
+        setAllPosts(prevPosts => {
+            return prevPosts.map(post => {
+                if (post._id === postId) {
+                    const alreadySaved = post.SavedBy.includes(userId);
+                    const updatedSavedBy = alreadySaved
+                        ? post.SavedBy.filter(id => id !== userId)
+                        : [...post.SavedBy, userId];
+
+                    return {
+                        ...post,
+                        SavedBy: updatedSavedBy
+                    };
+                }
+                return post;
+            });
+        });
+
+        // Call API in background
+        try {
+            const endPoint = item?.SavedBy?.includes(userId)
+                ? `${urls.removeSavedPost}/${postId}`
+                : `${urls.SavePost}/${postId}`;
+
+            const res = await apiGet(endPoint);
+            // console.log("-------------SAVE API SUCCESS----", res.data);
+        } catch (error) {
+            console.log("Save Post Error:", error);
+
+            // Revert UI on error
+            setAllPosts(prevPosts => {
+                return prevPosts.map(post => {
+                    if (post._id === postId) {
+                        const wasSaved = item.SavedBy.includes(userId);
+                        const revertedSavedBy = wasSaved
+                            ? [...post.SavedBy, userId]
+                            : post.SavedBy.filter(id => id !== userId);
+
+                        return {
+                            ...post,
+                            SavedBy: revertedSavedBy
+                        };
+                    }
+                    return post;
+                });
+            });
         }
     };
+
+
+    const onLikeUnlike = async (item) => {
+        const postId = item._id;
+        const userId = selector?._id;
+        setAllPosts(prevPosts => {
+            return prevPosts.map(post => {
+                if (post._id === postId) {
+                    const alreadyLiked = post.likes.includes(userId);
+                    const updatedLikes = alreadyLiked
+                        ? post.likes.filter(id => id !== userId)
+                        : [...post.likes, userId];
+
+                    return {
+                        ...post,
+                        likes: updatedLikes,
+                        TotalLikes: alreadyLiked ? post.TotalLikes - 1 : post.TotalLikes + 1
+                    };
+                }
+                return post;
+            });
+        });
+        try {
+            await apiGet(`${urls.likeUnlike}/${postId}`);
+            // console.log("Like/Unlike updated on server");
+        } catch (error) {
+            console.log("Error in like/unlike", error);
+
+            setAllPosts(prevPosts => {
+                return prevPosts.map(post => {
+                    if (post._id === postId) {
+                        const wasLiked = item.likes.includes(userId);
+                        const revertedLikes = wasLiked
+                            ? [...post.likes, userId]
+                            : post.likes.filter(id => id !== userId);
+
+                        return {
+                            ...post,
+                            likes: revertedLikes,
+                            TotalLikes: wasLiked ? post.TotalLikes + 1 : post.TotalLikes - 1
+                        };
+                    }
+                    return post;
+                });
+            });
+        }
+    };
+
+
+    const onDisLikes = async (item) => {
+        const postId = item._id;
+        const userId = selector?._id;
+        setAllPosts(prevPosts => {
+            return prevPosts.map(post => {
+                if (post._id === postId) {
+                    const alreadyLiked = post.Unlikes.includes(userId);
+                    const updatedLikes = alreadyLiked
+                        ? post.Unlikes.filter(id => id !== userId)
+                        : [...post.Unlikes, userId];
+
+                    return {
+                        ...post,
+                        Unlikes: updatedLikes,
+                        TotalUnLikes: alreadyLiked ? post.TotalUnLikes - 1 : post.TotalUnLikes + 1
+                    };
+                }
+                return post;
+            });
+        });
+        try {
+            await apiGet(`${urls.disLikePost}/${postId}`);
+            // console.log("Like/Unlike updated on server");
+        } catch (error) {
+            console.log("Error in like/unlike", error);
+
+            setAllPosts(prevPosts => {
+                return prevPosts.map(post => {
+                    if (post._id === postId) {
+                        const wasLiked = item.Unlikes.includes(userId);
+                        const revertedLikes = wasLiked
+                            ? [...post.Unlikes, userId]
+                            : post.Unlikes.filter(id => id !== userId);
+
+                        return {
+                            ...post,
+                            Unlikes: revertedLikes,
+                            TotalUnLikes: wasLiked ? post.TotalUnLikes + 1 : post.TotalUnLikes - 1
+                        };
+                    }
+                    return post;
+                });
+            });
+        }
+    };
+
+    const onDeleteComments = async (id) => {
+        try {
+            showLoader();
+            const response = await apiDelete(`/api/user/DeleteComment/${id}`);
+            // console.log('DeletePost::', response);
+            fetchCommentDataOfaPost(postId);
+        } catch (error) {
+            console.log('DeleteComment Error:', error?.response?.data || error.message);
+        } finally {
+            hideLoader();
+        }
+    };
+
+
+
+    const renderHeader = () => {
+        return (
+            <SpaceBetweenRow style={{ paddingTop: 50, paddingHorizontal: 20, backgroundColor: isDarkMode ? '#252525' : 'white', paddingBottom: 15 }}>
+                <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                >
+                    {isDarkMode ? <PrimaryBackWhite /> : <PrimaryBackArrow />}
+                </TouchableOpacity>
+                <CustomText style={{
+                    fontSize: 20,
+                    fontFamily: FONTS_FAMILY.SourceSans3_Bold
+                }}>My Posts</CustomText>
+
+                <TouchableOpacity onPress={() => navigation.navigate('Activity')}>
+                    {/* <NotiFication /> */}
+                </TouchableOpacity>
+
+            </SpaceBetweenRow>
+        )
+    }
+    const renderStories = () => {
+        return (
+            <Row style={{
+                borderBottomWidth: 1,
+                borderTopWidth: 1,
+                borderColor: 'rgba(219, 219, 219, 1)',
+            }}>
+                <Animated.View
+                    style={{
+                        paddingVertical: 10,
+                        backgroundColor: isDarkMode ? 'black' : 'rgba(245, 245, 248, 1)',
+                        opacity: storyOpacity,
+                    }}
+                >
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{ paddingHorizontal: 10 }}
+                    >
+                        {/* Your Story */}
+                        <View style={styles.storyContainer}>
+                            <TouchableOpacity
+                                style={[styles.storyBorder, styles.ownStoryBorder]}
+                                onPress={() => navigation.navigate('StoryScreen', { storyImage: allStories, User: selector })}
+                            >
+                                <Image
+                                    source={
+                                        allStories[0]?.media ? { uri: allStories[0]?.media } : IMG.AddStoryImage
+                                    }
+                                    style={styles.storyImage}
+                                />
+                            </TouchableOpacity>
+                            <Text style={styles.storyText} numberOfLines={1}>{'Your Story'}</Text>
+                            <TouchableOpacity
+                                style={{ position: 'absolute', bottom: 20, right: 10 }}
+                                onPress={() => navigation.navigate('GalleryPickerScreen')}
+                            >
+                                <AddStoryIcon />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Followed Stories */}
+                        {followedStories?.map((item) => {
+                            if (item?.User?.Stories?.length > 0) {
+                                console.log(item, 'Followed Story Item');
+
+                                return (
+                                    <View key={item.id} style={styles.storyContainer}>
+                                        <TouchableOpacity
+                                            style={[styles.storyBorder, item.isOwn && styles.ownStoryBorder]}
+                                            onPress={() => navigation.navigate('StoryScreen', { storyImage: item.User?.Stories, User: item?.User })}
+                                        >
+                                            <Image
+                                                source={
+                                                    item.User?.Stories?.length > 0
+                                                        ? { uri: item.User?.Stories[0]?.media }
+                                                        : IMG.AddStoryImage
+                                                }
+                                                style={styles.storyImage}
+                                            />
+                                        </TouchableOpacity>
+                                        <Text style={styles.storyText} numberOfLines={1}>
+                                            {item?.User?.UserName}
+                                        </Text>
+                                    </View>
+                                );
+                            } else {
+                                return null;
+                            }
+                        })}
+                    </ScrollView>
+                </Animated.View>
+            </Row>
+        );
+    };
+
+
     const renderFeeds = () => {
+
         return (
             <FlatList
                 data={allPosts}
                 style={{ marginBottom: 90 }}
-                keyExtractor={(item) => item._id}
+                keyExtractor={(item) => item.id}
                 showsVerticalScrollIndicator={false}
-                // onRefresh={onRefresh}
-                // refreshing={loading}
+                onRefresh={onRefresh}
+                refreshing={loading}
                 renderItem={({ item, index }) => {
-                    const mediaUrl = item.Post?.media // Use a consistent key for media
+                    const mediaUrl = item.media; // Use a consistent key for media
                     const isVideo = typeof mediaUrl === "string" && (mediaUrl.endsWith(".mp4") || mediaUrl.endsWith(".mov"));
 
                     return (
                         <View style={styles.feedContainer}>
-                            {console.log(item, '++++++++++++++++++++')
-                            }
                             {/* Header */}
                             <View style={styles.header}>
                                 <View style={styles.userInfo}>
                                     <Image source={item?.User?.Image ? { uri: item?.User?.Image } : IMG.MessageProfile} style={styles.profileImage} />
                                     <TouchableOpacity onPress={() => navigation.navigate('OtherUserDetail', { userId: item?.User?._id })}>
-                                        <Text style={styles.username}>{item?.Post?.User?.UserName}</Text>
+                                        <Text style={styles.username}>{item?.User?.UserName}</Text>
                                         {isVideo && <Text style={styles.audio}>{'Original audio'}</Text>}
                                     </TouchableOpacity>
                                 </View>
@@ -337,7 +552,7 @@ const SavedPosts = ({ navigation }) => {
                                             muted={isMuted}
                                         />
                                     ) : (
-                                        <Image source={{ uri: item?.Post?.media }} style={styles.postImage} />
+                                        <Image source={{ uri: item?.media }} style={styles.postImage} />
                                     )}
 
                                     {/* Heart Animation */}
@@ -378,7 +593,7 @@ const SavedPosts = ({ navigation }) => {
                                         style={{ right: 0 }}
                                         onPress={() => onLikeUnlike(item)}
                                     >
-                                        {item?.Post?.likes?.includes(selector?._id) ? (
+                                        {item?.likes?.includes(selector?._id) ? (
                                             isDarkMode ? <MaterialIcons name={'favorite'} color={'white'} size={24} />
                                                 : <MaterialIcons name={'favorite-border'} color={'black'} size={24} />
                                         ) : (
@@ -389,8 +604,8 @@ const SavedPosts = ({ navigation }) => {
                                     <TouchableOpacity
                                         onPress={() => {
                                             setModalVisible(true);
-                                            fetchCommentDataOfaPost(item?.Post?._id)
-                                            setPostId(item?.Post?._id)
+                                            fetchCommentDataOfaPost(item?._id)
+                                            setPostId(item?._id)
                                         }}
                                     >
                                         {isDarkMode ? <CommentWhite /> : <CommentIcon />}
@@ -401,7 +616,7 @@ const SavedPosts = ({ navigation }) => {
                                 </View>
 
                                 <Row style={{ gap: 20 }}>
-                                    {/* <TouchableOpacity>
+                                    <TouchableOpacity>
                                         {
                                             isDarkMode ?
                                                 <TouchableOpacity style={{ alignItems: 'center', gap: 0, flexDirection: 'row' }}
@@ -420,13 +635,13 @@ const SavedPosts = ({ navigation }) => {
                                                 </TouchableOpacity>
                                         }
 
-                                    </TouchableOpacity> */}
+                                    </TouchableOpacity>
 
                                     <TouchableOpacity
                                         style={{ right: 0 }}
                                         onPress={() => SavePost(item)}
                                     >
-                                        {item?.Post?.SavedBy?.includes(selector?._id) ? (
+                                        {item?.SavedBy?.includes(selector?._id) ? (
                                             isDarkMode ? <FontAwesome name={'bookmark'} color={'white'} size={24} />
                                                 : <FontAwesome name={'bookmark'} color={'black'} size={24} />
                                         ) : (
@@ -437,14 +652,16 @@ const SavedPosts = ({ navigation }) => {
 
                                 </Row>
                             </View>
-                            <Text style={styles.likes}>{item?.Post?.TotalLikes} {item?.Post?.TotalLikes > 1 ? 'likes' : 'like'}</Text>
+                            <Text style={styles.likes}>{item?.TotalLikes} {item?.TotalLikes > 1 ? 'likes' : 'like'}</Text>
                             <Text style={styles.caption}>
                                 <Text style={styles.username}>{item?.caption || 'No Caption Added'}</Text>
-                                {item.caption}
+                                {/* {item.caption} */}
                             </Text>
-                            <Text style={styles.comments}>{item?.Post?.TotalComents} comments</Text>
+                            {/* <SpaceBetweenRow> */}
+                            <Text style={styles.comments}>{item?.TotalComents} comments</Text>
                             <Text style={styles.time}>{formatInstagramDate(item?.createdAt)}</Text>
 
+                            {/* </SpaceBetweenRow> */}
                         </View>
                     );
                 }}
@@ -457,6 +674,7 @@ const SavedPosts = ({ navigation }) => {
             />
         );
     };
+
 
     const styles = StyleSheet.create({
         container: {
@@ -518,7 +736,6 @@ const SavedPosts = ({ navigation }) => {
             fontSize: 16,
             fontWeight: 'bold',
         },
-
 
         feedContainer: {
             // marginBottom: 20,
@@ -594,6 +811,7 @@ const SavedPosts = ({ navigation }) => {
 
         },
     })
+
     const renderCommentModal = () => {
         return (
             <>
@@ -612,7 +830,6 @@ const SavedPosts = ({ navigation }) => {
                     }}
                     onDeleteComments={(id) => onDeleteComments(id)}
                     onEditComment={(id, text)=>editComments(id, text)}
-
                 />
 
             </>
@@ -636,50 +853,6 @@ const SavedPosts = ({ navigation }) => {
     )
 }
 
-export default SavedPosts;
+export default AllPostOfAUser;
 
 
-
-
-
-
-const storiesData = [
-    { id: '1', name: 'Your story', image: IMG.AddStoryImage, isOwn: true },
-    { id: '2', name: 'mkbhd', image: IMG.StoryImage2 },
-    { id: '3', name: 'lewisham...', image: IMG.StoryImage1 },
-    { id: '4', name: 'defavours', image: IMG.StoryImage2 },
-    { id: '5', name: 'leome', image: IMG.StoryImage1 },
-];
-
-const feedData = [
-    {
-        id: '1',
-        username: 'spacex',
-        profileImage: IMG.ProfileImagePost,
-        postImage: 'https://res.cloudinary.com/dwewlzhdz/video/upload/v1743501862/Story/Video/gw9kaoshcsqij0ysabol.mp4',
-        likes: '112,099',
-        caption: 'View from Falcon 9’s second stage during an orbital sunset',
-        comments: 'View all 534 comments',
-        time: '1 DAY AGO',
-    },
-    {
-        id: '2',
-        username: 'spacex',
-        profileImage: IMG.ProfileImagePost,
-        postImage: IMG.PostImage,
-        likes: '112,099',
-        caption: 'View from Falcon 9’s second stage during an orbital sunset',
-        comments: 'View all 534 comments',
-        time: '1 DAY AGO',
-    },
-    {
-        id: '3',
-        username: 'spacex',
-        profileImage: IMG.ProfileImagePost,
-        postImage: IMG.PostImage,
-        likes: '112,099',
-        caption: 'View from Falcon 9’s second stage during an orbital sunset',
-        comments: 'View all 534 comments',
-        time: '1 DAY AGO',
-    },
-];

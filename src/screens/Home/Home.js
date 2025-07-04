@@ -8,7 +8,7 @@ import { FONTS_FAMILY } from "../../assets/Fonts";
 import SpaceBetweenRow from "../../components/wrapper/spacebetween";
 import { useSelector } from "react-redux";
 import Video from "react-native-video";
-import { apiDelete, apiGet, apiPost } from "../../utils/Apis";
+import { apiDelete, apiGet, apiPost, apiPut } from "../../utils/Apis";
 import urls from "../../config/urls";
 import { white } from "../../common/Colors/colors";
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -20,6 +20,8 @@ import useLoader from "../../utils/LoaderHook";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import CommentModal from "./CommentModel";
 import moment from "moment";
+import FeedShimmerLoader from "../../components/Skeletons/FeedsShimmer";
+import ProfileShimmer from "../../components/Skeletons/ProfilePageShimmer";
 
 
 const Home = ({ navigation }) => {
@@ -30,13 +32,10 @@ const Home = ({ navigation }) => {
     const [allPosts, setAllPosts] = useState([])
     const [allStories, setAllStories] = useState([])
     const [followedStories, setFollowedStories] = useState([])
-
     const [doubleTapIndex, setDoubleTapIndex] = useState(null);
     const heartOpacity = useRef(new Animated.Value(0)).current;
-
     const [modalVisible, setModalVisible] = useState(false);
     const [postId, setPostId] = useState(null);
-
     const [commentText, setCommentText] = useState('');
     const [comments, setComments] = useState([])
     const [isMuted, setIsMuted] = useState(false);
@@ -69,14 +68,12 @@ const Home = ({ navigation }) => {
             );
             return true;
         };
-
         const backHandler = BackHandler.addEventListener(
             "hardwareBackPress",
             backAction
         );
-
         return () => backHandler.remove();
-    }, []);
+    });
 
 
     const triggerHeartAnimation = (index) => {
@@ -130,6 +127,12 @@ const Home = ({ navigation }) => {
         getFollwedStories()
     }, [])
 
+    useEffect(() => {
+        // fetchData()
+        getCurrentStories()
+        getFollwedStories()
+    }, [isFocused])
+
     const onRefresh = async () => {
         setLoading(true)
         await fetchData()
@@ -158,6 +161,19 @@ const Home = ({ navigation }) => {
         }
         const res = await apiPost(`${urls.sendCommentOnPost}`, data)
         fetchCommentDataOfaPost(id)
+
+    }
+
+    const editComments = async (id, text) => {
+        console.log('---------___++++++++++++-----', id, text);
+
+        const data = {
+            text: text
+        }
+        const res = await apiPut(`${urls.editComment}/${id}`, data)
+        console.log(res,'+++++++++++++++++++++++++++res Of edit');
+        
+        fetchCommentDataOfaPost(postId)
 
     }
 
@@ -202,26 +218,20 @@ const Home = ({ navigation }) => {
 
 
     const fetchData = async () => {
-        showLoader()
+        setLoading(true)
         const res = await apiGet(urls.getAllPost)
         // console.log(res, '=================');
-
         setAllPosts(res?.data)
-        hideLoader()
+        setLoading(false)
     }
 
     const getCurrentStories = async () => {
         console.log("Selector", selector?._id);
-
         // setLoading(true);
         try {
             const res = await apiGet(urls.getCurrentStories);
             // console.log("Fetched Stories:::::::::::", res.data);
             setAllStories(res?.data)
-
-
-
-
         } catch (error) {
             console.error("Error fetching stories:", error);
         }
@@ -230,7 +240,6 @@ const Home = ({ navigation }) => {
 
     const getFollwedStories = async () => {
         console.log("Selector", selector?._id);
-
         // setLoading(true);
         try {
             const res = await apiGet(urls.followedUserStories);
@@ -449,7 +458,7 @@ const Home = ({ navigation }) => {
                         <View style={styles.storyContainer}>
                             <TouchableOpacity
                                 style={[styles.storyBorder, styles.ownStoryBorder]}
-                                onPress={() => navigation.navigate('StoryScreen', { storyImage: allStories })}
+                                onPress={() => navigation.navigate('StoryScreen', { storyImage: allStories, User: selector })}
                             >
                                 <Image
                                     source={
@@ -504,6 +513,7 @@ const Home = ({ navigation }) => {
 
 
     const renderFeeds = () => {
+
         return (
             <FlatList
                 data={allPosts}
@@ -646,7 +656,7 @@ const Home = ({ navigation }) => {
                             <Text style={styles.likes}>{item?.TotalLikes} {item?.TotalLikes > 1 ? 'likes' : 'like'}</Text>
                             <Text style={styles.caption}>
                                 <Text style={styles.username}>{item?.caption || 'No Caption Added'}</Text>
-                                {item.caption}
+                                {/* {item.caption} */}
                             </Text>
                             {/* <SpaceBetweenRow> */}
                             <Text style={styles.comments}>{item?.TotalComents} comments</Text>
@@ -803,27 +813,9 @@ const Home = ({ navigation }) => {
         },
     })
 
-
-
-
     const renderCommentModal = () => {
         return (
             <>
-                {/* <CommentModal
-                    isVisible={modalVisible}
-                    onClose={() => setModalVisible(false)}
-                    comments={comments}
-                    isDarkMode={isDarkMode}
-                    commentText={commentText}
-                    onChangeText={setCommentText}
-                    onSendPress={() => {
-                        console.log('Send:', commentText);
-                        // Add logic to post comment here
-                        setCommentText('');
-                        sendComments(postId, commentText)
-                    }}
-                    onDeleteComments={(id) => { onDeleteComments(id) }}
-                /> */}
                 <CommentModal
                     isVisible={modalVisible}
                     onClose={() => setModalVisible(false)}
@@ -838,11 +830,14 @@ const Home = ({ navigation }) => {
                         setCommentText('');
                     }}
                     onDeleteComments={(id) => onDeleteComments(id)}
+                    onEditComment={(id, text)=>editComments(id, text)}
                 />
 
             </>
         )
     }
+
+   
 
     return (
         <View style={styles.container}>
@@ -853,7 +848,8 @@ const Home = ({ navigation }) => {
             />
             {renderHeader()}
             {renderStories()}
-            {renderFeeds()}
+            {loading ? <FeedShimmerLoader isDarkMode={isDarkMode} count={5} /> :
+                renderFeeds()}
             {renderCommentModal()}
 
         </View>

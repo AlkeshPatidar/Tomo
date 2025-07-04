@@ -22,6 +22,8 @@ export default {
     followedUserStories: '/api/user/GetFollowedUserStories',
     getAllCommentofaPost: '/api/user/GetAllCommentofaPost',
     sendCommentOnPost: '/api/user/CreateComment',
+    editComment: '/api/user/UpdateComment',
+
     getAllFollowers: '/api/user/GetAllfollowers',
     getAllFollowings: '/api/user/GetAllFollowing',
     productDetails: '/api/user/GetAProductDetails',

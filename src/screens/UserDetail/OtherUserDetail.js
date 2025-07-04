@@ -16,6 +16,7 @@ import urls from '../../config/urls';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import useLoader from '../../utils/LoaderHook';
 import { ToastMsg } from '../../utils/helperFunctions';
+import ProfileShimmer from '../../components/Skeletons/ProfilePageShimmer';
 
 const OtherUserDetail = ({ navigation, route }) => {
     const [isDrawerVisible, setDrawerVisible] = useState(false);
@@ -438,12 +439,27 @@ const sendFollowRequest = async (id) => {
 
     const renderPost = ({ item }) => (
         <>
-            {console.log('++++++++++++++++++++++', item?.media)
-            }
-            <Image source={{ uri: item?.media }} style={styles.postImage} />
+               <TouchableOpacity onPress={()=>navigation.navigate('AllPostOfAUser', {userId:item?.User?._id})}
+                   style={{
+                           width: '31%',
+                       height: 100,
+                       margin: '1%',
+                   }}
+                   >
+                       {/* {console.log('++++++++++++++++++ITEM Of Other++++', item,)} */}
+                       <Image source={{ uri: item?.media }} style={{
+                           height:100,
+                           width:'100%',
+                       borderRadius: 8,
+           
+                       }} />
+                   </TouchableOpacity>
         </>
     );
 
+       if (loading) {
+        return <ProfileShimmer />;
+    }
     return (
         <View style={styles.container}>
             <StatusBar translucent={true} backgroundColor="transparent" barStyle={isDarkMode ? "light-content" : "dark-content"} />

@@ -258,12 +258,12 @@ const AddShops = ({ navigation }) => {
     const [fileName, setFileName] = useState({});
     const [shopName, setShopName] = useState(null);
     const [shopServices, setShopServices] = useState(null);
-    
+
     // Multiple addresses state
     const [addresses, setAddresses] = useState([
         { locationName: '', coordinates: [76.7794, 30.7333] } // Default with static coordinates
     ]);
-    
+
     // Shop categories state
     const [allCategories, setAllCategories] = useState([]);
     const [selectedCategories, setSelectedCategories] = useState([]);
@@ -277,7 +277,7 @@ const AddShops = ({ navigation }) => {
             duration: 500,
             useNativeDriver: true,
         }).start();
-        
+
         // Fetch categories on component mount
         fetchCategories();
     }, []);
@@ -434,7 +434,7 @@ const AddShops = ({ navigation }) => {
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         {isDarkMode ? <BackOuterWhite /> : <Back />}
                     </TouchableOpacity>
-                    <CustomText style={{ fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_Medium }}>Back</CustomText>
+                    {/* <CustomText style={{ fontSize: 16, fontFamily: FONTS_FAMILY.SourceSans3_Medium }}>Back</CustomText> */}
                 </Row>
                 <CustomText style={{
                     fontSize: 18,
@@ -462,7 +462,7 @@ const AddShops = ({ navigation }) => {
                                 <CustomText style={{ color: isDarkMode ? 'white' : 'black', fontSize: 18 }}>×</CustomText>
                             </TouchableOpacity>
                         </Row>
-                        
+
                         <FlatList
                             data={allCategories}
                             keyExtractor={(item) => item._id}
@@ -487,7 +487,7 @@ const AddShops = ({ navigation }) => {
                                 </TouchableOpacity>
                             )}
                         />
-                        
+
                         <TouchableOpacity
                             style={[styles.modalButton, { backgroundColor: '#2196f3' }]}
                             onPress={() => setShowCategoryModal(false)}
@@ -532,7 +532,7 @@ const AddShops = ({ navigation }) => {
                             }}>
                                 Shop Addresses ({addresses.length}/5)
                             </CustomText>
-                            
+
                             {addresses.map((address, index) => (
                                 <View key={index} style={{ marginBottom: 10 }}>
                                     <Row style={{ alignItems: 'center', gap: 10 }}>
@@ -542,6 +542,7 @@ const AddShops = ({ navigation }) => {
                                                 label={`Address ${index + 1}`}
                                                 value={address.locationName}
                                                 onChangeText={(text) => updateAddress(index, text)}
+                                                 lableStyle={true}
                                             />
                                         </View>
                                         {addresses.length > 1 && (
@@ -555,7 +556,7 @@ const AddShops = ({ navigation }) => {
                                     </Row>
                                 </View>
                             ))}
-                            
+
                             {addresses.length < 5 && (
                                 <TouchableOpacity
                                     onPress={addAddressField}
@@ -578,6 +579,7 @@ const AddShops = ({ navigation }) => {
                                 label={'Shop Categories'}
                                 value={selectedCategories.map(cat => cat.Name).join(', ')}
                                 editable={false}
+                                 lableStyle={true}
                             />
                         </TouchableOpacity>
 
@@ -602,7 +604,7 @@ const AddShops = ({ navigation }) => {
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            style={{ top: 0 }}
+                            style={{ top: 30 }}
                             onPress={onSubmit}
                         >
                             <SubmitBtn width={380} height={65} />
@@ -610,7 +612,6 @@ const AddShops = ({ navigation }) => {
                     </View>
                 </ScrollView>
 
-                <BottomIndicator style={{ position: 'absolute', bottom: 10, alignSelf: 'center' }} />
             </Animated.View>
         )
     };

@@ -5,6 +5,8 @@ import { useSelector } from 'react-redux';
 import useLoader from '../../utils/LoaderHook';
 import { apiGet } from '../../utils/Apis';
 import urls from '../../config/urls';
+import { FONTS_FAMILY } from '../../assets/Fonts';
+import SearchShimmerLoader from '../../components/Skeletons/SearchShimmer';
 
 const SearchScreen = ({ navigation }) => {
     const { isDarkMode } = useSelector(state => state.theme);
@@ -15,6 +17,7 @@ const SearchScreen = ({ navigation }) => {
     const [recentSearches, setRecentSearches] = useState(['john', 'sarah', 'mike']);
     const [isSearching, setIsSearching] = useState(false);
     const [searchFocused, setSearchFocused] = useState(false);
+    const [loading, setLoading]=useState(false)
 
     useEffect(() => {
         fetchData();
@@ -35,7 +38,7 @@ const SearchScreen = ({ navigation }) => {
     }, [searchQuery, allShops]);
 
     const fetchData = async () => {
-        showLoader();
+        setLoading(true);
         try {
             const res = await apiGet(urls.getAllUsers);
             setAllShops(res?.data || []);
@@ -43,7 +46,7 @@ const SearchScreen = ({ navigation }) => {
         } catch (error) {
             console.error('Error fetching data:', error);
         }
-        hideLoader();
+        setLoading(false);
     };
 
     const filterShops = () => {
@@ -85,7 +88,7 @@ const SearchScreen = ({ navigation }) => {
         <TouchableOpacity
             style={[
                 styles.imageWrapper,
-                index % 7 === 0 || index % 7 === 3 ? styles.largeItem : null
+               styles.largeItem
             ]}
             activeOpacity={0.8}
             // onPress={() => navigation.navigate('Tab', {
@@ -165,9 +168,10 @@ const SearchScreen = ({ navigation }) => {
             padding: 16,
         },
         sectionTitle: {
-            fontSize: 16,
+            fontSize: 17,
             fontWeight: '600',
             marginBottom: 12,
+            fontFamily:FONTS_FAMILY.SourceSans3_Bold
         },
         recentItem: {
             flexDirection: 'row',
@@ -210,6 +214,7 @@ const SearchScreen = ({ navigation }) => {
         username: {
             fontSize: 12,
             fontWeight: '500',
+            fontFamily:FONTS_FAMILY.SourceSans3_Medium
         },
         noResults: {
             flex: 1,
@@ -237,7 +242,12 @@ const SearchScreen = ({ navigation }) => {
         <View style={styles.container}>
             <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
 
-            {/* Search Bar */}
+{
+    loading? <SearchShimmerLoader />:
+
+    (
+       <>
+           {/* Search Bar */}
             <View style={styles.searchContainer}>
                 <Search
                     style={styles.searchIcon}
@@ -307,6 +317,10 @@ const SearchScreen = ({ navigation }) => {
                     )}
                 </View>
             )}
+       </> 
+    )
+}
+        
         </View>
     );
 };

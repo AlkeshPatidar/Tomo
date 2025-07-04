@@ -12,13 +12,14 @@ import urls from '../../config/urls';
 import useLoader from '../../utils/LoaderHook';
 import { setUser } from '../../redux/reducer/user';
 import { ToastMsg } from '../../utils/helperFunctions';
+import ActivityShimmer from '../../components/Skeletons/ActivityShimmer';
 
 const Activity = ({ navigation }) => {
     const [data, setData] = useState(DATA);
     const [searchText, setSearchText] = useState('');
     const [animatedValue] = useState(new Animated.Value(0));
     const { isDarkMode } = useSelector(state => state.theme);
-    const { showLoader, hideLoader } = useLoader()
+    // const { showLoader, hideLoader } = useLoader()
     const dispatch = useDispatch()
 
     const [loading, setLoading] = useState(false)
@@ -68,32 +69,16 @@ const Activity = ({ navigation }) => {
 
 
     const fetchData = async () => {
-        showLoader()
+        setLoading(true)
         const res = await apiGet(urls.getAllNotifications)
         setAllNotifications(res?.data)
         setLoading(false)
-        hideLoader()
+        setLoading(false)
 
     }
 
 
-    // Grouping data
-    const groupedData = {
-        "This month": data.filter((item) => item.type === 'This month'),
-        "Earlier": data.filter((item) => item.type === 'Earlier'),
-        "Suggested for you": data.filter((item) => item.type === 'Suggested for you'),
-    };
-
-    // Follow button state
-    const handleFollowToggle = (id) => {
-        setData((prevData) =>
-            prevData.map((item) =>
-                item.id === id
-                    ? { ...item, isFollowing: !item.isFollowing }
-                    : item
-            )
-        );
-    };
+  
 
     // Render header
     const renderHeader = () => (
@@ -227,10 +212,10 @@ const Activity = ({ navigation }) => {
         </Animated.View>
     );
 
-    // Render section header
-    const renderSectionHeader = (title) => (
-        <Text style={styles.sectionHeader}>{title}</Text>
-    );
+if (loading) {
+    return <ActivityShimmer/>;
+
+}
 
     return (
         <View style={styles.container}>
@@ -238,23 +223,10 @@ const Activity = ({ navigation }) => {
             {renderHeader()}
             <FlatList
                 style={{ marginTop: 20, paddingHorizontal: 10 }}
-                // data={Object.keys(groupedData).flatMap((key) => [
-                //     { type: 'header', key }, // Add header with unique key
-                //     ...groupedData[key].map((item) => ({ ...item, key: `${key}-${item.id}` })), // Add unique key to each item
-                // ])}
                 data={allNotifications}
                 keyExtractor={(item) => item.key}
-                // renderItem={({ item }) =>
-                //     item?.type === 'header' ? (
-                //         renderSectionHeader(item.key)
-                //     ) : (
-                //         <Card item={item} />
-                //     )
-                // }
                 renderItem={({ item }) =>
-
                     <Card item={item} />
-
                 }
                 contentContainerStyle={{ paddingBottom: 20 }}
             />
