@@ -23,6 +23,7 @@ import CommentModal from "../Home/CommentModel";
 
 import moment from "moment";
 import FeedShimmerLoader from "../../components/Skeletons/FeedsShimmer";
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 
 
@@ -136,18 +137,7 @@ const SavedPosts = ({ navigation }) => {
         setLoading(false)
     }
 
-    // const onLikeUnlike = async (item) => {
-
-    //     console.log(item?._id, 'ITEM ITDD');
-
-    //     setLoading(true)
-    //     const endPoint = item?.Post?.likes?.includes(selector?._id) ? `${urls.likeUnlike}/${item?.Post?._id}` : `${urls.likeUnlike}/${item?.Post?._id}`
-    //     const res = await apiGet(`${urls.likeUnlike}/${item?.Post?._id}`)
-    //     console.log("------------ONLSSSSSSSSSSSSSS-----", res.data);
-    //     setLoading(false)
-    //     fetchData()
-    // }
-
+ 
 
     const onLikeUnlike = async (item) => {
         const postId = item?.Post?._id;
@@ -272,22 +262,53 @@ const SavedPosts = ({ navigation }) => {
             return date.format('MMM D, YYYY');
         }
     };
-    const triggerHeartAnimation = (index) => {
+
+      const triggerHeartAnimation = (index) => {
         setDoubleTapIndex(index);
-        heartOpacity.setValue(1);
-
-        Animated.timing(heartOpacity, {
-            toValue: 0,
-            duration: 800,
-            useNativeDriver: true,
-        }).start();
+        
+       
+        heartOpacity.setValue(0);
+        heartScale.setValue(0); 
+      
+        Animated.parallel([
+            
+            Animated.sequence([
+                Animated.timing(heartOpacity, {
+                    toValue: 1,
+                    duration: 200,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(heartOpacity, {
+                    toValue: 0,
+                    duration: 600, 
+                    useNativeDriver: true,
+                })
+            ]),
+            
+            // Scale: 0 -> 1.2 -> 0 (grow from center then shrink)
+            Animated.sequence([
+                Animated.timing(heartScale, {
+                    toValue: 1.2,
+                    duration: 300, // Grow to slightly bigger
+                    useNativeDriver: true,
+                }),
+                Animated.timing(heartScale, {
+                    toValue: 0,
+                    duration: 500, // Shrink back to 0
+                    useNativeDriver: true,
+                })
+            ])
+        ]).start();
     };
+    
+    // Don't forget to add heartScale to your state
+    const heartScale = useRef(new Animated.Value(0)).current;
+    
     let lastTap = null;
-
     const handleDoubleTap = (item, index) => {
         const now = Date.now();
         const DOUBLE_PRESS_DELAY = 300;
-
+    
         if (lastTap && (now - lastTap) < DOUBLE_PRESS_DELAY) {
             triggerHeartAnimation(index);
             onLikeUnlike(item);
@@ -295,6 +316,7 @@ const SavedPosts = ({ navigation }) => {
             lastTap = now;
         }
     };
+
     const renderFeeds = () => {
         return (
             <FlatList
@@ -309,10 +331,8 @@ const SavedPosts = ({ navigation }) => {
                     const isVideo = typeof mediaUrl === "string" && (mediaUrl.endsWith(".mp4") || mediaUrl.endsWith(".mov"));
 
                     return (
-                        <View style={styles.feedContainer}>
-                            {console.log(item, '++++++++++++++++++++')
-                            }
-                            {/* Header */}
+                        <View style={styles.feedContainer} key={item?._id}>
+                        
                             <View style={styles.header}>
                                 <View style={styles.userInfo}>
                                     <Image source={item?.User?.Image ? { uri: item?.User?.Image } : IMG.MessageProfile} style={styles.profileImage} />
@@ -379,11 +399,11 @@ const SavedPosts = ({ navigation }) => {
                                         onPress={() => onLikeUnlike(item)}
                                     >
                                         {item?.Post?.likes?.includes(selector?._id) ? (
-                                            isDarkMode ? <MaterialIcons name={'favorite'} color={'white'} size={24} />
-                                                : <MaterialIcons name={'favorite-border'} color={'black'} size={24} />
+                                            isDarkMode ? <MaterialIcons name={'favorite'} color={'red'} size={25} />
+                                                : <MaterialIcons name={'favorite-border'} color={'red'} size={25} />
                                         ) : (
-                                            isDarkMode ? <MaterialIcons name={'favorite-border'} color={'white'} size={24} />
-                                                : <MaterialIcons name={'favorite-border'} color={'black'} size={24} />
+                                            isDarkMode ? <MaterialIcons name={'favorite-border'} color={'white'} size={25} />
+                                                : <MaterialIcons name={'favorite-border'} color={'black'} size={25} />
                                         )}
                                     </TouchableOpacity>
                                     <TouchableOpacity

@@ -47,7 +47,7 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
                     onPress: async () => {
                         try {
                             await clearAsyncStorage();
-                            navigation?.navigate('Login');
+                            navigation?.replace('Login');
                             // na.getParent()?.navigate('Login');
                         } catch (error) {
                             showError('Error while logging out');

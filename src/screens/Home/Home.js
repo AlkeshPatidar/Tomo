@@ -76,44 +76,68 @@ const Home = ({ navigation }) => {
     });
 
 
+
+
     const triggerHeartAnimation = (index) => {
-        setDoubleTapIndex(index);
-        heartOpacity.setValue(1);
+    setDoubleTapIndex(index);
+    
+    // Reset values for fresh animation
+    heartOpacity.setValue(0);
+    heartScale.setValue(0);
+    
+    Animated.parallel([
+        Animated.sequence([
+            Animated.timing(heartOpacity, {
+                toValue: 1,
+                duration: 200,
+                useNativeDriver: true,
+            }),
+            Animated.timing(heartOpacity, {
+                toValue: 0,
+                duration: 600, 
+                useNativeDriver: true,
+            })
+        ]),
+        
+        Animated.sequence([
+            Animated.timing(heartScale, {
+                toValue: 1.2,
+                duration: 300, 
+                useNativeDriver: true,
+            }),
+            Animated.timing(heartScale, {
+                toValue: 0,
+                duration: 500, 
+                useNativeDriver: true,
+            })
+        ])
+    ]).start();
+};
 
-        Animated.timing(heartOpacity, {
-            toValue: 0,
-            duration: 800,
-            useNativeDriver: true,
-        }).start();
-    };
+const heartScale = useRef(new Animated.Value(0)).current;
 
-    let lastTap = null;
-    const handleDoubleTap = (item, index) => {
-        const now = Date.now();
-        const DOUBLE_PRESS_DELAY = 300;
+let lastTap = null;
+const handleDoubleTap = (item, index) => {
+    const now = Date.now();
+    const DOUBLE_PRESS_DELAY = 300;
 
-        if (lastTap && (now - lastTap) < DOUBLE_PRESS_DELAY) {
-            triggerHeartAnimation(index);
-            onLikeUnlike(item);
-        } else {
-            lastTap = now;
-        }
-    };
-
-
-
+    if (lastTap && (now - lastTap) < DOUBLE_PRESS_DELAY) {
+        triggerHeartAnimation(index);
+        onLikeUnlike(item);
+    } else {
+        lastTap = now;
+    }
+};
 
     const isFocused = useIsFocused()
 
     useEffect(() => {
-        // Animate Stories (Fade-in)
         Animated.timing(storyOpacity, {
             toValue: 1,
             duration: 500,
             useNativeDriver: true,
         }).start();
 
-        // Animate Feeds (Slide-in)
         Animated.timing(feedTranslateY, {
             toValue: 0,
             duration: 500,
@@ -165,13 +189,13 @@ const Home = ({ navigation }) => {
     }
 
     const editComments = async (id, text) => {
-        console.log('---------___++++++++++++-----', id, text);
+        // console.log('---------___++++++++++++-----', id, text);
 
         const data = {
             text: text
         }
         const res = await apiPut(`${urls.editComment}/${id}`, data)
-        console.log(res,'+++++++++++++++++++++++++++res Of edit');
+        // console.log(res,'+++++++++++++++++++++++++++res Of edit');
         
         fetchCommentDataOfaPost(postId)
 
@@ -479,10 +503,9 @@ const Home = ({ navigation }) => {
                         {/* Followed Stories */}
                         {followedStories?.map((item) => {
                             if (item?.User?.Stories?.length > 0) {
-                                console.log(item, 'Followed Story Item');
 
                                 return (
-                                    <View key={item.id} style={styles.storyContainer}>
+                                    <View key={item?._id} style={styles.storyContainer} >
                                         <TouchableOpacity
                                             style={[styles.storyBorder, item.isOwn && styles.ownStoryBorder]}
                                             onPress={() => navigation.navigate('StoryScreen', { storyImage: item.User?.Stories, User: item?.User })}
@@ -513,7 +536,6 @@ const Home = ({ navigation }) => {
 
 
     const renderFeeds = () => {
-
         return (
             <FlatList
                 data={allPosts}
@@ -527,7 +549,7 @@ const Home = ({ navigation }) => {
                     const isVideo = typeof mediaUrl === "string" && (mediaUrl.endsWith(".mp4") || mediaUrl.endsWith(".mov"));
 
                     return (
-                        <View style={styles.feedContainer}>
+                        <View style={styles.feedContainer} key={item?._id}>
                             {/* Header */}
                             <View style={styles.header}>
                                 <View style={styles.userInfo}>
@@ -595,11 +617,11 @@ const Home = ({ navigation }) => {
                                         onPress={() => onLikeUnlike(item)}
                                     >
                                         {item?.likes?.includes(selector?._id) ? (
-                                            isDarkMode ? <MaterialIcons name={'favorite'} color={'white'} size={24} />
-                                                : <MaterialIcons name={'favorite-border'} color={'black'} size={24} />
+                                            isDarkMode ? <MaterialIcons name={'favorite'} color={'red'} size={25} />
+                                                : <MaterialIcons name={'favorite-border'} color={'red'} size={25} />
                                         ) : (
-                                            isDarkMode ? <MaterialIcons name={'favorite-border'} color={'white'} size={24} />
-                                                : <MaterialIcons name={'favorite-border'} color={'black'} size={24} />
+                                            isDarkMode ? <MaterialIcons name={'favorite-border'} color={'white'} size={25} />
+                                                : <MaterialIcons name={'favorite-border'} color={'black'} size={25} />
                                         )}
                                     </TouchableOpacity>
                                     <TouchableOpacity
@@ -771,7 +793,7 @@ const Home = ({ navigation }) => {
         },
         postImage: {
             width: '100%',
-            height: 210,
+            height: 310,
             resizeMode: 'cover',
         },
         actions: {
