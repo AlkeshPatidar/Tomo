@@ -13,7 +13,6 @@ import urls from "../../config/urls";
 import { white } from "../../common/Colors/colors";
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
-
 import Foundation from 'react-native-vector-icons/Foundation';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import useLoader from "../../utils/LoaderHook";
@@ -22,7 +21,6 @@ import CommentModal from "./CommentModel";
 import moment from "moment";
 import FeedShimmerLoader from "../../components/Skeletons/FeedsShimmer";
 import ProfileShimmer from "../../components/Skeletons/ProfilePageShimmer";
-
 
 const Home = ({ navigation }) => {
     const { isDarkMode } = useSelector(state => state.theme);
@@ -38,9 +36,10 @@ const Home = ({ navigation }) => {
     const [postId, setPostId] = useState(null);
     const [commentText, setCommentText] = useState('');
     const [comments, setComments] = useState([])
-    const [isMuted, setIsMuted] = useState(false);
+    const [isMuted, setIsMuted] = useState(true);
+    const [visibleVideoIndex, setVisibleVideoIndex] = useState(0); // Track which video should play
+    const [pausedVideos, setPausedVideos] = useState({}); // Track paused state for each video
     const loaderVisible = useSelector(state => state?.loader?.loader);
-
 
     const { showLoader, hideLoader } = useLoader()
 
@@ -75,59 +74,67 @@ const Home = ({ navigation }) => {
         return () => backHandler.remove();
     });
 
-
-
-
     const triggerHeartAnimation = (index) => {
-    setDoubleTapIndex(index);
-    
-    // Reset values for fresh animation
-    heartOpacity.setValue(0);
-    heartScale.setValue(0);
-    
-    Animated.parallel([
-        Animated.sequence([
-            Animated.timing(heartOpacity, {
-                toValue: 1,
-                duration: 200,
-                useNativeDriver: true,
-            }),
-            Animated.timing(heartOpacity, {
-                toValue: 0,
-                duration: 600, 
-                useNativeDriver: true,
-            })
-        ]),
+        setDoubleTapIndex(index);
         
-        Animated.sequence([
-            Animated.timing(heartScale, {
-                toValue: 1.2,
-                duration: 300, 
-                useNativeDriver: true,
-            }),
-            Animated.timing(heartScale, {
-                toValue: 0,
-                duration: 500, 
-                useNativeDriver: true,
-            })
-        ])
-    ]).start();
-};
+        // Reset values for fresh animation
+        heartOpacity.setValue(0);
+        heartScale.setValue(0);
+        
+        Animated.parallel([
+            Animated.sequence([
+                Animated.timing(heartOpacity, {
+                    toValue: 1,
+                    duration: 200,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(heartOpacity, {
+                    toValue: 0,
+                    duration: 600, 
+                    useNativeDriver: true,
+                })
+            ]),
+            
+            Animated.sequence([
+                Animated.timing(heartScale, {
+                    toValue: 1.2,
+                    duration: 300, 
+                    useNativeDriver: true,
+                }),
+                Animated.timing(heartScale, {
+                    toValue: 0,
+                    duration: 500, 
+                    useNativeDriver: true,
+                })
+            ])
+        ]).start();
+    };
 
-const heartScale = useRef(new Animated.Value(0)).current;
+    const heartScale = useRef(new Animated.Value(0)).current;
 
-let lastTap = null;
-const handleDoubleTap = (item, index) => {
-    const now = Date.now();
-    const DOUBLE_PRESS_DELAY = 300;
+    let lastTap = null;
+    const handleDoubleTap = (item, index) => {
+        const now = Date.now();
+        const DOUBLE_PRESS_DELAY = 300;
 
-    if (lastTap && (now - lastTap) < DOUBLE_PRESS_DELAY) {
-        triggerHeartAnimation(index);
-        onLikeUnlike(item);
-    } else {
-        lastTap = now;
-    }
-};
+        if (lastTap && (now - lastTap) < DOUBLE_PRESS_DELAY) {
+            triggerHeartAnimation(index);
+            onLikeUnlike(item);
+        } else {
+            lastTap = now;
+        }
+    };
+
+    // Handle video visibility in FlatList
+    const onViewableItemsChanged = useRef(({ viewableItems }) => {
+        if (viewableItems.length > 0) {
+            setVisibleVideoIndex(viewableItems[0].index);
+        }
+    }).current;
+
+    const viewabilityConfig = useRef({
+        itemVisiblePercentThreshold: 50, // Video plays when 50% visible
+    }).current;
 
     const isFocused = useIsFocused()
 
@@ -152,7 +159,6 @@ const handleDoubleTap = (item, index) => {
     }, [])
 
     useEffect(() => {
-        // fetchData()
         getCurrentStories()
         getFollwedStories()
     }, [isFocused])
@@ -163,49 +169,34 @@ const handleDoubleTap = (item, index) => {
         await getCurrentStories()
         await getFollwedStories()
         setLoading(false)
-
     }
 
-
     const fetchCommentDataOfaPost = async (id) => {
-        // console.log('--------------', id);
-
         const res = await apiGet(`${urls.getAllCommentofaPost}/${id}`)
         setComments(res?.data)
-        // console.log(res, 'Coemments data');
-
     }
 
     const sendComments = async (id, text) => {
-        // console.log('---------___++++++++++++-----', id);
-
         const data = {
             Post: id,
             text: text
         }
         const res = await apiPost(`${urls.sendCommentOnPost}`, data)
         fetchCommentDataOfaPost(id)
-
     }
 
     const editComments = async (id, text) => {
-        // console.log('---------___++++++++++++-----', id, text);
-
         const data = {
             text: text
         }
         const res = await apiPut(`${urls.editComment}/${id}`, data)
-        // console.log(res,'+++++++++++++++++++++++++++res Of edit');
-        
         fetchCommentDataOfaPost(postId)
-
     }
 
     const formatInstagramDate = (dateString) => {
         const date = moment(dateString);
         const now = moment();
 
-        // Calculate difference
         const diffInSeconds = now.diff(date, 'seconds');
         const diffInMinutes = now.diff(date, 'minutes');
         const diffInHours = now.diff(date, 'hours');
@@ -239,45 +230,32 @@ const handleDoubleTap = (item, index) => {
         }
     };
 
-
-
     const fetchData = async () => {
         setLoading(true)
         const res = await apiGet(urls.getAllPost)
-        // console.log(res, '=================');
         setAllPosts(res?.data)
         setLoading(false)
     }
 
     const getCurrentStories = async () => {
         console.log("Selector", selector?._id);
-        // setLoading(true);
         try {
             const res = await apiGet(urls.getCurrentStories);
-            // console.log("Fetched Stories:::::::::::", res.data);
             setAllStories(res?.data)
         } catch (error) {
             console.error("Error fetching stories:", error);
         }
-        // setLoading(false);
     };
 
     const getFollwedStories = async () => {
         console.log("Selector", selector?._id);
-        // setLoading(true);
         try {
             const res = await apiGet(urls.followedUserStories);
-            // console.log("Fetched Stories:::::::::::", res.data);
             setFollowedStories(res?.data)
-
         } catch (error) {
             console.error("Error fetching stories:", error);
         }
-        // setLoading(false);
     };
-
-
-
 
     const SavePost = async (item) => {
         const postId = item._id;
@@ -299,18 +277,14 @@ const handleDoubleTap = (item, index) => {
             });
         });
 
-        // Call API in background
         try {
             const endPoint = item?.SavedBy?.includes(userId)
                 ? `${urls.removeSavedPost}/${postId}`
                 : `${urls.SavePost}/${postId}`;
 
             const res = await apiGet(endPoint);
-            // console.log("-------------SAVE API SUCCESS----", res.data);
         } catch (error) {
             console.log("Save Post Error:", error);
-
-            // Revert UI on error
             setAllPosts(prevPosts => {
                 return prevPosts.map(post => {
                     if (post._id === postId) {
@@ -329,7 +303,6 @@ const handleDoubleTap = (item, index) => {
             });
         }
     };
-
 
     const onLikeUnlike = async (item) => {
         const postId = item._id;
@@ -353,10 +326,8 @@ const handleDoubleTap = (item, index) => {
         });
         try {
             await apiGet(`${urls.likeUnlike}/${postId}`);
-            // console.log("Like/Unlike updated on server");
         } catch (error) {
             console.log("Error in like/unlike", error);
-
             setAllPosts(prevPosts => {
                 return prevPosts.map(post => {
                     if (post._id === postId) {
@@ -376,7 +347,6 @@ const handleDoubleTap = (item, index) => {
             });
         }
     };
-
 
     const onDisLikes = async (item) => {
         const postId = item._id;
@@ -400,10 +370,8 @@ const handleDoubleTap = (item, index) => {
         });
         try {
             await apiGet(`${urls.disLikePost}/${postId}`);
-            // console.log("Like/Unlike updated on server");
         } catch (error) {
             console.log("Error in like/unlike", error);
-
             setAllPosts(prevPosts => {
                 return prevPosts.map(post => {
                     if (post._id === postId) {
@@ -428,7 +396,6 @@ const handleDoubleTap = (item, index) => {
         try {
             showLoader();
             const response = await apiDelete(`/api/user/DeleteComment/${id}`);
-            // console.log('DeletePost::', response);
             fetchCommentDataOfaPost(postId);
         } catch (error) {
             console.log('DeleteComment Error:', error?.response?.data || error.message);
@@ -436,8 +403,6 @@ const handleDoubleTap = (item, index) => {
             hideLoader();
         }
     };
-
-
 
     const renderHeader = () => {
         return (
@@ -455,10 +420,10 @@ const handleDoubleTap = (item, index) => {
                 <TouchableOpacity onPress={() => navigation.navigate('Activity')}>
                     <NotiFication />
                 </TouchableOpacity>
-
             </SpaceBetweenRow>
         )
     }
+
     const renderStories = () => {
         return (
             <Row style={{
@@ -477,6 +442,7 @@ const handleDoubleTap = (item, index) => {
                         horizontal
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={{ paddingHorizontal: 10 }}
+
                     >
                         {/* Your Story */}
                         <View style={styles.storyContainer}>
@@ -501,14 +467,15 @@ const handleDoubleTap = (item, index) => {
                         </View>
 
                         {/* Followed Stories */}
-                        {followedStories?.map((item) => {
+                        {followedStories?.map((item, index) => {
+                             const key = item?._id || `story-${index}`;
                             if (item?.User?.Stories?.length > 0) {
-
                                 return (
-                                    <View key={item?._id} style={styles.storyContainer} >
+                                    <View key={key} style={styles.storyContainer} >
                                         <TouchableOpacity
                                             style={[styles.storyBorder, item.isOwn && styles.ownStoryBorder]}
                                             onPress={() => navigation.navigate('StoryScreen', { storyImage: item.User?.Stories, User: item?.User })}
+                                             key={key}
                                         >
                                             <Image
                                                 source={
@@ -534,48 +501,60 @@ const handleDoubleTap = (item, index) => {
         );
     };
 
-
     const renderFeeds = () => {
         return (
             <FlatList
                 data={allPosts}
                 style={{ marginBottom: 90 }}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item, index) => `${item._id}-${index}`} // Better key extractor
                 showsVerticalScrollIndicator={false}
                 onRefresh={onRefresh}
                 refreshing={loading}
+                onViewableItemsChanged={onViewableItemsChanged}
+                viewabilityConfig={viewabilityConfig}
                 renderItem={({ item, index }) => {
-                    const mediaUrl = item.media; // Use a consistent key for media
-                    const isVideo = typeof mediaUrl === "string" && (mediaUrl.endsWith(".mp4") || mediaUrl.endsWith(".mov"));
+                    const mediaUrl = item.media;
+                    const isVideo = typeof mediaUrl === "string" && 
+                        (mediaUrl.includes('.mp4') || mediaUrl.includes('.mov') || 
+                         mediaUrl.includes('video') || mediaUrl.includes('.avi'));
 
                     return (
-                        <View style={styles.feedContainer} key={item?._id}>
+                        <View style={styles.feedContainer} key={`${item._id}-${index}`}>
                             {/* Header */}
                             <View style={styles.header}>
                                 <View style={styles.userInfo}>
-                                    <Image source={item?.User?.Image ? { uri: item?.User?.Image } : IMG.MessageProfile} style={styles.profileImage} />
+                                    <Image 
+                                        source={item?.User?.Image ? { uri: item?.User?.Image } : IMG.MessageProfile} 
+                                        style={styles.profileImage} 
+                                    />
                                     <TouchableOpacity onPress={() => navigation.navigate('OtherUserDetail', { userId: item?.User?._id })}>
                                         <Text style={styles.username}>{item?.User?.UserName}</Text>
                                         {isVideo && <Text style={styles.audio}>{'Original audio'}</Text>}
                                     </TouchableOpacity>
                                 </View>
-                                {/* <TouchableOpacity>
-                                    {isDarkMode ? <WhiteThreeDot /> : <ThreeDotIcon />}
-                                </TouchableOpacity> */}
                             </View>
 
                             <TouchableWithoutFeedback onPress={() => handleDoubleTap(item, index)}>
                                 <View style={{ position: 'relative' }}>
                                     {isVideo ? (
                                         <Video
-                                            source={{ uri: item?.media }}
+                                            source={{ uri: mediaUrl }}
                                             style={styles.postImage}
                                             resizeMode="cover"
-                                            repeat
+                                            repeat={true}
                                             muted={isMuted}
+                                            paused={visibleVideoIndex !== index || pausedVideos[index]}
+                                            onLoad={() => console.log(`Video ${index} loaded`)}
+                                            onError={(error) => console.log(`Video ${index} error:`, error)}
+                                            onBuffer={() => console.log(`Video ${index} buffering`)}
                                         />
                                     ) : (
-                                        <Image source={{ uri: item?.media }} style={styles.postImage} />
+                                        <Image 
+                                            source={{ uri: mediaUrl }} 
+                                            style={styles.postImage}
+                                            onError={(error) => console.log(`Image ${index} error:`, error)}
+                                            resizeMode="cover"
+                                        />
                                     )}
 
                                     {/* Heart Animation */}
@@ -593,18 +572,38 @@ const handleDoubleTap = (item, index) => {
                                     </Animated.View>
 
                                     {isVideo && (
-                                        <TouchableOpacity
-                                            style={styles.soundButton}
-                                            onPress={() => setIsMuted(!isMuted)}
-                                        >
-                                            {isMuted ? <SpeakerOff /> : (
-                                                <AntDesign
-                                                    name={'sound'}
-                                                    color={isDarkMode ? 'white' : 'black'}
-                                                    size={14}
+                                        <>
+                                            {/* Play/Pause Button */}
+                                            {/* <TouchableOpacity
+                                                style={[styles.soundButton, { left: 20 }]}
+                                                onPress={() => {
+                                                    setPausedVideos(prev => ({
+                                                        ...prev,
+                                                        [index]: !prev[index]
+                                                    }));
+                                                }}
+                                            >
+                                                <MaterialIcons 
+                                                    name={pausedVideos[index] ? "play-arrow" : "pause"} 
+                                                    size={20} 
+                                                    color="white" 
                                                 />
-                                            )}
-                                        </TouchableOpacity>
+                                            </TouchableOpacity> */}
+
+                                            {/* Sound Button */}
+                                            <TouchableOpacity
+                                                style={styles.soundButton}
+                                                onPress={() => setIsMuted(!isMuted)}
+                                            >
+                                                {isMuted ? <SpeakerOff /> : (
+                                                    <AntDesign
+                                                        name={'sound'}
+                                                        color="white"
+                                                        size={14}
+                                                    />
+                                                )}
+                                            </TouchableOpacity>
+                                        </>
                                     )}
                                 </View>
                             </TouchableWithoutFeedback>
@@ -617,11 +616,9 @@ const handleDoubleTap = (item, index) => {
                                         onPress={() => onLikeUnlike(item)}
                                     >
                                         {item?.likes?.includes(selector?._id) ? (
-                                            isDarkMode ? <MaterialIcons name={'favorite'} color={'red'} size={25} />
-                                                : <MaterialIcons name={'favorite-border'} color={'red'} size={25} />
+                                            <MaterialIcons name={'favorite'} color={'red'} size={25} />
                                         ) : (
-                                            isDarkMode ? <MaterialIcons name={'favorite-border'} color={'white'} size={25} />
-                                                : <MaterialIcons name={'favorite-border'} color={'black'} size={25} />
+                                            <MaterialIcons name={'favorite-border'} color={isDarkMode ? 'white' : 'black'} size={25} />
                                         )}
                                     </TouchableOpacity>
                                     <TouchableOpacity
@@ -633,31 +630,14 @@ const handleDoubleTap = (item, index) => {
                                     >
                                         {isDarkMode ? <CommentWhite /> : <CommentIcon />}
                                     </TouchableOpacity>
-                                    {/* <TouchableOpacity>
-                                        {isDarkMode ? <PostShareWhite /> : <ShareIcon />}
-                                    </TouchableOpacity> */}
                                 </View>
 
                                 <Row style={{ gap: 20 }}>
-                                    <TouchableOpacity>
-                                        {
-                                            isDarkMode ?
-                                                <TouchableOpacity style={{ alignItems: 'center', gap: 0, flexDirection: 'row' }}
-                                                    onPress={() => onDisLikes(item)}
-                                                >
-                                                    <Foundation name={'dislike'} color={'white'} size={30} />
-                                                    <Text style={styles.likes}>{item?.TotalUnLikes}</Text>
-                                                </TouchableOpacity>
-                                                :
-                                                <TouchableOpacity style={{ alignItems: 'center', gap: 0, flexDirection: 'row' }}
-                                                    onPress={() => onDisLikes(item)}
-
-                                                >
-                                                    <Foundation name={'dislike'} color={'black'} size={30} />
-                                                    <Text style={styles.likes}>{item?.TotalUnLikes}</Text>
-                                                </TouchableOpacity>
-                                        }
-
+                                    <TouchableOpacity style={{ alignItems: 'center', gap: 0, flexDirection: 'row' }}
+                                        onPress={() => onDisLikes(item)}
+                                    >
+                                        <Foundation name={'dislike'} color={isDarkMode ? 'white' : 'black'} size={30} />
+                                        <Text style={styles.likes}>{item?.TotalUnLikes}</Text>
                                     </TouchableOpacity>
 
                                     <TouchableOpacity
@@ -665,26 +645,19 @@ const handleDoubleTap = (item, index) => {
                                         onPress={() => SavePost(item)}
                                     >
                                         {item?.SavedBy?.includes(selector?._id) ? (
-                                            isDarkMode ? <FontAwesome name={'bookmark'} color={'white'} size={24} />
-                                                : <FontAwesome name={'bookmark'} color={'black'} size={24} />
+                                            <FontAwesome name={'bookmark'} color={isDarkMode ? 'white' : 'black'} size={24} />
                                         ) : (
-                                            isDarkMode ? <FontAwesome name={'bookmark-o'} color={'white'} size={24} />
-                                                : <FontAwesome name={'bookmark-o'} color={'black'} size={24} />
+                                            <FontAwesome name={'bookmark-o'} color={isDarkMode ? 'white' : 'black'} size={24} />
                                         )}
                                     </TouchableOpacity>
-
                                 </Row>
                             </View>
                             <Text style={styles.likes}>{item?.TotalLikes} {item?.TotalLikes > 1 ? 'likes' : 'like'}</Text>
                             <Text style={styles.caption}>
                                 <Text style={styles.username}>{item?.caption || 'No Caption Added'}</Text>
-                                {/* {item.caption} */}
                             </Text>
-                            {/* <SpaceBetweenRow> */}
                             <Text style={styles.comments}>{item?.TotalComents} comments</Text>
                             <Text style={styles.time}>{formatInstagramDate(item?.createdAt)}</Text>
-
-                            {/* </SpaceBetweenRow> */}
                         </View>
                     );
                 }}
@@ -697,7 +670,6 @@ const handleDoubleTap = (item, index) => {
             />
         );
     };
-
 
     const styles = StyleSheet.create({
         container: {
@@ -759,9 +731,7 @@ const handleDoubleTap = (item, index) => {
             fontSize: 16,
             fontWeight: 'bold',
         },
-
         feedContainer: {
-            // marginBottom: 20,
             borderBottomWidth: 0.5,
             borderBottomColor: '#ccc',
             paddingBottom: 10,
@@ -794,13 +764,12 @@ const handleDoubleTap = (item, index) => {
         postImage: {
             width: '100%',
             height: 310,
-            resizeMode: 'cover',
+            // resizeMode: 'cover',
         },
         actions: {
             flexDirection: 'row',
             justifyContent: 'space-between',
             paddingTop: 8,
-            // left:15
             marginHorizontal: 10
         },
         leftIcons: {
@@ -817,13 +786,11 @@ const handleDoubleTap = (item, index) => {
             fontSize: 14,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular,
             color: isDarkMode ? 'white' : 'black'
-
         },
         comments: {
             paddingHorizontal: 10,
             color: isDarkMode ? 'white' : 'gray',
             fontFamily: FONTS_FAMILY.SourceSans3_Regular
-
         },
         time: {
             paddingHorizontal: 10,
@@ -831,7 +798,6 @@ const handleDoubleTap = (item, index) => {
             fontSize: 12,
             marginTop: 5,
             fontFamily: FONTS_FAMILY.SourceSans3_Regular
-
         },
     })
 

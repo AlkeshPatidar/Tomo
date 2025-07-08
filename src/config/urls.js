@@ -24,6 +24,11 @@ export default {
     sendCommentOnPost: '/api/user/CreateComment',
     editComment: '/api/user/UpdateComment',
 
+    getStoryViewers:'/api/user/GetStoryViewers',
+    replyOnOthersStory:'/api/user/ReplyToStory',
+    reactToStory:'/api/user/ReactToStory',
+    watchStory:'/api/user/ViewStrories',
+
     getAllFollowers: '/api/user/GetAllfollowers',
     getAllFollowings: '/api/user/GetAllFollowing',
     productDetails: '/api/user/GetAProductDetails',

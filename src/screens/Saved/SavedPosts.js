@@ -46,6 +46,8 @@ const SavedPosts = ({ navigation }) => {
 
     const [isMuted, setIsMuted] = useState(false);
     const loaderVisible = useSelector(state => state?.loader?.loader);
+      const [visibleVideoIndex, setVisibleVideoIndex] = useState(0); // Track which video should play
+        const [pausedVideos, setPausedVideos] = useState({});
 
     const { showLoader, hideLoader } = useLoader()
 
@@ -54,6 +56,15 @@ const SavedPosts = ({ navigation }) => {
         selector = JSON.parse(selector);
     }
 
+      const onViewableItemsChanged = useRef(({ viewableItems }) => {
+            if (viewableItems.length > 0) {
+                setVisibleVideoIndex(viewableItems[0].index);
+            }
+        }).current;
+    
+        const viewabilityConfig = useRef({
+            itemVisiblePercentThreshold: 50, // Video plays when 50% visible
+        }).current;
 
 
     const isFocused = useIsFocused()
@@ -324,6 +335,8 @@ const SavedPosts = ({ navigation }) => {
                 style={{ marginBottom: 90 }}
                 keyExtractor={(item) => item._id}
                 showsVerticalScrollIndicator={false}
+                onViewableItemsChanged={onViewableItemsChanged}
+
                 // onRefresh={onRefresh}
                 // refreshing={loading}
                 renderItem={({ item, index }) => {
@@ -350,11 +363,15 @@ const SavedPosts = ({ navigation }) => {
                                 <View style={{ position: 'relative' }}>
                                     {isVideo ? (
                                         <Video
-                                            source={{ uri: item?.media }}
+                                            source={{ uri: item?.Post?.media }}
                                             style={styles.postImage}
                                             resizeMode="cover"
                                             repeat
                                             muted={isMuted}
+                                             paused={visibleVideoIndex !== index || pausedVideos[index]}
+                                               onLoad={() => console.log(`Video ${index} loaded`)}
+                                            onError={(error) => console.log(`Video ${index} error:`, error)}
+                                            onBuffer={() => console.log(`Video ${index} buffering`)}
                                         />
                                     ) : (
                                         <Image source={{ uri: item?.Post?.media }} style={styles.postImage} />
@@ -573,8 +590,8 @@ const SavedPosts = ({ navigation }) => {
         },
         postImage: {
             width: '100%',
-            height: 210,
-            resizeMode: 'cover',
+            height: 310,
+            // resizeMode: 'cover',
         },
         actions: {
             flexDirection: 'row',
