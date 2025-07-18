@@ -181,8 +181,23 @@ export function removeItem(key) {
   return AsyncStorage.removeItem(key);
 }
 
-export function clearAsyncStorage() {
-  return AsyncStorage.clear();
+const CLEAR_KEYS = [
+  'token',
+  
+];
+
+// export function clearAsyncStorage() {
+//   return AsyncStorage.clear();
+// }
+
+export async function clearAsyncStorage() {
+  try {
+    await AsyncStorage.multiRemove(CLEAR_KEYS);
+        navigation.replace('MainScreen')
+    console.log('Session data cleared, biometric data preserved');
+  } catch (error) {
+    console.log('Error clearing storage:', error);
+  }
 }
 
 export function setUserData(data) {
