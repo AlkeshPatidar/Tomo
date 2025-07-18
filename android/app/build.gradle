@@ -121,4 +121,5 @@ implementation project(':react-native-camera-roll_camera-roll')
     }
 }
 apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
+apply plugin: 'com.google.gms.google-services'
 

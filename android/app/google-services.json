@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1008007835499",
+    "project_id": "tomo-3a172",
+    "storage_bucket": "tomo-3a172.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1008007835499:android:cdae0c855107baa265662e",
+        "android_client_info": {
+          "package_name": "com.tomo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_avCP7xDmQnC1-tV4q7Z21L9gJG73uys"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
