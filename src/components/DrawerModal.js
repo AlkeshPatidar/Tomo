@@ -22,6 +22,7 @@ import { navigationRef } from '../routes/StackNavigation/route';
 import IMG from '../assets/Images';
 import ThemeToggle from './ThemeToggle';
 import { useSelector } from 'react-redux';
+import FingerPrintToggle from './FingerPrintToggle';
 
 
 
@@ -293,6 +294,7 @@ const CustomDrawer = ({ isVisible, onClose, navigation }) => {
                         }}
                     />
                     <ThemeToggle />
+                    <FingerPrintToggle/>
 
                     <View style={styles.options}>
                         <OptionItem label="Followers" nav={'Followers'} />
