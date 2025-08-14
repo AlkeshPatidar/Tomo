@@ -14,6 +14,8 @@ const IMG = {
   Applogo: require('./Applogo.png'),
   menuIcon: require('./menuWhite.jpg'),
   OnBoardinDark: require('./OnBoardinDark.png'),
+  FinalLogo: require('./FinalisedLogo.png'),
+
 
 };
 

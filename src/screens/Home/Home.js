@@ -22,10 +22,13 @@ import IMG from '../../assets/Images'
 import Row from '../../components/wrapper/row'
 import {
   AddStoryIcon,
+  AddStoryNewTheme,
   CameraButton,
+  CameraButtonNewTheme,
   CommentIcon,
   CommentWhite,
   NotiFication,
+  NotificationNewTheme,
   PostShareWhite,
   ShareIcon,
   SpeakerOff,
@@ -38,7 +41,7 @@ import {useSelector} from 'react-redux'
 import Video from 'react-native-video'
 import {apiDelete, apiGet, apiPost, apiPut} from '../../utils/Apis'
 import urls from '../../config/urls'
-import {white} from '../../common/Colors/colors'
+import {theme, white} from '../../common/Colors/colors'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import Foundation from 'react-native-vector-icons/Foundation'
@@ -99,78 +102,77 @@ const Home = ({navigation}) => {
     return () => backHandler.remove()
   })
 
- useEffect(() => {
-        initializeFirebase();
-    }, []);
+  useEffect(() => {
+    initializeFirebase()
+  }, [])
 
-    const initializeFirebase = async () => {
-        try {
-            // Check if Firebase is initialized
-            console.log('Initializing Firebase...');
-            
-            // Request permission first
-            await requestNotificationPermission();
-            
-        } catch (error) {
-            console.error('Firebase initialization error:', error);
-            Alert.alert('Error', `Firebase setup failed: ${error.message}`);
+  const initializeFirebase = async () => {
+    try {
+      // Check if Firebase is initialized
+      console.log('Initializing Firebase...')
+
+      // Request permission first
+      await requestNotificationPermission()
+    } catch (error) {
+      console.error('Firebase initialization error:', error)
+      Alert.alert('Error', `Firebase setup failed: ${error.message}`)
+    }
+  }
+
+  const requestNotificationPermission = async () => {
+    try {
+      let hasPermission = false
+
+      if (Platform.OS === 'android') {
+        if (Platform.Version >= 33) {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+          )
+          hasPermission = granted === PermissionsAndroid.RESULTS.GRANTED
+        } else {
+          hasPermission = true // Android < 13 doesn't need runtime permission
         }
-    };
+      } else {
+        const authStatus = await messaging().requestPermission()
+        hasPermission =
+          authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+          authStatus === messaging.AuthorizationStatus.PROVISIONAL
+      }
 
-    const requestNotificationPermission = async () => {
-        try {
-            let hasPermission = false;
+      if (hasPermission) {
+        console.log('Permission granted')
+        await getFCMToken()
+      } else {
+        console.log('Permission denied')
+        Alert.alert('Permission Required', 'Please enable notifications')
+      }
+    } catch (error) {
+      console.error('Permission error:', error)
+      Alert.alert('Error', `Permission failed: ${error.message}`)
+    }
+  }
 
-            if (Platform.OS === 'android') {
-                if (Platform.Version >= 33) {
-                    const granted = await PermissionsAndroid.request(
-                        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
-                    );
-                    hasPermission = granted === PermissionsAndroid.RESULTS.GRANTED;
-                } else {
-                    hasPermission = true; // Android < 13 doesn't need runtime permission
-                }
-            } else {
-                const authStatus = await messaging().requestPermission();
-                hasPermission = authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-                               authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-            }
+  const getFCMToken = async () => {
+    try {
+      console.log('Getting FCM token...')
 
-            if (hasPermission) {
-                console.log('Permission granted');
-                await getFCMToken();
-            } else {
-                console.log('Permission denied');
-                Alert.alert('Permission Required', 'Please enable notifications');
-            }
-        } catch (error) {
-            console.error('Permission error:', error);
-            Alert.alert('Error', `Permission failed: ${error.message}`);
-        }
-    };
+      // Register device for remote messages
+      if (!messaging().isDeviceRegisteredForRemoteMessages) {
+        await messaging().registerDeviceForRemoteMessages()
+      }
 
-    const getFCMToken = async () => {
-        try {
-            console.log('Getting FCM token...');
-            
-            // Register device for remote messages
-            if (!messaging().isDeviceRegisteredForRemoteMessages) {
-                await messaging().registerDeviceForRemoteMessages();
-            }
+      // Get token
+      const fcmToken = await messaging().getToken()
 
-            // Get token
-            const fcmToken = await messaging().getToken();
-            
-            if (fcmToken) {
-                console.log('FCM Token:', fcmToken);
-           
-            } else {
-                throw new Error('No FCM token received');
-            }
-        } catch (error) {
-            console.error('FCM Token Error:', error);
-        }
-    };
+      if (fcmToken) {
+        console.log('FCM Token:', fcmToken)
+      } else {
+        throw new Error('No FCM token received')
+      }
+    } catch (error) {
+      console.error('FCM Token Error:', error)
+    }
+  }
 
   const triggerHeartAnimation = index => {
     setDoubleTapIndex(index)
@@ -524,6 +526,7 @@ const Home = ({navigation}) => {
           onPress={() => navigation.navigate('GalleryForAddPost')}>
           <CameraButton />
         </TouchableOpacity>
+
         <CustomText
           style={{
             fontSize: 20,
@@ -582,6 +585,7 @@ const Home = ({navigation}) => {
               <TouchableOpacity
                 style={{position: 'absolute', bottom: 20, right: 10}}
                 onPress={() => navigation.navigate('GalleryPickerScreen')}>
+                {/* <AddStoryIcon /> */}
                 <AddStoryIcon />
               </TouchableOpacity>
             </View>
@@ -667,33 +671,59 @@ const Home = ({navigation}) => {
                         userId: item?.User?._id,
                       })
                     }>
-                    <Text style={styles.username}>{item?.User?.UserName}</Text>
-                    {isVideo && (
+                    <Row
+                      style={{
+                        gap: 5,
+                      }}>
+                      <Text style={styles.username}>
+                        {item?.User?.UserName}
+                      </Text>
+                      <Text style={styles.time}>
+                        {formatInstagramDate(item?.createdAt)}
+                      </Text>
+                    </Row>
+                    {/* {isVideo && (
                       <Text style={styles.audio}>{'Original audio'}</Text>
-                    )}
+                    )} */}
+
+                    <Text style={styles.caption}>
+                      <Text style={styles.username}>
+                        {item?.caption || 'No Caption Added'}
+                      </Text>
+                    </Text>
                   </TouchableOpacity>
                 </View>
               </View>
 
               <TouchableWithoutFeedback
-                onPress={() => handleDoubleTap(item, index)}>
-                <View style={{position: 'relative'}}>
+                onPress={() => handleDoubleTap(item, index)}
+                >
+                <View style={{position: 'relative', borderRadius: 13}}>
                   {isVideo ? (
-                    <Video
-                      source={{uri: mediaUrl}}
-                      style={styles.postImage}
-                      resizeMode='cover'
-                      repeat={true}
-                      muted={isMuted}
-                      paused={
-                        visibleVideoIndex !== index || pausedVideos[index]
-                      }
-                      onLoad={() => console.log(`Video ${index} loaded`)}
-                      onError={error =>
-                        console.log(`Video ${index} error:`, error)
-                      }
-                      onBuffer={() => console.log(`Video ${index} buffering`)}
-                    />
+                    <View style={styles.videoContainer}>
+                      <Video
+                        source={{uri: mediaUrl}}
+                        // style={styles.postImage}
+                        style={[
+                          styles.postImage,
+                          {
+                            // borderRadius: 13,
+                            height: 170,
+                          },
+                        ]}
+                        resizeMode='cover'
+                        repeat={true}
+                        muted={isMuted}
+                        paused={
+                          visibleVideoIndex !== index || pausedVideos[index]
+                        }
+                        onLoad={() => console.log(`Video ${index} loaded`)}
+                        onError={error =>
+                          console.log(`Video ${index} error:`, error)
+                        }
+                        onBuffer={() => console.log(`Video ${index} buffering`)}
+                      />
+                    </View>
                   ) : (
                     <Image
                       source={{uri: mediaUrl}}
@@ -705,7 +735,6 @@ const Home = ({navigation}) => {
                     />
                   )}
 
-                  {/* Heart Animation */}
                   <Animated.View
                     pointerEvents='none'
                     style={{
@@ -720,24 +749,6 @@ const Home = ({navigation}) => {
 
                   {isVideo && (
                     <>
-                      {/* Play/Pause Button */}
-                      {/* <TouchableOpacity
-                                                style={[styles.soundButton, { left: 20 }]}
-                                                onPress={() => {
-                                                    setPausedVideos(prev => ({
-                                                        ...prev,
-                                                        [index]: !prev[index]
-                                                    }));
-                                                }}
-                                            >
-                                                <MaterialIcons 
-                                                    name={pausedVideos[index] ? "play-arrow" : "pause"} 
-                                                    size={20} 
-                                                    color="white" 
-                                                />
-                                            </TouchableOpacity> */}
-
-                      {/* Sound Button */}
                       <TouchableOpacity
                         style={styles.soundButton}
                         onPress={() => setIsMuted(!isMuted)}>
@@ -755,43 +766,84 @@ const Home = ({navigation}) => {
               {/* Actions */}
               <View style={styles.actions}>
                 <View style={styles.leftIcons}>
-                  <TouchableOpacity
-                    style={{right: 0}}
-                    onPress={() => onLikeUnlike(item)}>
-                    {item?.likes?.includes(selector?._id) ? (
-                      <MaterialIcons
-                        name={'favorite'}
-                        color={'red'}
-                        size={25}
-                      />
-                    ) : (
-                      <MaterialIcons
-                        name={'favorite-border'}
-                        color={isDarkMode ? 'white' : 'black'}
-                        size={25}
-                      />
-                    )}
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setModalVisible(true)
-                      fetchCommentDataOfaPost(item?._id)
-                      setPostId(item?._id)
-                    }}>
-                    {isDarkMode ? <CommentWhite /> : <CommentIcon />}
-                  </TouchableOpacity>
+                  <Row
+                    style={{
+                    borderWidth: 0.5,
+                    borderColor: isDarkMode ? 'gray' : 'gray',
+                    borderRadius:18,
+                    paddingHorizontal: 5,
+
+                  }}
+                  >
+                    <TouchableOpacity
+                      style={{right: 0}}
+                      onPress={() => onLikeUnlike(item)}>
+                      {item?.likes?.includes(selector?._id) ? (
+                        <MaterialIcons
+                          name={'favorite'}
+                          color={'red'}
+                          size={18}
+                        />
+                      ) : (
+                        <MaterialIcons
+                          name={'favorite-border'}
+                          color={isDarkMode ? 'white' : 'black'}
+                          size={18}
+                        />
+                      )}
+                    </TouchableOpacity>
+                    <Text style={styles.likes}>
+                      {item?.TotalLikes}{' '}
+                      {/* {item?.TotalLikes > 1 ? 'likes' : 'like'} */}
+                    </Text>
+                  </Row>
+                  <Row
+                       style={{
+                    borderWidth: 0.5,
+                    borderColor: isDarkMode ? 'gray' : 'gray',
+                    borderRadius:18,
+                    paddingHorizontal: 5,
+
+                  }}
+                  >
+                    <TouchableOpacity
+                      onPress={() => {
+                        setModalVisible(true)
+                        fetchCommentDataOfaPost(item?._id)
+                        setPostId(item?._id)
+                      }}>
+                      {isDarkMode ? (
+                        <CommentWhite height={18} width={18} />
+                      ) : (
+                        <CommentIcon height={18} width={18} />
+                      )}
+                    </TouchableOpacity>
+                    <Text style={styles.comments}>
+                      {item?.TotalComents}
+                    </Text>
+                  </Row>
                 </View>
 
-                <Row style={{gap: 20}}>
+                <Row style={{gap: 20, marginRight: 6,}}>
                   <TouchableOpacity
-                    style={{alignItems: 'center', gap: 0, flexDirection: 'row'}}
+                    style={{alignItems: 'center', gap: 5, flexDirection: 'row',
+                    borderWidth: 0.5,
+                    borderColor: isDarkMode ? 'gray' : 'gray',
+                    borderRadius:18,
+                    paddingHorizontal: 10 ,
+
+
+
+                    }}
                     onPress={() => onDisLikes(item)}>
                     <Foundation
                       name={'dislike'}
                       color={isDarkMode ? 'white' : 'black'}
-                      size={30}
+                      size={27}
                     />
-                    <Text style={styles.likes}>{item?.TotalUnLikes}</Text>
+                    <Text style={{...styles.likes, fontSize: 16}}>
+                      {item?.TotalUnLikes}
+                    </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -800,31 +852,20 @@ const Home = ({navigation}) => {
                     {item?.SavedBy?.includes(selector?._id) ? (
                       <FontAwesome
                         name={'bookmark'}
+                        // color={isDarkMode ? theme : theme}
                         color={isDarkMode ? 'white' : 'black'}
-                        size={24}
+                        size={18}
                       />
                     ) : (
                       <FontAwesome
                         name={'bookmark-o'}
                         color={isDarkMode ? 'white' : 'black'}
-                        size={24}
+                        size={18}
                       />
                     )}
                   </TouchableOpacity>
                 </Row>
               </View>
-              <Text style={styles.likes}>
-                {item?.TotalLikes} {item?.TotalLikes > 1 ? 'likes' : 'like'}
-              </Text>
-              <Text style={styles.caption}>
-                <Text style={styles.username}>
-                  {item?.caption || 'No Caption Added'}
-                </Text>
-              </Text>
-              <Text style={styles.comments}>{item?.TotalComents} comments</Text>
-              <Text style={styles.time}>
-                {formatInstagramDate(item?.createdAt)}
-              </Text>
             </View>
           )
         }}
@@ -860,6 +901,7 @@ const Home = ({navigation}) => {
       borderRadius: 50,
       borderWidth: 3,
       borderColor: '#0084ff',
+      // borderColor: '#10B981',
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -887,6 +929,11 @@ const Home = ({navigation}) => {
       textAlign: 'center',
       fontFamily: FONTS_FAMILY.SourceSans3_Bold,
     },
+    videoContainer: {
+      borderRadius: 20,
+      // borderTopLeftRadius: 20,
+      overflow: 'hidden', // This is crucial!
+    },
     plusIcon: {
       position: 'absolute',
       bottom: 25,
@@ -906,7 +953,7 @@ const Home = ({navigation}) => {
       fontWeight: 'bold',
     },
     feedContainer: {
-      borderBottomWidth: 0.5,
+      borderBottomWidth: 0.3,
       borderBottomColor: '#ccc',
       paddingBottom: 10,
       backgroundColor: isDarkMode ? 'black' : 'white',
@@ -936,41 +983,52 @@ const Home = ({navigation}) => {
       fontSize: 12,
     },
     postImage: {
-      width: '100%',
-      height: 310,
+      width: '81%',
+      height: 170,
       // resizeMode: 'cover',
+      borderRadius: 13,
+      alignSelf: 'flex-end',
+      marginRight: 10,
     },
     actions: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       paddingTop: 8,
       marginHorizontal: 10,
+      paddingBottom: 10,
+      width: '81%',
+      alignSelf: 'flex-end',
     },
     leftIcons: {
       flexDirection: 'row',
       gap: 15,
+      
     },
     likes: {
-      fontWeight: 'bold',
-      paddingHorizontal: 10,
+      // fontWeight: 'bold',
+      paddingHorizontal: 3,
       color: isDarkMode ? 'white' : 'black',
+      fontFamily: FONTS_FAMILY.SourceSans3_Regular,
+      bottom: 2,
     },
     caption: {
-      paddingHorizontal: 10,
-      fontSize: 14,
+      paddingHorizontal: 2,
+      fontSize: 13,
       fontFamily: FONTS_FAMILY.SourceSans3_Regular,
       color: isDarkMode ? 'white' : 'black',
+      width: 280,
+      // padding: 10,
     },
     comments: {
-      paddingHorizontal: 10,
+      paddingHorizontal: 3,
       color: isDarkMode ? 'white' : 'gray',
       fontFamily: FONTS_FAMILY.SourceSans3_Regular,
     },
     time: {
-      paddingHorizontal: 10,
+      // paddingHorizontal: 10,
       color: 'gray',
       fontSize: 12,
-      marginTop: 5,
+      marginTop: 0,
       fontFamily: FONTS_FAMILY.SourceSans3_Regular,
     },
   })

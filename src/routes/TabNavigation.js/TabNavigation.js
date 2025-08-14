@@ -56,14 +56,14 @@ function TabNavigation() {
           headerShown: false,
           tabBarStyle: keyboardVisible ? { display: 'none' } : {
             position: 'absolute',
-            height: verticalScale(80),
+            height: verticalScale(70),
             justifyContent: 'center',
             alignItems: 'center',
             elevation: 20,
             shadowColor: '#000',
             backgroundColor: isDarkMode ? '#252525' : white,
-            borderTopRightRadius: 20,
-            borderTopLeftRadius: 20,
+            // borderTopRightRadius: 20,
+            // borderTopLeftRadius: 20,
             alignSelf: 'center',
             elevation: 1
           },

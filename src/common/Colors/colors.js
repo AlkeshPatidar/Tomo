@@ -1,5 +1,6 @@
 const color = {
   App_Primary_color: 'rgba(46, 125, 50, 1)',
+  theme:'#10B981',
   black: '#282828',
   white: '#fff',
   light_black: '#999999',

@@ -93,7 +93,7 @@
 
 
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ImageBackground, StatusBar, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Image, ImageBackground, StatusBar, StyleSheet, View } from "react-native";
 import CustomText from "../../components/TextComponent";
 import IMG from "../../assets/Images";
 import { initializeTheme } from "../../redux/actions/themeActions";
@@ -226,6 +226,19 @@ const Splash = ({ navigation }) => {
                 backgroundColor="transparent"
                 barStyle="light-content"
             />
+            <Image
+            source={IMG.FinalLogo}
+            style={{
+                width: '60%',
+                height: '30%',
+                // resizeMode: 'contain',
+                borderRadius: 20,
+                // position: 'absolute',
+                // top: 0,
+                // left: 0,
+                alignSelf: 'center',
+            }}
+            />
             <ActivityIndicator
                 color={'white'}
                 size='large'
@@ -243,6 +256,7 @@ export default Splash;
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1
+        flex: 1,
+        justifyContent:'center'
     }
 });
