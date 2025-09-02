@@ -53,6 +53,7 @@ import moment from 'moment'
 import FeedShimmerLoader from '../../components/Skeletons/FeedsShimmer'
 import ProfileShimmer from '../../components/Skeletons/ProfilePageShimmer'
 import messaging from '@react-native-firebase/messaging'
+import PostDetailModal from './PostDetailModel'
 
 const Home = ({navigation}) => {
   const {isDarkMode} = useSelector(state => state.theme)
@@ -78,6 +79,32 @@ const Home = ({navigation}) => {
   let selector = useSelector(state => state?.user?.userData)
   if (Object.keys(selector).length != 0) {
     selector = JSON.parse(selector)
+  }
+
+  const [selectedPost, setSelectedPost] = useState(null)
+  const [postDetailVisible, setPostDetailVisible] = useState(false)
+  const [postComments, setPostComments] = useState([])
+
+  // Add this function to handle post click
+  const handlePostClick = item => {
+    console.log('_______________+')
+
+    setSelectedPost(item)
+    setPostDetailVisible(true)
+    // Fetch comments for this post
+    fetchCommentDataOfaPost(item._id)
+  }
+
+  // Add this function to handle adding new comment
+  const handleAddComment = async (postId, commentText) => {
+    try {
+      // Your API call to add comment
+      // const response = await addCommentAPI(postId, commentText);
+      // After successful comment addition, refresh comments
+      fetchCommentDataOfaPost(postId)
+    } catch (error) {
+      console.error('Error adding comment:', error)
+    }
   }
 
   useFocusEffect(() => {
@@ -215,7 +242,7 @@ const Home = ({navigation}) => {
   let lastTap = null
   const handleDoubleTap = (item, index) => {
     const now = Date.now()
-    const DOUBLE_PRESS_DELAY = 300
+    const DOUBLE_PRESS_DELAY = 200
 
     if (lastTap && now - lastTap < DOUBLE_PRESS_DELAY) {
       triggerHeartAnimation(index)
@@ -405,6 +432,8 @@ const Home = ({navigation}) => {
   }
 
   const onLikeUnlike = async item => {
+    console.log('+++++++++++++++++++++++++++++++++++', item?._id)
+
     const postId = item._id
     const userId = selector?._id
     setAllPosts(prevPosts => {
@@ -530,7 +559,7 @@ const Home = ({navigation}) => {
         <CustomText
           style={{
             fontSize: 20,
-            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+            fontFamily: FONTS_FAMILY.SourceSans3_Medium,
           }}>
           Explore
         </CustomText>
@@ -546,7 +575,7 @@ const Home = ({navigation}) => {
     return (
       <Row
         style={{
-          borderBottomWidth: 1,
+          borderBottomWidth: 0.4,
           borderTopWidth: 1,
           borderColor: 'rgba(219, 219, 219, 1)',
         }}>
@@ -635,9 +664,12 @@ const Home = ({navigation}) => {
   const renderFeeds = () => {
     return (
       <FlatList
-        data={allPosts}
+        // data={allPosts}
+          data={allPosts.filter(
+          item => item?.media && !item?.media.toLowerCase().includes('.mp4'),
+        )}
         style={{marginBottom: 90}}
-        keyExtractor={(item, index) => `${item._id}-${index}`} // Better key extractor
+        keyExtractor={(item, index) => `${item._id}-${index}`}
         showsVerticalScrollIndicator={false}
         onRefresh={onRefresh}
         refreshing={loading}
@@ -653,7 +685,12 @@ const Home = ({navigation}) => {
               mediaUrl.includes('.avi'))
 
           return (
-            <View style={styles.feedContainer} key={`${item._id}-${index}`}>
+            <TouchableOpacity
+              style={styles.feedContainer}
+              key={`${item._id}-${index}`}
+              onPress={() => handlePostClick(item)}
+              // activeOpacity={0.9}
+            >
               {/* Header */}
               <View style={styles.header}>
                 <View style={styles.userInfo}>
@@ -687,7 +724,7 @@ const Home = ({navigation}) => {
                     )} */}
 
                     <Text style={styles.caption}>
-                      <Text style={styles.username}>
+                      <Text style={styles.caption}>
                         {item?.caption || 'No Caption Added'}
                       </Text>
                     </Text>
@@ -695,86 +732,102 @@ const Home = ({navigation}) => {
                 </View>
               </View>
 
-              <TouchableWithoutFeedback
-                onPress={() => handleDoubleTap(item, index)}
-                >
-                <View style={{position: 'relative', borderRadius: 13}}>
-                  {isVideo ? (
-                    <View style={styles.videoContainer}>
-                      <Video
+              <TouchableOpacity
+              // onPress={() => }
+              >
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    // handleDoubleTap(item, index)
+
+                    const now = Date.now()
+                    const DOUBLE_PRESS_DELAY = 200
+
+                    if (lastTap && now - lastTap < DOUBLE_PRESS_DELAY) {
+                      triggerHeartAnimation(index)
+                      onLikeUnlike(item)
+                    } else {
+                      lastTap = now
+                      handlePostClick(item)
+                    }
+                  }}>
+                  <View style={{position: 'relative', borderRadius: 13}}>
+                    {isVideo ? (
+                      <View style={styles.videoContainer}>
+                        <Video
+                          source={{uri: mediaUrl}}
+                          // style={styles.postImage}
+                          style={[
+                            styles.postImage,
+                            {
+                              // borderRadius: 13,
+                              height: 170,
+                            },
+                          ]}
+                          resizeMode='cover'
+                          repeat={true}
+                          muted={isMuted}
+                          paused={
+                            visibleVideoIndex !== index || pausedVideos[index]
+                          }
+                          onLoad={() => console.log(`Video ${index} loaded`)}
+                          onError={error =>
+                            console.log(`Video ${index} error:`, error)
+                          }
+                          onBuffer={() =>
+                            console.log(`Video ${index} buffering`)
+                          }
+                        />
+                      </View>
+                    ) : (
+                      <Image
                         source={{uri: mediaUrl}}
-                        // style={styles.postImage}
-                        style={[
-                          styles.postImage,
-                          {
-                            // borderRadius: 13,
-                            height: 170,
-                          },
-                        ]}
-                        resizeMode='cover'
-                        repeat={true}
-                        muted={isMuted}
-                        paused={
-                          visibleVideoIndex !== index || pausedVideos[index]
-                        }
-                        onLoad={() => console.log(`Video ${index} loaded`)}
+                        style={styles.postImage}
                         onError={error =>
-                          console.log(`Video ${index} error:`, error)
+                          console.log(`Image ${index} error:`, error)
                         }
-                        onBuffer={() => console.log(`Video ${index} buffering`)}
+                        resizeMode='cover'
                       />
-                    </View>
-                  ) : (
-                    <Image
-                      source={{uri: mediaUrl}}
-                      style={styles.postImage}
-                      onError={error =>
-                        console.log(`Image ${index} error:`, error)
-                      }
-                      resizeMode='cover'
-                    />
-                  )}
+                    )}
 
-                  <Animated.View
-                    pointerEvents='none'
-                    style={{
-                      position: 'absolute',
-                      top: '40%',
-                      left: '40%',
-                      opacity: doubleTapIndex === index ? heartOpacity : 0,
-                      transform: [{scale: heartOpacity}],
-                    }}>
-                    <MaterialIcons name='favorite' size={100} color='red' />
-                  </Animated.View>
+                    <Animated.View
+                      pointerEvents='none'
+                      style={{
+                        position: 'absolute',
+                        top: '40%',
+                        left: '40%',
+                        opacity: doubleTapIndex === index ? heartOpacity : 0,
+                        transform: [{scale: heartOpacity}],
+                      }}>
+                      <MaterialIcons name='favorite' size={100} color='red' />
+                    </Animated.View>
 
-                  {isVideo && (
-                    <>
-                      <TouchableOpacity
-                        style={styles.soundButton}
-                        onPress={() => setIsMuted(!isMuted)}>
-                        {isMuted ? (
-                          <SpeakerOff />
-                        ) : (
-                          <AntDesign name={'sound'} color='white' size={14} />
-                        )}
-                      </TouchableOpacity>
-                    </>
-                  )}
-                </View>
-              </TouchableWithoutFeedback>
+                    {isVideo && (
+                      <>
+                        <TouchableOpacity
+                          style={styles.soundButton}
+                          onPress={() => setIsMuted(!isMuted)}>
+                          {isMuted ? (
+                            <SpeakerOff />
+                          ) : (
+                            <AntDesign name={'sound'} color='white' size={14} />
+                          )}
+                        </TouchableOpacity>
+                      </>
+                    )}
+                  </View>
+                </TouchableWithoutFeedback>
+              </TouchableOpacity>
 
               {/* Actions */}
               <View style={styles.actions}>
                 <View style={styles.leftIcons}>
                   <Row
                     style={{
-                    borderWidth: 0.5,
-                    borderColor: isDarkMode ? 'gray' : 'gray',
-                    borderRadius:18,
-                    paddingHorizontal: 5,
-
-                  }}
-                  >
+                      borderWidth: 0.5,
+                      borderColor: isDarkMode ? 'gray' : 'gray',
+                      borderRadius: 18,
+                      paddingHorizontal: 5,
+                    }}>
                     <TouchableOpacity
                       style={{right: 0}}
                       onPress={() => onLikeUnlike(item)}>
@@ -782,13 +835,13 @@ const Home = ({navigation}) => {
                         <MaterialIcons
                           name={'favorite'}
                           color={'red'}
-                          size={18}
+                          size={16}
                         />
                       ) : (
                         <MaterialIcons
                           name={'favorite-border'}
                           color={isDarkMode ? 'white' : 'black'}
-                          size={18}
+                          size={16}
                         />
                       )}
                     </TouchableOpacity>
@@ -798,14 +851,12 @@ const Home = ({navigation}) => {
                     </Text>
                   </Row>
                   <Row
-                       style={{
-                    borderWidth: 0.5,
-                    borderColor: isDarkMode ? 'gray' : 'gray',
-                    borderRadius:18,
-                    paddingHorizontal: 5,
-
-                  }}
-                  >
+                    style={{
+                      borderWidth: 0.5,
+                      borderColor: isDarkMode ? 'gray' : 'gray',
+                      borderRadius: 18,
+                      paddingHorizontal: 5,
+                    }}>
                     <TouchableOpacity
                       onPress={() => {
                         setModalVisible(true)
@@ -813,35 +864,33 @@ const Home = ({navigation}) => {
                         setPostId(item?._id)
                       }}>
                       {isDarkMode ? (
-                        <CommentWhite height={18} width={18} />
+                        <CommentWhite height={16} width={16} />
                       ) : (
-                        <CommentIcon height={18} width={18} />
+                        <CommentIcon height={16} width={16} />
                       )}
                     </TouchableOpacity>
-                    <Text style={styles.comments}>
-                      {item?.TotalComents}
-                    </Text>
+                    <Text style={styles.comments}>{item?.TotalComents}</Text>
                   </Row>
                 </View>
 
-                <Row style={{gap: 20, marginRight: 6,}}>
+                <Row style={{gap: 20, marginRight: 6}}>
                   <TouchableOpacity
-                    style={{alignItems: 'center', gap: 5, flexDirection: 'row',
-                    borderWidth: 0.5,
-                    borderColor: isDarkMode ? 'gray' : 'gray',
-                    borderRadius:18,
-                    paddingHorizontal: 10 ,
-
-
-
+                    style={{
+                      alignItems: 'center',
+                      gap: 5,
+                      flexDirection: 'row',
+                      borderWidth: 0.5,
+                      borderColor: isDarkMode ? 'gray' : 'gray',
+                      borderRadius: 18,
+                      paddingHorizontal: 10,
                     }}
                     onPress={() => onDisLikes(item)}>
                     <Foundation
                       name={'dislike'}
                       color={isDarkMode ? 'white' : 'black'}
-                      size={27}
+                      size={18}
                     />
-                    <Text style={{...styles.likes, fontSize: 16}}>
+                    <Text style={{...styles.likes, fontSize: 13}}>
                       {item?.TotalUnLikes}
                     </Text>
                   </TouchableOpacity>
@@ -866,7 +915,7 @@ const Home = ({navigation}) => {
                   </TouchableOpacity>
                 </Row>
               </View>
-            </View>
+            </TouchableOpacity>
           )
         }}
         ListEmptyComponent={
@@ -899,7 +948,7 @@ const Home = ({navigation}) => {
       width: 65,
       height: 65,
       borderRadius: 50,
-      borderWidth: 3,
+      borderWidth: 2,
       borderColor: '#0084ff',
       // borderColor: '#10B981',
       justifyContent: 'center',
@@ -922,12 +971,12 @@ const Home = ({navigation}) => {
       borderRadius: 50,
     },
     storyText: {
-      fontSize: 14,
+      fontSize: 13,
       marginTop: 5,
       color: isDarkMode ? 'white' : '#000',
       width: 70,
       textAlign: 'center',
-      fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+      fontFamily: FONTS_FAMILY.SourceSans3_Medium,
     },
     videoContainer: {
       borderRadius: 20,
@@ -1002,7 +1051,6 @@ const Home = ({navigation}) => {
     leftIcons: {
       flexDirection: 'row',
       gap: 15,
-      
     },
     likes: {
       // fontWeight: 'bold',
@@ -1010,6 +1058,7 @@ const Home = ({navigation}) => {
       color: isDarkMode ? 'white' : 'black',
       fontFamily: FONTS_FAMILY.SourceSans3_Regular,
       bottom: 2,
+      fontSize: 13,
     },
     caption: {
       paddingHorizontal: 2,
@@ -1023,6 +1072,7 @@ const Home = ({navigation}) => {
       paddingHorizontal: 3,
       color: isDarkMode ? 'white' : 'gray',
       fontFamily: FONTS_FAMILY.SourceSans3_Regular,
+      fontSize: 13,
     },
     time: {
       // paddingHorizontal: 10,
@@ -1071,6 +1121,25 @@ const Home = ({navigation}) => {
         renderFeeds()
       )}
       {renderCommentModal()}
+      <PostDetailModal
+        visible={postDetailVisible}
+        onClose={() => {
+          setPostDetailVisible(false)
+          setSelectedPost(null)
+        }}
+        setPost={setSelectedPost}
+        post={selectedPost}
+        comments={comments}
+        isDarkMode={isDarkMode}
+        selector={selector}
+        onLikeUnlike={post => onLikeUnlike(post)}
+        onDisLikes={onDisLikes}
+        SavePost={SavePost}
+        onAddComment={(id, commentText)=>{sendComments(postId, commentText); setCommentText('')}}
+        formatInstagramDate={formatInstagramDate}
+        isMuted={isMuted}
+        setIsMuted={setIsMuted}
+      />
     </View>
   )
 }

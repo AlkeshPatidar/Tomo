@@ -56,7 +56,7 @@ function TabNavigation() {
           headerShown: false,
           tabBarStyle: keyboardVisible ? { display: 'none' } : {
             position: 'absolute',
-            height: verticalScale(70),
+            height: verticalScale(60),
             justifyContent: 'center',
             alignItems: 'center',
             elevation: 20,
