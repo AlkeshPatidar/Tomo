@@ -112,8 +112,20 @@ const Splash = ({ navigation }) => {
     useEffect(() => {
         initializeTheme();
         fetchData();
-        updateLocation();
+        // updateLocation();
+        // initializeLocation()
     }, []);
+
+     const initializeLocation = async () => {
+        try {
+          setLocationStatus('updating');
+          await LocationManager.initializeLocationTracking();
+          
+          // Reset status after 2 seconds
+        } catch (error) {
+          console.log('Location initialization failed:', error);
+        }
+      }
 
     const verifyBiometricBeforeLogin = async () => {
         try {

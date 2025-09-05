@@ -20,6 +20,7 @@ import {
 import CustomText from '../../components/TextComponent'
 import IMG from '../../assets/Images'
 import Row from '../../components/wrapper/row'
+import LocationManager from '../../utils/LocationManager'
 import {
   AddStoryIcon,
   AddStoryNewTheme,
@@ -37,9 +38,9 @@ import {
 } from '../../assets/SVGs'
 import {FONTS_FAMILY} from '../../assets/Fonts'
 import SpaceBetweenRow from '../../components/wrapper/spacebetween'
-import {useSelector} from 'react-redux'
+import {useDispatch, useSelector} from 'react-redux'
 import Video from 'react-native-video'
-import {apiDelete, apiGet, apiPost, apiPut} from '../../utils/Apis'
+import {apiDelete, apiGet, apiPost, apiPut, getItem} from '../../utils/Apis'
 import urls from '../../config/urls'
 import {theme, white} from '../../common/Colors/colors'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
@@ -54,6 +55,7 @@ import FeedShimmerLoader from '../../components/Skeletons/FeedsShimmer'
 import ProfileShimmer from '../../components/Skeletons/ProfilePageShimmer'
 import messaging from '@react-native-firebase/messaging'
 import PostDetailModal from './PostDetailModel'
+import { setUser } from '../../redux/reducer/user'
 
 const Home = ({navigation}) => {
   const {isDarkMode} = useSelector(state => state.theme)
@@ -73,6 +75,7 @@ const Home = ({navigation}) => {
   const [visibleVideoIndex, setVisibleVideoIndex] = useState(0) // Track which video should play
   const [pausedVideos, setPausedVideos] = useState({}) // Track paused state for each video
   const loaderVisible = useSelector(state => state?.loader?.loader)
+  const dispatch =useDispatch()
 
   const {showLoader, hideLoader} = useLoader()
 
@@ -84,6 +87,8 @@ const Home = ({navigation}) => {
   const [selectedPost, setSelectedPost] = useState(null)
   const [postDetailVisible, setPostDetailVisible] = useState(false)
   const [postComments, setPostComments] = useState([])
+
+  const [locationStatus, setLocationStatus] = useState('idle')
 
   // Add this function to handle post click
   const handlePostClick = item => {
@@ -283,20 +288,124 @@ const Home = ({navigation}) => {
     fetchData()
     getCurrentStories()
     getFollwedStories()
+    initializeLocation()
+
+  }, [])
+
+  useEffect(() => {
+  // Callback function define kar
+  const fetchData = async () => {
+    const token = await getItem('token');
+    setLoading(true);
+    
+    try {
+      if (token) {
+        const getUserDetails = await apiGet(urls.userProfile);
+        dispatch(setUser(JSON.stringify(getUserDetails))); // userData ki jagah getUserDetails
+        setLoading(false);
+      } else {
+        navigation.replace('Onboarding');
+        setLoading(false);
+      }
+    } catch (error) {
+      console.log('Fetch data error:', error);
+      navigation.replace('Onboarding');
+      setLoading(false);
+    }
+  };
+
+  // LocationManager mein callback set kar
+  LocationManager.setLocationUpdateCallback(fetchData);
+
+  // Location tracking initialize kar
+  LocationManager.initializeLocationTracking();
+
+  // Cleanup function
+  return () => {
+    LocationManager.setLocationUpdateCallback(null);
+    LocationManager.stopLocationTracking();
+  };
+}, []);
+
+ const initializeLocation = async () => {
+    try {
+      setLocationStatus('updating');
+      await LocationManager.initializeLocationTracking();
+      setLocationStatus('updated');
+      
+      // Reset status after 2 seconds
+      setTimeout(() => setLocationStatus('idle'), 2000);
+    } catch (error) {
+      console.log('Location initialization failed:', error);
+      setLocationStatus('error');
+      setTimeout(() => setLocationStatus('idle'), 3000);
+    }
+  }
+
+  // Update location when app comes to foreground
+  const updateLocationOnFocus = async () => {
+    try {
+      await LocationManager.checkAndUpdateLocation();
+    } catch (error) {
+      console.log('Foreground location update failed:', error);
+    }
+  }
+
+      const handleManualLocationUpdate = async () => {
+    try {
+      setLocationStatus('updating');
+      const result = await LocationManager.updateLocationNow();
+      
+      if (result.success) {
+        setLocationStatus('updated');
+        console.log('Manual location update successful');
+      } else {
+        setLocationStatus('error');
+        console.log('Manual location update failed:', result.error);
+      }
+      
+      setTimeout(() => setLocationStatus('idle'), 2000);
+    } catch (error) {
+      setLocationStatus('error');
+      console.log('Manual location update error:', error);
+      setTimeout(() => setLocationStatus('idle'), 3000);
+    }
+  }
+
+  // Enhanced cleanup when component unmounts
+  useEffect(() => {
+    return () => {
+      // Stop location tracking when component unmounts
+      LocationManager.stopLocationTracking();
+    }
   }, [])
 
   useEffect(() => {
     getCurrentStories()
     getFollwedStories()
+     if (isFocused) {
+      updateLocationOnFocus()
+    }
   }, [isFocused])
+
+
+
+  
 
   const onRefresh = async () => {
     setLoading(true)
+    //  try {
+    //   await LocationManager.updateLocationNow();
+    // } catch (error) {
+    //   console.log('Location update during refresh failed:', error);
+    // }
     await fetchData()
     await getCurrentStories()
     await getFollwedStories()
     setLoading(false)
   }
+
+
 
   const fetchCommentDataOfaPost = async id => {
     const res = await apiGet(`${urls.getAllCommentofaPost}/${id}`)
