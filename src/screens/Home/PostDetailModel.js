@@ -1,6 +1,6 @@
 
 
-import React, {useState, useRef} from 'react'
+import React, { useState, useRef } from 'react'
 import {
   View,
   Text,
@@ -21,10 +21,11 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import Foundation from 'react-native-vector-icons/Foundation'
 import Video from 'react-native-video'
 import IMG from '../../assets/Images'
-import {FONTS_FAMILY} from '../../assets/Fonts'
+import { FONTS_FAMILY } from '../../assets/Fonts'
 import color from '../../common/Colors/colors'
+import GradientIcon from '../../components/GradientIcon'
 
-const {height: screenHeight, width: screenWidth} = Dimensions.get('window')
+const { height: screenHeight, width: screenWidth } = Dimensions.get('window')
 
 const PostDetailModal = ({
   visible,
@@ -65,7 +66,7 @@ const PostDetailModal = ({
   const handleInputFocus = () => {
     // Scroll to bottom when input is focused
     setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({animated: true})
+      scrollViewRef.current?.scrollToEnd({ animated: true })
     }, 100)
   }
 
@@ -79,15 +80,15 @@ const PostDetailModal = ({
       mediaUrl.includes('video') ||
       mediaUrl.includes('.avi'))
 
-  const renderComment = ({item, index}) => (
+  const renderComment = ({ item, index }) => (
     <View
       style={[
         styles.commentItem,
-        {borderBottomColor: isDarkMode ? '#333' : '#eee'},
+        { borderBottomColor: isDarkMode ? '#333' : '#eee' },
       ]}>
       <Image
         source={
-          item?.User?.Image ? {uri: item?.User?.Image} : IMG.ProfileImagePost
+          item?.User?.Image ? { uri: item?.User?.Image } : IMG.ProfileImagePost
         }
         style={styles.commentProfileImage}
       />
@@ -96,17 +97,17 @@ const PostDetailModal = ({
           <Text
             style={[
               styles.commentUsername,
-              {color: isDarkMode ? 'white' : 'black'},
+              { color: isDarkMode ? 'white' : 'black' },
             ]}>
             {item?.User?.UserName || 'User'}
           </Text>
           <Text
-            style={[styles.commentTime, {color: isDarkMode ? '#888' : '#666'}]}>
+            style={[styles.commentTime, { color: isDarkMode ? '#888' : '#666' }]}>
             {formatInstagramDate(item?.createdAt)}
           </Text>
         </View>
         <Text
-          style={[styles.commentText, {color: isDarkMode ? '#ddd' : '#333'}]}>
+          style={[styles.commentText, { color: isDarkMode ? '#ddd' : '#333' }]}>
           {item?.text || item?.comment || ''}
         </Text>
       </View>
@@ -166,8 +167,8 @@ const PostDetailModal = ({
     },
     userInfo: {
       marginLeft: 12,
-      flexDirection:'row',
-      gap:10
+      flexDirection: 'row',
+      gap: 10
     },
     userName: {
       fontSize: 16,
@@ -339,12 +340,12 @@ const PostDetailModal = ({
       <Modal
         isVisible={visible}
         animationIn="zoomIn"
-        animationOut="zoomOut" 
+        animationOut="zoomOut"
         // animationInTiming={300}
         // animationOutTiming={250}
         // backdropTransitionInTiming={300}
         // backdropTransitionOutTiming={250}
-        style={{margin: 0}}
+        style={{ margin: 0 }}
         backdropOpacity={0.9}
         useNativeDriver={true}
         statusBarTranslucent={true}
@@ -352,137 +353,137 @@ const PostDetailModal = ({
         onBackButtonPress={handleClose}>
         <StatusBar backgroundColor='transparent' barStyle='light-content' />
         <View style={styles.modalContainer}>
-            {/* Header */}
-            <View style={styles.modalHeader}>
-              <TouchableOpacity
-                onPress={handleClose}
-                style={styles.closeButton}>
-                <MaterialIcons
-                  name='arrow-back'
-                  size={24}
-                  color={isDarkMode ? 'white' : 'black'}
+          {/* Header */}
+          <View style={styles.modalHeader}>
+            <TouchableOpacity
+              onPress={handleClose}
+              style={styles.closeButton}>
+              <MaterialIcons
+                name='arrow-back'
+                size={24}
+                color={isDarkMode ? 'white' : 'black'}
+              />
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Post</Text>
+            <TouchableOpacity style={styles.moreButton}>
+              <MaterialIcons
+                name='more-vert'
+                size={24}
+                color={isDarkMode ? 'white' : 'black'}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <KeyboardAvoidingView
+            style={styles.keyboardContainer}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={0}>
+
+            <ScrollView
+              ref={scrollViewRef}
+              style={styles.scrollContainer}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 20 }}>
+
+              {/* User Info */}
+              <View style={styles.userSection}>
+                <Image
+                  source={
+                    post?.User?.Image
+                      ? { uri: post?.User?.Image }
+                      : IMG.ProfileImagePost
+                  }
+                  style={styles.userAvatar}
                 />
-              </TouchableOpacity>
-              <Text style={styles.modalTitle}>Post</Text>
-              <TouchableOpacity style={styles.moreButton}>
-                <MaterialIcons
-                  name='more-vert'
-                  size={24}
-                  color={isDarkMode ? 'white' : 'black'}
-                />
-              </TouchableOpacity>
-            </View>
-
-            <KeyboardAvoidingView 
-              style={styles.keyboardContainer}
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              keyboardVerticalOffset={0}>
-              
-              <ScrollView
-                ref={scrollViewRef}
-                style={styles.scrollContainer}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{paddingBottom: 20}}>
-                
-                {/* User Info */}
-                <View style={styles.userSection}>
-                  <Image
-                    source={
-                      post?.User?.Image
-                        ? {uri: post?.User?.Image}
-                        : IMG.ProfileImagePost
-                    }
-                    style={styles.userAvatar}
-                  />
-                  <View style={styles.userInfo}>
-                    <Text style={styles.userName}>{post?.User?.UserName}</Text>
-                    <Text style={styles.postTime}>
-                      {formatInstagramDate(post?.createdAt)}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Media */}
-                <TouchableOpacity
-                  onPress={() => setImageModalVisible(true)}
-                  style={styles.mediaContainer}>
-                  {isVideo ? (
-                    <View style={styles.videoWrapper}>
-                      <Video
-                        source={{uri: mediaUrl}}
-                        style={styles.media}
-                        resizeMode='cover'
-                        repeat={true}
-                        muted={isMuted}
-                        paused={false}
-                      />
-                      <TouchableOpacity
-                        style={styles.soundButton}
-                        onPress={e => {
-                          e.stopPropagation()
-                          setIsMuted(!isMuted)
-                        }}>
-                        {isMuted ? (
-                          <MaterialIcons
-                            name='volume-off'
-                            size={20}
-                            color='white'
-                          />
-                        ) : (
-                          <MaterialIcons
-                            name='volume-up'
-                            size={20}
-                            color='white'
-                          />
-                        )}
-                      </TouchableOpacity>
-                    </View>
-                  ) : (
-                    <Image
-                      source={{uri: mediaUrl}}
-                      style={styles.media}
-                      resizeMode='cover'
-                    />
-                  )}
-                </TouchableOpacity>
-
-                {/* Caption */}
-                <View style={styles.captionSection}>
-                  <Text style={styles.caption}>
-                    {post?.caption || 'No Caption Added'}
+                <View style={styles.userInfo}>
+                  <Text style={styles.userName}>{post?.User?.UserName}</Text>
+                  <Text style={styles.postTime}>
+                    {formatInstagramDate(post?.createdAt)}
                   </Text>
                 </View>
+              </View>
 
-                {/* Actions */}
-                <View style={styles.actionsSection}>
-                  <View style={styles.actionRow}>
+              {/* Media */}
+              <TouchableOpacity
+                onPress={() => setImageModalVisible(true)}
+                style={styles.mediaContainer}>
+                {isVideo ? (
+                  <View style={styles.videoWrapper}>
+                    <Video
+                      source={{ uri: mediaUrl }}
+                      style={styles.media}
+                      resizeMode='cover'
+                      repeat={true}
+                      muted={isMuted}
+                      paused={false}
+                    />
                     <TouchableOpacity
-                      style={styles.actionButton}
-                      onPress={() => {
-                        const postId = post._id
-                        const userId = selector?._id
-
-                        // ✅ ek hi post ko update karna
-                        setPost(prevPost => {
-                          if (!prevPost) return prevPost
-
-                          const alreadyLiked = prevPost.likes.includes(userId)
-                          const updatedLikes = alreadyLiked
-                            ? prevPost.likes.filter(id => id !== userId)
-                            : [...prevPost.likes, userId]
-
-                          return {
-                            ...prevPost,
-                            likes: updatedLikes,
-                            TotalLikes: alreadyLiked
-                              ? prevPost.TotalLikes - 1
-                              : prevPost.TotalLikes + 1,
-                          }
-                        })
-
-                        onLikeUnlike(post)
+                      style={styles.soundButton}
+                      onPress={e => {
+                        e.stopPropagation()
+                        setIsMuted(!isMuted)
                       }}>
-                      <MaterialIcons
+                      {isMuted ? (
+                        <MaterialIcons
+                          name='volume-off'
+                          size={20}
+                          color='white'
+                        />
+                      ) : (
+                        <MaterialIcons
+                          name='volume-up'
+                          size={20}
+                          color='white'
+                        />
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <Image
+                    source={{ uri: mediaUrl }}
+                    style={styles.media}
+                    resizeMode='cover'
+                  />
+                )}
+              </TouchableOpacity>
+
+              {/* Caption */}
+              <View style={styles.captionSection}>
+                <Text style={styles.caption}>
+                  {post?.caption || 'No Caption Added'}
+                </Text>
+              </View>
+
+              {/* Actions */}
+              <View style={styles.actionsSection}>
+                <View style={styles.actionRow}>
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => {
+                      const postId = post._id
+                      const userId = selector?._id
+
+                      // ✅ ek hi post ko update karna
+                      setPost(prevPost => {
+                        if (!prevPost) return prevPost
+
+                        const alreadyLiked = prevPost.likes.includes(userId)
+                        const updatedLikes = alreadyLiked
+                          ? prevPost.likes.filter(id => id !== userId)
+                          : [...prevPost.likes, userId]
+
+                        return {
+                          ...prevPost,
+                          likes: updatedLikes,
+                          TotalLikes: alreadyLiked
+                            ? prevPost.TotalLikes - 1
+                            : prevPost.TotalLikes + 1,
+                        }
+                      })
+
+                      onLikeUnlike(post)
+                    }}>
+                    {/* <MaterialIcons
                         name={
                           post?.likes?.includes(selector?._id)
                             ? 'favorite'
@@ -496,31 +497,67 @@ const PostDetailModal = ({
                             ? 'white'
                             : 'black'
                         }
-                      />
-                      <Text style={styles.actionText}>{post?.TotalLikes}</Text>
-                    </TouchableOpacity>
+                      /> */}
 
-                    <TouchableOpacity
-                      style={styles.actionButton}
-                      onPress={() => onDisLikes(post)}>
-                      <Foundation
-                        name='dislike'
-                        size={20}
-                        color={isDarkMode ? 'white' : 'black'}
-                      />
-                      <Text style={styles.actionText}>{post?.TotalUnLikes}</Text>
-                    </TouchableOpacity>
+                    {
+                      post?.likes?.includes(selector?._id) ?
 
-                    <TouchableOpacity style={styles.actionButton}>
-                      <MaterialIcons
-                        name='chat-bubble-outline'
-                        size={20}
-                        color={isDarkMode ? 'white' : 'black'}
-                      />
-                      <Text style={styles.actionText}>{comments.length}</Text>
-                    </TouchableOpacity>
+                        <GradientIcon
+                          colors={['#4F52FE', '#FC14CB']}
+                          size={18}
+                          iconType='Ionicons'
+                          name={'triangle'}
+                        /> :
 
-                    {/* <TouchableOpacity onPress={() => SavePost(post)}>
+                        <GradientIcon
+                          colors={['#4F52FE', '#FC14CB']}
+                          size={18}
+                          iconType='Feather'
+                          name={'triangle'}
+                        />
+
+                    }
+                    <Text style={styles.actionText}>{post?.TotalLikes}</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => onDisLikes(post)}>
+                    {/* <Foundation
+                      name='dislike'
+                      size={20}
+                      color={isDarkMode ? 'white' : 'black'}
+                    /> */}
+
+                    <GradientIcon
+                      colors={['#4F52FE', '#FC14CB']}
+                      size={18}
+                      iconType='Feather'
+                      name={'triangle'}
+                      style={{
+                        transform: [{ rotate: '180deg' }],
+                      }}
+                    />
+
+                    <Text style={styles.actionText}>{post?.TotalUnLikes}</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.actionButton}>
+                    {/* <MaterialIcons
+                      name='chat-bubble-outline'
+                      size={20}
+                      color={isDarkMode ? 'white' : 'black'}
+                    /> */}
+                      <GradientIcon
+                          colors={['#4F52FE', '#FC14CB']}
+                          size={18}
+                          iconType='FontAwesome'
+                          name={'comment-o'}
+                        />
+                    <Text style={styles.actionText}>{comments.length}</Text>
+                  </TouchableOpacity>
+
+                  {/* <TouchableOpacity onPress={() => SavePost(post)}>
                       <FontAwesome
                         name={
                           post?.SavedBy?.includes(selector?._id)
@@ -531,77 +568,77 @@ const PostDetailModal = ({
                         color={isDarkMode ? 'white' : 'black'}
                       />
                     </TouchableOpacity> */}
-                  </View>
                 </View>
+              </View>
 
-                {/* Comments Section */}
-                <View style={styles.commentsSection}>
-                  <Text style={styles.commentsTitle}>
-                    Comments ({comments.length})
-                  </Text>
+              {/* Comments Section */}
+              <View style={styles.commentsSection}>
+                <Text style={styles.commentsTitle}>
+                  Comments ({comments.length})
+                </Text>
 
-                  <FlatList
-                    data={comments}
-                    keyExtractor={(item, index) => item._id || index.toString()}
-                    renderItem={renderComment}
-                    scrollEnabled={false}
-                    removeClippedSubviews={false}
-                    ListEmptyComponent={
-                      <Text
-                        style={[
-                          styles.commentText,
-                          {textAlign: 'center', marginTop: 20},
-                        ]}>
-                        No Comments Yet!
-                      </Text>
-                    }
-                  />
-                </View>
-              </ScrollView>
-
-              {/* Comment Input */}
-              <View style={styles.commentInputContainer}>
-                <Image
-                  source={
-                    selector?.Image
-                      ? {uri: selector?.Image}
-                      : IMG.ProfileImagePost
+                <FlatList
+                  data={comments}
+                  keyExtractor={(item, index) => item._id || index.toString()}
+                  renderItem={renderComment}
+                  scrollEnabled={false}
+                  removeClippedSubviews={false}
+                  ListEmptyComponent={
+                    <Text
+                      style={[
+                        styles.commentText,
+                        { textAlign: 'center', marginTop: 20 },
+                      ]}>
+                      No Comments Yet!
+                    </Text>
                   }
-                  style={styles.inputProfileImage}
                 />
-                <TextInput
-                  style={styles.commentInput}
-                  placeholder='Add a comment...'
-                  placeholderTextColor={isDarkMode ? '#888' : '#666'}
-                  value={comment}
-                  onChangeText={setComment}
-                  onFocus={handleInputFocus}
-                  multiline
-                />
-                <TouchableOpacity
-                  onPress={handleAddComment}
-                  style={[
-                    styles.sendButton,
-                    {
-                      backgroundColor: comment.trim()
-                        ? '#007AFF'
-                        : isDarkMode
+              </View>
+            </ScrollView>
+
+            {/* Comment Input */}
+            <View style={styles.commentInputContainer}>
+              <Image
+                source={
+                  selector?.Image
+                    ? { uri: selector?.Image }
+                    : IMG.ProfileImagePost
+                }
+                style={styles.inputProfileImage}
+              />
+              <TextInput
+                style={styles.commentInput}
+                placeholder='Add a comment...'
+                placeholderTextColor={isDarkMode ? '#888' : '#666'}
+                value={comment}
+                onChangeText={setComment}
+                onFocus={handleInputFocus}
+                multiline
+              />
+              <TouchableOpacity
+                onPress={handleAddComment}
+                style={[
+                  styles.sendButton,
+                  {
+                    backgroundColor: comment.trim()
+                      ? '#007AFF'
+                      : isDarkMode
                         ? '#333'
                         : '#ddd',
-                    },
-                  ]}
-                  disabled={!comment.trim()}>
-                  <MaterialIcons
-                    name='send'
-                    size={18}
-                    color={
-                      comment.trim() ? 'white' : isDarkMode ? '#666' : '#999'
-                    }
-                  />
-                </TouchableOpacity>
-              </View>
-            </KeyboardAvoidingView>
-          </View>
+                  },
+                ]}
+                disabled={!comment.trim()}>
+                <MaterialIcons
+                  name='send'
+                  size={18}
+                  color={
+                    comment.trim() ? 'white' : isDarkMode ? '#666' : '#999'
+                  }
+                />
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
       </Modal>
 
       {/* Image Preview Modal */}
@@ -609,7 +646,7 @@ const PostDetailModal = ({
         isVisible={imageModalVisible}
         animationIn="fadeIn"
         animationOut="fadeOut"
-        style={{margin: 0}}
+        style={{ margin: 0 }}
         backdropOpacity={1}
         useNativeDriver={true}
         statusBarTranslucent={true}
@@ -625,7 +662,7 @@ const PostDetailModal = ({
 
           {isVideo ? (
             <Video
-              source={{uri: mediaUrl}}
+              source={{ uri: mediaUrl }}
               style={styles.fullscreenMedia}
               resizeMode='contain'
               repeat={true}
@@ -634,7 +671,7 @@ const PostDetailModal = ({
             />
           ) : (
             <Image
-              source={{uri: mediaUrl}}
+              source={{ uri: mediaUrl }}
               style={styles.fullscreenMedia}
               resizeMode='contain'
             />

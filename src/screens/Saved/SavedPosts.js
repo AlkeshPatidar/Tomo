@@ -62,6 +62,7 @@ import CommentModal from '../Home/CommentModel'
 import moment from 'moment'
 import FeedShimmerLoader from '../../components/Skeletons/FeedsShimmer'
 import AntDesign from 'react-native-vector-icons/AntDesign'
+import GradientIcon from '../../components/GradientIcon'
 
 const SavedPosts = ({navigation}) => {
   const {isDarkMode} = useSelector(state => state.theme)
@@ -640,10 +641,12 @@ const SavedPosts = ({navigation}) => {
                 <View style={styles.leftIcons}>
                   <Row 
                   style={{
-                    borderWidth: 0.5,
+                    // borderWidth: 0.5,
                     borderColor: isDarkMode ? 'gray' : 'gray',
                     borderRadius:10,
                     paddingHorizontal: 5,
+                    gap:5
+
 
                   }}
                   >
@@ -652,29 +655,43 @@ const SavedPosts = ({navigation}) => {
                       onPress={() => onLikeUnlike(item)}>
                       {item?.Post?.likes?.includes(selector?._id) ? (
                         isDarkMode ? (
-                          <MaterialIcons
-                            name={'favorite'}
-                            color={'red'}
-                            size={18}
-                          />
+                          // <MaterialIcons
+                          //   name={'favorite'}
+                          //   color={'red'}
+                          //   size={18}
+                          // />
+                           <GradientIcon
+                          colors={['#4F52FE', '#FC14CB']}
+                          size={18}
+                          iconType='Ionicons'
+                          name={'triangle'}
+                        />
                         ) : (
-                          <MaterialIcons
-                            name={'favorite-border'}
-                            color={'red'}
-                            size={18}
-                          />
+                          // <MaterialIcons
+                          //   name={'favorite-border'}
+                          //   color={'red'}
+                          //   size={18}
+                          // />
+                            <GradientIcon
+                          colors={['#4F52FE', '#FC14CB']}
+                          size={18}
+                          iconType='Feather'
+                          name={'triangle'}
+                        />
                         )
                       ) : isDarkMode ? (
-                        <MaterialIcons
-                          name={'favorite-border'}
-                          color={'white'}
+                         <GradientIcon
+                          colors={['#4F52FE', '#FC14CB']}
                           size={18}
+                          iconType='Feather'
+                          name={'triangle'}
                         />
                       ) : (
-                        <MaterialIcons
-                          name={'favorite-border'}
-                          color={'black'}
+                        <GradientIcon
+                          colors={['#4F52FE', '#FC14CB']}
                           size={18}
+                          iconType='Feather'
+                          name={'triangle'}
                         />
                       )}
                     </TouchableOpacity>
@@ -684,10 +701,11 @@ const SavedPosts = ({navigation}) => {
                     </Text>
                   </Row>
                   <Row style={{
-                    borderWidth: 0.5,
+                    // borderWidth: 0.5,
                     borderColor: isDarkMode ? 'gray' : 'gray',
                     borderRadius:10,
                     paddingHorizontal: 5,
+                    gap:5
 
                   }}>
                     <TouchableOpacity
@@ -697,9 +715,21 @@ const SavedPosts = ({navigation}) => {
                         setPostId(item?.Post?._id)
                       }}>
                       {isDarkMode ? (
-                        <CommentWhite height={18} width={18} />
+                        // <CommentWhite height={18} width={18} />
+                         <GradientIcon
+                          colors={['#4F52FE', '#FC14CB']}
+                          size={18}
+                          iconType='FontAwesome'
+                          name={'comment-o'}
+                        />
                       ) : (
-                        <CommentIcon height={18} width={18} />
+                        // <CommentIcon height={18} width={18} />
+                         <GradientIcon
+                          colors={['#4F52FE', '#FC14CB']}
+                          size={18}
+                          iconType='FontAwesome'
+                          name={'comment-o'}
+                        />
                       )}
                     </TouchableOpacity>
                     <Text style={styles.comments}>
@@ -735,29 +765,42 @@ const SavedPosts = ({navigation}) => {
                     onPress={() => SavePost(item)}>
                     {item?.Post?.SavedBy?.includes(selector?._id) ? (
                       isDarkMode ? (
-                        <FontAwesome
-                          name={'bookmark'}
-                          color={'white'}
-                          size={18}
-                        />
+                        // <FontAwesome
+                        //   name={'bookmark'}
+                        //   color={'white'}
+                        //   size={18}
+                        // />
+                          <GradientIcon
+                        colors={['#4F52FE', '#FC14CB']}
+                        size={18}
+                        iconType='FontAwesome'
+                        name={'bookmark-o'}
+
+                      />
                       ) : (
-                        <FontAwesome
-                          name={'bookmark'}
-                          color={'black'}
-                          size={18}
-                        />
+                        <GradientIcon
+                        colors={['#4F52FE', '#FC14CB']}
+                        size={18}
+                        iconType='FontAwesome'
+                        name={'bookmark-o'}
+
+                      />
                       )
                     ) : isDarkMode ? (
-                      <FontAwesome
-                        name={'bookmark-o'}
-                        color={'white'}
+                       <GradientIcon
+                        colors={['#4F52FE', '#FC14CB']}
                         size={18}
+                        iconType='FontAwesome'
+                        name={'bookmark-o'}
+
                       />
                     ) : (
-                      <FontAwesome
-                        name={'bookmark-o'}
-                        color={'black'}
+                     <GradientIcon
+                        colors={['#4F52FE', '#FC14CB']}
                         size={18}
+                        iconType='FontAwesome'
+                        name={'bookmark-o'}
+
                       />
                     )}
                   </TouchableOpacity>

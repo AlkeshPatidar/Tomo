@@ -578,7 +578,7 @@
 
 // export default OtherUserDetail;
 
-import React, {useCallback, useEffect, useState} from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   View,
   Text,
@@ -599,29 +599,30 @@ import {
   ThreeDotIcon,
 } from '../../assets/SVGs'
 import Row from '../../components/wrapper/row'
-import {FONTS_FAMILY} from '../../assets/Fonts'
+import { FONTS_FAMILY } from '../../assets/Fonts'
 import CustomText from '../../components/TextComponent'
 import LinearGradient from 'react-native-linear-gradient'
 import CustomDrawer from '../../components/DrawerModal'
-import {useSelector} from 'react-redux'
+import { useSelector } from 'react-redux'
 import IMG from '../../assets/Images'
-import {apiGet, apiPost} from '../../utils/Apis'
+import { apiGet, apiPost } from '../../utils/Apis'
 import urls from '../../config/urls'
-import {useFocusEffect, useIsFocused} from '@react-navigation/native'
+import { useFocusEffect, useIsFocused } from '@react-navigation/native'
 import useLoader from '../../utils/LoaderHook'
-import {ToastMsg} from '../../utils/helperFunctions'
+import { ToastMsg } from '../../utils/helperFunctions'
 import ProfileShimmer from '../../components/Skeletons/ProfilePageShimmer'
 import Feather from 'react-native-vector-icons/Feather'
-import {white} from '../../common/Colors/colors'
+import { white } from '../../common/Colors/colors'
+import GradientIcon from '../../components/GradientIcon'
 
-const OtherUserDetail = ({navigation, route}) => {
+const OtherUserDetail = ({ navigation, route }) => {
   const [isDrawerVisible, setDrawerVisible] = useState(false)
   const [activeTab, setActiveTab] = useState('all') // 'all' or 'saved' (for consistency)
-  const {isDarkMode} = useSelector(state => state.theme)
+  const { isDarkMode } = useSelector(state => state.theme)
   const [UserDetails, setUserDetails] = useState(null)
   const [loading, setLoading] = useState(false)
   const [allPosts, setAllPosts] = useState([])
-  const {showLoader, hideLoader} = useLoader()
+  const { showLoader, hideLoader } = useLoader()
 
   const isFocused = useIsFocused()
 
@@ -699,7 +700,7 @@ const OtherUserDetail = ({navigation, route}) => {
       backgroundColor: isDarkMode ? '#252525' : '#ffffff',
       elevation: 2,
       shadowColor: '#000',
-      shadowOffset: {width: 0, height: 2},
+      shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 2,
       paddingBottom: 16,
@@ -907,7 +908,7 @@ const OtherUserDetail = ({navigation, route}) => {
       padding: 20,
       elevation: 2,
       shadowColor: '#000',
-      shadowOffset: {width: 0, height: 1},
+      shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.1,
       shadowRadius: 2,
     },
@@ -928,18 +929,26 @@ const OtherUserDetail = ({navigation, route}) => {
   const renderHeader = () => (
     <SpaceBetweenRow style={styles.header}>
       <TouchableOpacity
-        onPress={() => navigation.navigate('Tab', {screen: 'Home'})}>
+        onPress={() => navigation.navigate('Tab', { screen: 'Home' })}>
         {isDarkMode ? <PrimaryBackWhite /> : <PrimaryBackArrow />}
       </TouchableOpacity>
       <Text style={styles.headerText}>
         {UserDetails?.UserName || UserDetails?.FullName}
       </Text>
       <TouchableOpacity onPress={() => setDrawerVisible(true)}>
-        <Feather
+        {/* <Feather
           name={'settings'}
           size={24}
           color={isDarkMode ? white : '#000'}
+        /> */}
+
+        <GradientIcon
+          colors={['#4F52FE', '#FC14CB']}
+          size={18}
+          iconType='Feather'
+          name={'settings'}
         />
+
       </TouchableOpacity>
     </SpaceBetweenRow>
   )
@@ -1016,12 +1025,12 @@ const OtherUserDetail = ({navigation, route}) => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.messageButton}
-          // onPress={() => navigation.navigate('Chat')}
+        // onPress={() => navigation.navigate('Chat')}
         >
           <Text style={styles.messageButtonText}>Message</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.moreButton}>
-          <Text style={{color: isDarkMode ? '#ccc' : '#666'}}>•••</Text>
+          <Text style={{ color: isDarkMode ? '#ccc' : '#666' }}>•••</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -1044,13 +1053,13 @@ const OtherUserDetail = ({navigation, route}) => {
     </View>
   )
 
-  const renderPost = ({item}) => (
+  const renderPost = ({ item }) => (
     <TouchableOpacity
       onPress={() =>
-        navigation.navigate('AllPostOfAUser', {userId: item?.User?._id})
+        navigation.navigate('AllPostOfAUser', { userId: item?.User?._id })
       }
       style={styles.postItem}>
-      <Image source={{uri: item?.media}} style={styles.postImage} />
+      <Image source={{ uri: item?.media }} style={styles.postImage} />
     </TouchableOpacity>
   )
 
@@ -1074,7 +1083,7 @@ const OtherUserDetail = ({navigation, route}) => {
         keyExtractor={item => item?._id}
         showsVerticalScrollIndicator={false}
         scrollEnabled={false}
-        contentContainerStyle={{paddingBottom: 20}}
+        contentContainerStyle={{ paddingBottom: 20 }}
       />
     )
   }

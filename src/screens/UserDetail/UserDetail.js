@@ -734,6 +734,7 @@ import Feather from 'react-native-vector-icons/Feather'
 import {ToastMsg} from '../../utils/helperFunctions'
 import {white} from '../../common/Colors/colors'
 import ProfileShimmer from '../../components/Skeletons/ProfilePageShimmer'
+import GradientIcon from '../../components/GradientIcon'
 
 const OtherUserDetail = ({navigation, route}) => {
   const [isDrawerVisible, setDrawerVisible] = useState(false)
@@ -1230,10 +1231,16 @@ const OtherUserDetail = ({navigation, route}) => {
         {UserDetails?.UserName || UserDetails?.FullName}
       </Text>
       <TouchableOpacity onPress={() => setDrawerVisible(true)}>
-        <Feather
+        {/* <Feather
           name={'settings'}
           size={24}
           color={isDarkMode ? white : '#000'}
+        /> */}
+           <GradientIcon
+          colors={['#4F52FE', '#FC14CB']}
+          size={18}
+          iconType='Feather'
+          name={'settings'}
         />
       </TouchableOpacity>
     </SpaceBetweenRow>

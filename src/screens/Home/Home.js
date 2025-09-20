@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   FlatList,
   Image,
@@ -36,19 +36,19 @@ import {
   ThreeDotIcon,
   WhiteThreeDot,
 } from '../../assets/SVGs'
-import {FONTS_FAMILY} from '../../assets/Fonts'
+import { FONTS_FAMILY } from '../../assets/Fonts'
 import SpaceBetweenRow from '../../components/wrapper/spacebetween'
-import {useDispatch, useSelector} from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import Video from 'react-native-video'
-import {apiDelete, apiGet, apiPost, apiPut, getItem} from '../../utils/Apis'
+import { apiDelete, apiGet, apiPost, apiPut, getItem } from '../../utils/Apis'
 import urls from '../../config/urls'
-import {theme, white} from '../../common/Colors/colors'
+import { theme, white } from '../../common/Colors/colors'
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import Foundation from 'react-native-vector-icons/Foundation'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import useLoader from '../../utils/LoaderHook'
-import {useFocusEffect, useIsFocused} from '@react-navigation/native'
+import { useFocusEffect, useIsFocused } from '@react-navigation/native'
 import CommentModal from './CommentModel'
 import moment from 'moment'
 import FeedShimmerLoader from '../../components/Skeletons/FeedsShimmer'
@@ -56,9 +56,10 @@ import ProfileShimmer from '../../components/Skeletons/ProfilePageShimmer'
 import messaging from '@react-native-firebase/messaging'
 import PostDetailModal from './PostDetailModel'
 import { setUser } from '../../redux/reducer/user'
+import GradientIcon from '../../components/GradientIcon'
 
-const Home = ({navigation}) => {
-  const {isDarkMode} = useSelector(state => state.theme)
+const Home = ({ navigation }) => {
+  const { isDarkMode } = useSelector(state => state.theme)
   const storyOpacity = useRef(new Animated.Value(0)).current
   const feedTranslateY = useRef(new Animated.Value(20)).current
   const [loading, setLoading] = useState(false)
@@ -75,9 +76,9 @@ const Home = ({navigation}) => {
   const [visibleVideoIndex, setVisibleVideoIndex] = useState(0) // Track which video should play
   const [pausedVideos, setPausedVideos] = useState({}) // Track paused state for each video
   const loaderVisible = useSelector(state => state?.loader?.loader)
-  const dispatch =useDispatch()
+  const dispatch = useDispatch()
 
-  const {showLoader, hideLoader} = useLoader()
+  const { showLoader, hideLoader } = useLoader()
 
   let selector = useSelector(state => state?.user?.userData)
   if (Object.keys(selector).length != 0) {
@@ -258,7 +259,7 @@ const Home = ({navigation}) => {
   }
 
   // Handle video visibility in FlatList
-  const onViewableItemsChanged = useRef(({viewableItems}) => {
+  const onViewableItemsChanged = useRef(({ viewableItems }) => {
     if (viewableItems.length > 0) {
       setVisibleVideoIndex(viewableItems[0].index)
     }
@@ -293,46 +294,48 @@ const Home = ({navigation}) => {
   }, [])
 
   useEffect(() => {
-  // Callback function define kar
-  const fetchData = async () => {
-    const token = await getItem('token');
-    setLoading(true);
-    
-    try {
-      if (token) {
-        const getUserDetails = await apiGet(urls.userProfile);
-        dispatch(setUser(JSON.stringify(getUserDetails))); // userData ki jagah getUserDetails
-        setLoading(false);
-      } else {
+    // Callback function define kar
+    const fetchData = async () => {
+      const token = await getItem('token');
+      setLoading(true);
+
+      try {
+        if (token) {
+          const getUserDetails = await apiGet(urls.userProfile);
+          console.log('++++++++++++++++++++++==', getUserDetails);
+
+          dispatch(setUser(JSON.stringify(getUserDetails?.data))); // userData ki jagah getUserDetails
+          setLoading(false);
+        } else {
+          navigation.replace('Onboarding');
+          setLoading(false);
+        }
+      } catch (error) {
+        console.log('Fetch data error:', error);
         navigation.replace('Onboarding');
         setLoading(false);
       }
-    } catch (error) {
-      console.log('Fetch data error:', error);
-      navigation.replace('Onboarding');
-      setLoading(false);
-    }
-  };
+    };
 
-  // LocationManager mein callback set kar
-  LocationManager.setLocationUpdateCallback(fetchData);
+    // LocationManager mein callback set kar
+    LocationManager.setLocationUpdateCallback(fetchData);
 
-  // Location tracking initialize kar
-  LocationManager.initializeLocationTracking();
+    // Location tracking initialize kar
+    LocationManager.initializeLocationTracking();
 
-  // Cleanup function
-  return () => {
-    LocationManager.setLocationUpdateCallback(null);
-    LocationManager.stopLocationTracking();
-  };
-}, []);
+    // Cleanup function
+    return () => {
+      LocationManager.setLocationUpdateCallback(null);
+      LocationManager.stopLocationTracking();
+    };
+  }, []);
 
- const initializeLocation = async () => {
+  const initializeLocation = async () => {
     try {
       setLocationStatus('updating');
       await LocationManager.initializeLocationTracking();
       setLocationStatus('updated');
-      
+
       // Reset status after 2 seconds
       setTimeout(() => setLocationStatus('idle'), 2000);
     } catch (error) {
@@ -351,11 +354,11 @@ const Home = ({navigation}) => {
     }
   }
 
-      const handleManualLocationUpdate = async () => {
+  const handleManualLocationUpdate = async () => {
     try {
       setLocationStatus('updating');
       const result = await LocationManager.updateLocationNow();
-      
+
       if (result.success) {
         setLocationStatus('updated');
         console.log('Manual location update successful');
@@ -363,7 +366,7 @@ const Home = ({navigation}) => {
         setLocationStatus('error');
         console.log('Manual location update failed:', result.error);
       }
-      
+
       setTimeout(() => setLocationStatus('idle'), 2000);
     } catch (error) {
       setLocationStatus('error');
@@ -383,14 +386,14 @@ const Home = ({navigation}) => {
   useEffect(() => {
     getCurrentStories()
     getFollwedStories()
-     if (isFocused) {
+    if (isFocused) {
       updateLocationOnFocus()
     }
   }, [isFocused])
 
 
 
-  
+
 
   const onRefresh = async () => {
     setLoading(true)
@@ -697,7 +700,7 @@ const Home = ({navigation}) => {
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{paddingHorizontal: 10}}>
+            contentContainerStyle={{ paddingHorizontal: 10 }}>
             {/* Your Story */}
             <View style={styles.storyContainer}>
               <TouchableOpacity
@@ -711,7 +714,7 @@ const Home = ({navigation}) => {
                 <Image
                   source={
                     allStories[0]?.media
-                      ? {uri: allStories[0]?.media}
+                      ? { uri: allStories[0]?.media }
                       : IMG.AddStoryImage
                   }
                   style={styles.storyImage}
@@ -721,7 +724,7 @@ const Home = ({navigation}) => {
                 {'Your Story'}
               </Text>
               <TouchableOpacity
-                style={{position: 'absolute', bottom: 20, right: 10}}
+                style={{ position: 'absolute', bottom: 20, right: 10 }}
                 onPress={() => navigation.navigate('GalleryPickerScreen')}>
                 {/* <AddStoryIcon /> */}
                 <AddStoryIcon />
@@ -749,7 +752,7 @@ const Home = ({navigation}) => {
                       <Image
                         source={
                           item.User?.Stories?.length > 0
-                            ? {uri: item.User?.Stories[0]?.media}
+                            ? { uri: item.User?.Stories[0]?.media }
                             : IMG.AddStoryImage
                         }
                         style={styles.storyImage}
@@ -774,17 +777,17 @@ const Home = ({navigation}) => {
     return (
       <FlatList
         // data={allPosts}
-          data={allPosts.filter(
+        data={allPosts.filter(
           item => item?.media && !item?.media.toLowerCase().includes('.mp4'),
         )}
-        style={{marginBottom: 90}}
+        style={{ marginBottom: 90 }}
         keyExtractor={(item, index) => `${item._id}-${index}`}
         showsVerticalScrollIndicator={false}
         onRefresh={onRefresh}
         refreshing={loading}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
-        renderItem={({item, index}) => {
+        renderItem={({ item, index }) => {
           const mediaUrl = item.media
           const isVideo =
             typeof mediaUrl === 'string' &&
@@ -798,7 +801,7 @@ const Home = ({navigation}) => {
               style={styles.feedContainer}
               key={`${item._id}-${index}`}
               onPress={() => handlePostClick(item)}
-              // activeOpacity={0.9}
+            // activeOpacity={0.9}
             >
               {/* Header */}
               <View style={styles.header}>
@@ -806,7 +809,7 @@ const Home = ({navigation}) => {
                   <Image
                     source={
                       item?.User?.Image
-                        ? {uri: item?.User?.Image}
+                        ? { uri: item?.User?.Image }
                         : IMG.MessageProfile
                     }
                     style={styles.profileImage}
@@ -859,11 +862,11 @@ const Home = ({navigation}) => {
                       handlePostClick(item)
                     }
                   }}>
-                  <View style={{position: 'relative', borderRadius: 13}}>
+                  <View style={{ position: 'relative', borderRadius: 13 }}>
                     {isVideo ? (
                       <View style={styles.videoContainer}>
                         <Video
-                          source={{uri: mediaUrl}}
+                          source={{ uri: mediaUrl }}
                           // style={styles.postImage}
                           style={[
                             styles.postImage,
@@ -889,7 +892,7 @@ const Home = ({navigation}) => {
                       </View>
                     ) : (
                       <Image
-                        source={{uri: mediaUrl}}
+                        source={{ uri: mediaUrl }}
                         style={styles.postImage}
                         onError={error =>
                           console.log(`Image ${index} error:`, error)
@@ -905,7 +908,7 @@ const Home = ({navigation}) => {
                         top: '40%',
                         left: '40%',
                         opacity: doubleTapIndex === index ? heartOpacity : 0,
-                        transform: [{scale: heartOpacity}],
+                        transform: [{ scale: heartOpacity }],
                       }}>
                       <MaterialIcons name='favorite' size={100} color='red' />
                     </Animated.View>
@@ -932,25 +935,44 @@ const Home = ({navigation}) => {
                 <View style={styles.leftIcons}>
                   <Row
                     style={{
-                      borderWidth: 0.5,
+                      // borderWidth: 0.5,
                       borderColor: isDarkMode ? 'gray' : 'gray',
                       borderRadius: 18,
                       paddingHorizontal: 5,
+                      gap: 5,
+                      alignItems: 'center'
                     }}>
                     <TouchableOpacity
-                      style={{right: 0}}
+                      style={{ right: 0 }}
                       onPress={() => onLikeUnlike(item)}>
                       {item?.likes?.includes(selector?._id) ? (
-                        <MaterialIcons
-                          name={'favorite'}
-                          color={'red'}
-                          size={16}
+                        // <MaterialIcons
+                        //   name={'favorite'}
+                        //   color={'red'}
+                        //   size={16}
+                        // />
+
+                        //                        name, 
+                        // size = 24, 
+                        // colors = ['#FF6B6B', '#4ECDC4'], 
+                        // iconType = 'MaterialIcons',
+                        <GradientIcon
+                          colors={['#4F52FE', '#FC14CB']}
+                          size={18}
+                          iconType='Ionicons'
+                          name={'triangle'}
                         />
                       ) : (
-                        <MaterialIcons
-                          name={'favorite-border'}
-                          color={isDarkMode ? 'white' : 'black'}
-                          size={16}
+                        // <MaterialIcons
+                        //   name={'favorite-border'}
+                        //   color={isDarkMode ? 'white' : 'black'}
+                        //   size={16}
+                        // />
+                        <GradientIcon
+                          colors={['#4F52FE', '#FC14CB']}
+                          size={18}
+                          iconType='Feather'
+                          name={'triangle'}
                         />
                       )}
                     </TouchableOpacity>
@@ -961,10 +983,11 @@ const Home = ({navigation}) => {
                   </Row>
                   <Row
                     style={{
-                      borderWidth: 0.5,
+                      // borderWidth: 0.5,
                       borderColor: isDarkMode ? 'gray' : 'gray',
                       borderRadius: 18,
                       paddingHorizontal: 5,
+                      gap:5
                     }}>
                     <TouchableOpacity
                       onPress={() => {
@@ -973,52 +996,87 @@ const Home = ({navigation}) => {
                         setPostId(item?._id)
                       }}>
                       {isDarkMode ? (
-                        <CommentWhite height={16} width={16} />
+                        // <CommentWhite height={16} width={16} />
+                        <GradientIcon
+                          colors={['#4F52FE', '#FC14CB']}
+                          size={18}
+                          iconType='FontAwesome'
+                          name={'comment-o'}
+                        />
                       ) : (
-                        <CommentIcon height={16} width={16} />
+                        // <CommentIcon height={16} width={16} />
+                        <GradientIcon
+                          colors={['#4F52FE', '#FC14CB']}
+                          size={18}
+                          iconType='FontAwesome'
+                          name={'comment-o'}
+                        />
                       )}
                     </TouchableOpacity>
                     <Text style={styles.comments}>{item?.TotalComents}</Text>
                   </Row>
                 </View>
 
-                <Row style={{gap: 20, marginRight: 6}}>
+                <Row style={{ gap: 20, marginRight: 6 }}>
                   <TouchableOpacity
                     style={{
                       alignItems: 'center',
                       gap: 5,
                       flexDirection: 'row',
-                      borderWidth: 0.5,
+                      // borderWidth: 0.5,
                       borderColor: isDarkMode ? 'gray' : 'gray',
                       borderRadius: 18,
                       paddingHorizontal: 10,
                     }}
                     onPress={() => onDisLikes(item)}>
-                    <Foundation
+                    {/* <Foundation
                       name={'dislike'}
                       color={isDarkMode ? 'white' : 'black'}
                       size={18}
+                    /> */}
+                    <GradientIcon
+                      colors={['#4F52FE', '#FC14CB']}
+                      size={18}
+                      iconType='Feather'
+                      name={'triangle'}
+                      style={{
+                        transform: [{ rotate: '180deg' }],
+                      }}
                     />
-                    <Text style={{...styles.likes, fontSize: 13}}>
+                    <Text style={{ ...styles.likes, fontSize: 13 }}>
                       {item?.TotalUnLikes}
                     </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={{right: 0}}
+                    style={{ right: 0 }}
                     onPress={() => SavePost(item)}>
                     {item?.SavedBy?.includes(selector?._id) ? (
-                      <FontAwesome
-                        name={'bookmark'}
-                        // color={isDarkMode ? theme : theme}
-                        color={isDarkMode ? 'white' : 'black'}
+                      // <FontAwesome
+                      //   name={'bookmark'}
+                      //   // color={isDarkMode ? theme : theme}
+                      //   color={isDarkMode ? 'white' : 'black'}
+                      //   size={18}
+                      // />
+                      <GradientIcon
+                        colors={['#4F52FE', '#FC14CB']}
                         size={18}
+                        iconType='FontAwesome'
+                        name={'bookmark'}
+
                       />
                     ) : (
-                      <FontAwesome
-                        name={'bookmark-o'}
-                        color={isDarkMode ? 'white' : 'black'}
+                      // <FontAwesome
+                      //   name={'bookmark-o'}
+                      //   color={isDarkMode ? 'white' : 'black'}
+                      //   size={18}
+                      // />
+                      <GradientIcon
+                        colors={['#4F52FE', '#FC14CB']}
                         size={18}
+                        iconType='FontAwesome'
+                        name={'bookmark-o'}
+
                       />
                     )}
                   </TouchableOpacity>
@@ -1166,7 +1224,7 @@ const Home = ({navigation}) => {
       paddingHorizontal: 3,
       color: isDarkMode ? 'white' : 'black',
       fontFamily: FONTS_FAMILY.SourceSans3_Regular,
-      bottom: 2,
+      // bottom: 2,
       fontSize: 13,
     },
     caption: {
@@ -1179,7 +1237,7 @@ const Home = ({navigation}) => {
     },
     comments: {
       paddingHorizontal: 3,
-      color: isDarkMode ? 'white' : 'gray',
+      color: isDarkMode ? 'white' : 'black',
       fontFamily: FONTS_FAMILY.SourceSans3_Regular,
       fontSize: 13,
     },
@@ -1244,7 +1302,7 @@ const Home = ({navigation}) => {
         onLikeUnlike={post => onLikeUnlike(post)}
         onDisLikes={onDisLikes}
         SavePost={SavePost}
-        onAddComment={(id, commentText)=>{sendComments(postId, commentText); setCommentText('')}}
+        onAddComment={(id, commentText) => { sendComments(postId, commentText); setCommentText('') }}
         formatInstagramDate={formatInstagramDate}
         isMuted={isMuted}
         setIsMuted={setIsMuted}

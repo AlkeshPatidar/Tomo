@@ -32,7 +32,7 @@ function TabNavigation() {
     selector = JSON.parse(selector);
   }
 
-  console.log("selector in tab navigation", selector?.
+  console.log("selector in +++++++++++tab navigation", selector?.
     SellerStatus);
 
   React.useEffect(() => {

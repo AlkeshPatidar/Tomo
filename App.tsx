@@ -36,10 +36,6 @@ const MainApp = () => {
 
 const App = () => {
 
-
-
-
-
   return (
     <PaperProvider>
       <Provider store={store}>
