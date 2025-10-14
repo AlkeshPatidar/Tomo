@@ -1,119 +1,4 @@
-// // Product Detail Screen (React Native)
 
-// import React, { useState } from 'react';
-// import { View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, StatusBar } from 'react-native';
-// import { useSelector } from 'react-redux';
-// import SpaceBetweenRow from '../../components/wrapper/spacebetween';
-// import { BackIcon } from '../../assets/SVGs';
-// import CustomText from '../../components/TextComponent';
-// import { FONTS_FAMILY } from '../../assets/Fonts';
-// import { App_Primary_color } from '../../common/Colors/colors';
-// import SuccessModal from './SuccessModel';
-
-// const ProductDetail = ({ route, navigation }) => {
-//     const { item } = route.params;
-//     const { isDarkMode } = useSelector(state => state.theme);
-//     const [showModal, setShowModal] = useState(false);
-
-//     const styles = StyleSheet.create({
-//         container: {
-//             // padding: 16,
-//             flex: 1,
-//             backgroundColor: isDarkMode ? 'black' : '#fff',
-
-//         },
-//         image: {
-//             width: '100%',
-//             height: 250,
-//             borderRadius: 12,
-//             marginBottom: 16,
-//         },
-//         details: {
-//             paddingHorizontal: 8,
-//             marginHorizontal:10
-//         },
-//         title: {
-//             fontSize: 22,
-//             fontFamily:FONTS_FAMILY.SourceSans3_Bold,
-//             marginBottom: 8,
-//         },
-//         price: {
-//             fontSize: 18,
-//             // color: '#333',
-//             marginBottom: 8,
-//             fontFamily:FONTS_FAMILY.SourceSans3_Regular
-//         },
-//         description: {
-//             fontSize: 16,
-//             // color: '#666',
-//             lineHeight: 22,
-//             marginBottom: 20,
-//             fontFamily:FONTS_FAMILY.SourceSans3_Regular
-
-//         },
-//         buyButton: {
-//             backgroundColor: App_Primary_color,
-//             paddingVertical: 12,
-//             borderRadius: 8,
-//             alignItems: 'center',
-//             position:'absolute',
-//             bottom:30,
-//             width:'90%',
-//             alignSelf:'center'
-//         },
-//         buyButtonText: {
-//             color: '#fff',
-//             fontSize: 16,
-//             fontWeight: 'bold',
-//         },
-//     });
-
-//     const renderHeader = () => {
-//         return (
-//             <SpaceBetweenRow style={{ paddingTop: 50, paddingHorizontal: 20, backgroundColor: isDarkMode ? '#252525' : 'white', paddingBottom: 15 }}>
-//                 <TouchableOpacity
-//                     onPress={() => navigation.goBack()}
-//                 >
-//                     {isDarkMode ? <BackIcon /> : <BackIcon />}
-//                 </TouchableOpacity>
-//                 <CustomText style={{
-//                     fontSize: 20,
-//                     fontFamily: FONTS_FAMILY.SourceSans3_Bold
-//                 }}>Market Place</CustomText>
-
-//                 <TouchableOpacity onPress={() => navigation.navigate('Activity')}>
-//                     {/* <NotiFication /> */}
-//                 </TouchableOpacity>
-
-//             </SpaceBetweenRow>
-//         )
-//     }
-
-//     return (
-//         <ScrollView contentContainerStyle={styles.container}>
-//             <StatusBar
-//                 translucent={true}
-//                 backgroundColor="transparent"
-//                 barStyle={isDarkMode ? "light-content" : "dark-content"}
-//             />
-//             {renderHeader()}
-//             <Image source={{ uri: item.image }} style={styles.image} />
-//             <View style={styles.details}>
-//                 <CustomText style={styles.title}>{item.title}</CustomText>
-//                 <CustomText style={styles.price}>{item.price}</CustomText>
-//                 <CustomText style={styles.description}>
-//                     This is a placeholder description for the product. Add more details here like specifications, features, and usage instructions.
-//                 </CustomText>
-//             </View>
-//                 <TouchableOpacity style={styles.buyButton} onPress={() =>setShowModal(true)}>
-//                     <CustomText style={styles.buyButtonText}>Buy Now</CustomText>
-//                 </TouchableOpacity>
-//                 <SuccessModal visible={showModal} onClose={() => setShowModal(false)} />
-//         </ScrollView>
-//     );
-// };
-
-// export default ProductDetail;
 
 import React, { useEffect, useState } from 'react';
 import {
@@ -181,22 +66,27 @@ const ProductDetail = ({ navigation, route }) => {
     const [allProducts, setAllProducts] = useState(null)
 
     const { showLoader, hideLoader } = useLoader()
-    
-        useEffect(() => {
-            fetchData()
-        }, [isFocused])
-    
-    
-    
-        const fetchData = async () => {
+
+    useEffect(() => {
+        fetchData()
+    }, [isFocused])
+
+
+
+    const fetchData = async () => {
+        try {
             showLoader()
             const res = await apiGet(`${urls.productDetails}/${route?.params?.productId}`)
             console.log("------------Producat detaulsssss-----", res.data);
             setAllProducts(res?.data)
             hideLoader()
-    
+        } catch (error) {
+            hideLoader()
         }
-    
+
+
+    }
+
 
     // Sample car data
     const carData = {

@@ -32,8 +32,7 @@ function TabNavigation() {
     selector = JSON.parse(selector);
   }
 
-  console.log("selector in +++++++++++tab navigation", selector?.
-    SellerStatus);
+  console.log("selector in +++++++++++tab navigation", selector);
 
   React.useEffect(() => {
     const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
@@ -104,8 +103,11 @@ function TabNavigation() {
               ),
           }}
         />
-        {selector?.
-          SellerStatus == 'Approved' && <Tab.Screen
+        
+        {
+        // selector?.
+        //   SellerStatus == 'Approved' && 
+          <Tab.Screen
             name="MarketPlace"
             // component={MarketPlace}
             component={Shops}

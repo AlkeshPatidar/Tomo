@@ -26,6 +26,12 @@ const Shops = ({ navigation }) => {
     const [loading, setLoading] = useState(false)
     const { isKeyboardOpen, keyboardHeight } = useKeyboardStatus()
 
+    
+      let selector = useSelector(state => state?.user?.userData);
+      if (Object.keys(selector).length != 0) {
+        selector = JSON.parse(selector);
+      }
+
     useEffect(() => {
         fetchData()
     }, [])
@@ -207,7 +213,10 @@ const Shops = ({ navigation }) => {
                             )}
                         />
 
-                        {<TouchableOpacity onPress={() => navigation?.navigate('AddShops')}>
+                        {
+                             selector?.
+          SellerStatus == 'Approved' && 
+                            <TouchableOpacity onPress={() => navigation?.navigate('AddShops')}>
                             <AddShopBtn />
                         </TouchableOpacity>}
 

@@ -23,6 +23,10 @@ const AllProductsOfAShops = ({ navigation, route }) => {
     const [allProducts, setAllProducts] = useState([])
     const { showLoader, hideLoader } = useLoader()
     const isFocused = useIsFocused()
+       let selector = useSelector(state => state?.user?.userData);
+          if (Object.keys(selector).length != 0) {
+            selector = JSON.parse(selector);
+          }
 
     useEffect(() => {
         fetchData()
@@ -191,7 +195,10 @@ const AllProductsOfAShops = ({ navigation, route }) => {
             {/* <TouchableOpacity onPress={()=>navigation?.navigate('CreateProducts',{shopId:route?.params?.shopId})}>
                 <AddShopBtn/>
             </TouchableOpacity> */}
-            <TouchableOpacity
+       {
+           selector?.
+          SellerStatus == 'Approved' && 
+       <TouchableOpacity
                 onPress={() => navigation?.navigate('CreateProducts', { shopId: route?.params?.shopId })}            >
                 <LinearGradient
                     colors={['#ff00ff', '#6a5acd']}
@@ -207,7 +214,7 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                         {'Create Product'}
                     </Text>
                 </LinearGradient>
-            </TouchableOpacity>
+            </TouchableOpacity>}
 
             <View style={{ height: 100 }} />
 

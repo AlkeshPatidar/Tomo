@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   FlatList,
   Image,
@@ -42,21 +42,21 @@ import {
   ThreeDotWhite,
   WhiteThreeDot,
 } from '../../assets/SVGs'
-import {FONTS_FAMILY} from '../../assets/Fonts'
+import { FONTS_FAMILY } from '../../assets/Fonts'
 import CustomInputField from '../../components/CustomInputField'
 import SpaceBetweenRow from '../../components/wrapper/spacebetween'
-import {useSelector} from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import Video from 'react-native-video'
-import {apiGet, apiPost, apiPut} from '../../utils/Apis'
+import { apiGet, apiPost, apiPut } from '../../utils/Apis'
 import urls from '../../config/urls'
-import {white} from '../../common/Colors/colors'
+import { white } from '../../common/Colors/colors'
 
 import FontAwesome from 'react-native-vector-icons/FontAwesome'
 import Foundation from 'react-native-vector-icons/Foundation'
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import useLoader from '../../utils/LoaderHook'
-import {useIsFocused} from '@react-navigation/native'
+import { useIsFocused } from '@react-navigation/native'
 import CommentModal from '../Home/CommentModel'
 
 import moment from 'moment'
@@ -64,8 +64,8 @@ import FeedShimmerLoader from '../../components/Skeletons/FeedsShimmer'
 import AntDesign from 'react-native-vector-icons/AntDesign'
 import GradientIcon from '../../components/GradientIcon'
 
-const SavedPosts = ({navigation}) => {
-  const {isDarkMode} = useSelector(state => state.theme)
+const SavedPosts = ({ navigation }) => {
+  const { isDarkMode } = useSelector(state => state.theme)
   const storyOpacity = useRef(new Animated.Value(0)).current
   const feedTranslateY = useRef(new Animated.Value(20)).current
 
@@ -85,14 +85,14 @@ const SavedPosts = ({navigation}) => {
   const [visibleVideoIndex, setVisibleVideoIndex] = useState(0) // Track which video should play
   const [pausedVideos, setPausedVideos] = useState({})
 
-  const {showLoader, hideLoader} = useLoader()
+  const { showLoader, hideLoader } = useLoader()
 
   let selector = useSelector(state => state?.user?.userData)
   if (Object.keys(selector).length != 0) {
     selector = JSON.parse(selector)
   }
 
-  const onViewableItemsChanged = useRef(({viewableItems}) => {
+  const onViewableItemsChanged = useRef(({ viewableItems }) => {
     if (viewableItems.length > 0) {
       setVisibleVideoIndex(viewableItems[0].index)
     }
@@ -526,13 +526,13 @@ const SavedPosts = ({navigation}) => {
     return (
       <FlatList
         data={allPosts}
-        style={{marginBottom: 30}}
+        style={{ marginBottom: 30 }}
         keyExtractor={item => item._id}
         showsVerticalScrollIndicator={false}
         onViewableItemsChanged={onViewableItemsChanged}
         // onRefresh={onRefresh}
         // refreshing={loading}
-        renderItem={({item, index}) => {
+        renderItem={({ item, index }) => {
           const mediaUrl = item.Post?.media // Use a consistent key for media
           const isVideo =
             typeof mediaUrl === 'string' &&
@@ -545,7 +545,7 @@ const SavedPosts = ({navigation}) => {
                   <Image
                     source={
                       item?.User?.Image
-                        ? {uri: item?.User?.Image}
+                        ? { uri: item?.User?.Image }
                         : IMG.MessageProfile
                     }
                     style={styles.profileImage}
@@ -581,10 +581,10 @@ const SavedPosts = ({navigation}) => {
 
               <TouchableWithoutFeedback
                 onPress={() => handleDoubleTap(item, index)}>
-                <View style={{position: 'relative'}}>
+                <View style={{ position: 'relative' }}>
                   {isVideo ? (
                     <Video
-                      source={{uri: item?.Post?.media}}
+                      source={{ uri: item?.Post?.media }}
                       style={styles.postImage}
                       resizeMode='cover'
                       repeat
@@ -600,7 +600,7 @@ const SavedPosts = ({navigation}) => {
                     />
                   ) : (
                     <Image
-                      source={{uri: item?.Post?.media}}
+                      source={{ uri: item?.Post?.media }}
                       style={styles.postImage}
                     />
                   )}
@@ -613,7 +613,7 @@ const SavedPosts = ({navigation}) => {
                       top: '40%',
                       left: '40%',
                       opacity: doubleTapIndex === index ? heartOpacity : 0,
-                      transform: [{scale: heartOpacity}],
+                      transform: [{ scale: heartOpacity }],
                     }}>
                     <MaterialIcons name='favorite' size={100} color='red' />
                   </Animated.View>
@@ -639,19 +639,19 @@ const SavedPosts = ({navigation}) => {
               {/* Actions */}
               <View style={styles.actions}>
                 <View style={styles.leftIcons}>
-                  <Row 
-                  style={{
-                    // borderWidth: 0.5,
-                    borderColor: isDarkMode ? 'gray' : 'gray',
-                    borderRadius:10,
-                    paddingHorizontal: 5,
-                    gap:5
+                  <Row
+                    style={{
+                      // borderWidth: 0.5,
+                      borderColor: isDarkMode ? 'gray' : 'gray',
+                      borderRadius: 10,
+                      paddingHorizontal: 5,
+                      gap: 5
 
 
-                  }}
+                    }}
                   >
                     <TouchableOpacity
-                      style={{right: 0}}
+                      style={{ right: 0 }}
                       onPress={() => onLikeUnlike(item)}>
                       {item?.Post?.likes?.includes(selector?._id) ? (
                         isDarkMode ? (
@@ -660,27 +660,27 @@ const SavedPosts = ({navigation}) => {
                           //   color={'red'}
                           //   size={18}
                           // />
-                           <GradientIcon
-                          colors={['#4F52FE', '#FC14CB']}
-                          size={18}
-                          iconType='Ionicons'
-                          name={'triangle'}
-                        />
+                          <GradientIcon
+                            colors={['#4F52FE', '#FC14CB']}
+                            size={18}
+                            iconType='Ionicons'
+                            name={'triangle'}
+                          />
                         ) : (
                           // <MaterialIcons
                           //   name={'favorite-border'}
                           //   color={'red'}
                           //   size={18}
                           // />
-                            <GradientIcon
-                          colors={['#4F52FE', '#FC14CB']}
-                          size={18}
-                          iconType='Feather'
-                          name={'triangle'}
-                        />
+                          <GradientIcon
+                            colors={['#4F52FE', '#FC14CB']}
+                            size={18}
+                            iconType='Feather'
+                            name={'triangle'}
+                          />
                         )
                       ) : isDarkMode ? (
-                         <GradientIcon
+                        <GradientIcon
                           colors={['#4F52FE', '#FC14CB']}
                           size={18}
                           iconType='Feather'
@@ -703,9 +703,9 @@ const SavedPosts = ({navigation}) => {
                   <Row style={{
                     // borderWidth: 0.5,
                     borderColor: isDarkMode ? 'gray' : 'gray',
-                    borderRadius:10,
+                    borderRadius: 10,
                     paddingHorizontal: 5,
-                    gap:5
+                    gap: 5
 
                   }}>
                     <TouchableOpacity
@@ -716,7 +716,7 @@ const SavedPosts = ({navigation}) => {
                       }}>
                       {isDarkMode ? (
                         // <CommentWhite height={18} width={18} />
-                         <GradientIcon
+                        <GradientIcon
                           colors={['#4F52FE', '#FC14CB']}
                           size={18}
                           iconType='FontAwesome'
@@ -724,7 +724,7 @@ const SavedPosts = ({navigation}) => {
                         />
                       ) : (
                         // <CommentIcon height={18} width={18} />
-                         <GradientIcon
+                        <GradientIcon
                           colors={['#4F52FE', '#FC14CB']}
                           size={18}
                           iconType='FontAwesome'
@@ -738,7 +738,7 @@ const SavedPosts = ({navigation}) => {
                   </Row>
                 </View>
 
-                <Row style={{gap: 20, marginRight:7}}>
+                <Row style={{ gap: 20, marginRight: 7 }}>
                   {/* <TouchableOpacity>
                                     {
                                         isDarkMode ?
@@ -761,7 +761,7 @@ const SavedPosts = ({navigation}) => {
                                 </TouchableOpacity> */}
 
                   <TouchableOpacity
-                    style={{right: 0}}
+                    style={{ right: 0 }}
                     onPress={() => SavePost(item)}>
                     {item?.Post?.SavedBy?.includes(selector?._id) ? (
                       isDarkMode ? (
@@ -770,24 +770,24 @@ const SavedPosts = ({navigation}) => {
                         //   color={'white'}
                         //   size={18}
                         // />
-                          <GradientIcon
-                        colors={['#4F52FE', '#FC14CB']}
-                        size={18}
-                        iconType='FontAwesome'
-                        name={'bookmark-o'}
+                        <GradientIcon
+                          colors={['#4F52FE', '#FC14CB']}
+                          size={18}
+                          iconType='FontAwesome'
+                          name={'bookmark-o'}
 
-                      />
+                        />
                       ) : (
                         <GradientIcon
-                        colors={['#4F52FE', '#FC14CB']}
-                        size={18}
-                        iconType='FontAwesome'
-                        name={'bookmark-o'}
+                          colors={['#4F52FE', '#FC14CB']}
+                          size={18}
+                          iconType='FontAwesome'
+                          name={'bookmark-o'}
 
-                      />
+                        />
                       )
                     ) : isDarkMode ? (
-                       <GradientIcon
+                      <GradientIcon
                         colors={['#4F52FE', '#FC14CB']}
                         size={18}
                         iconType='FontAwesome'
@@ -795,7 +795,7 @@ const SavedPosts = ({navigation}) => {
 
                       />
                     ) : (
-                     <GradientIcon
+                      <GradientIcon
                         colors={['#4F52FE', '#FC14CB']}
                         size={18}
                         iconType='FontAwesome'
@@ -918,7 +918,7 @@ const SavedPosts = ({navigation}) => {
       fontSize: 12,
     },
     postImage: {
-       width: '81%',
+      width: '81%',
       height: 170,
       // resizeMode: 'cover',
       borderRadius: 13,
@@ -946,10 +946,10 @@ const SavedPosts = ({navigation}) => {
       gap: 15,
     },
     likes: {
-      fontFamily:FONTS_FAMILY.SourceSans3_Medium,
+      fontFamily: FONTS_FAMILY.SourceSans3_Medium,
       paddingHorizontal: 3,
       color: isDarkMode ? 'white' : 'black',
-      top:-1
+      top: -1
     },
     caption: {
       paddingHorizontal: 2,
@@ -1015,11 +1015,11 @@ const SavedPosts = ({navigation}) => {
 export default SavedPosts
 
 const storiesData = [
-  {id: '1', name: 'Your story', image: IMG.AddStoryImage, isOwn: true},
-  {id: '2', name: 'mkbhd', image: IMG.StoryImage2},
-  {id: '3', name: 'lewisham...', image: IMG.StoryImage1},
-  {id: '4', name: 'defavours', image: IMG.StoryImage2},
-  {id: '5', name: 'leome', image: IMG.StoryImage1},
+  { id: '1', name: 'Your story', image: IMG.AddStoryImage, isOwn: true },
+  { id: '2', name: 'mkbhd', image: IMG.StoryImage2 },
+  { id: '3', name: 'lewisham...', image: IMG.StoryImage1 },
+  { id: '4', name: 'defavours', image: IMG.StoryImage2 },
+  { id: '5', name: 'leome', image: IMG.StoryImage1 },
 ]
 
 const feedData = [

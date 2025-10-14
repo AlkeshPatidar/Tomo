@@ -90,6 +90,8 @@ const Home = ({ navigation }) => {
   const [postComments, setPostComments] = useState([])
 
   const [locationStatus, setLocationStatus] = useState('idle')
+  const [selectedTab, setSelectedTab] = useState('home')
+
 
   // Add this function to handle post click
   const handlePostClick = item => {
@@ -354,26 +356,7 @@ const Home = ({ navigation }) => {
     }
   }
 
-  const handleManualLocationUpdate = async () => {
-    try {
-      setLocationStatus('updating');
-      const result = await LocationManager.updateLocationNow();
 
-      if (result.success) {
-        setLocationStatus('updated');
-        console.log('Manual location update successful');
-      } else {
-        setLocationStatus('error');
-        console.log('Manual location update failed:', result.error);
-      }
-
-      setTimeout(() => setLocationStatus('idle'), 2000);
-    } catch (error) {
-      setLocationStatus('error');
-      console.log('Manual location update error:', error);
-      setTimeout(() => setLocationStatus('idle'), 3000);
-    }
-  }
 
   // Enhanced cleanup when component unmounts
   useEffect(() => {
@@ -656,30 +639,100 @@ const Home = ({ navigation }) => {
 
   const renderHeader = () => {
     return (
-      <SpaceBetweenRow
+      <View
         style={{
-          paddingTop: 50,
-          paddingHorizontal: 20,
+          // paddingTop: 50,
+          // paddingHorizontal: 20,
           backgroundColor: isDarkMode ? '#252525' : 'white',
-          paddingBottom: 15,
-        }}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('GalleryForAddPost')}>
-          <CameraButton />
-        </TouchableOpacity>
-
-        <CustomText
+          // paddingBottom: 15,
+        }}
+      >
+        <SpaceBetweenRow
           style={{
-            fontSize: 20,
-            fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+            paddingTop: 50,
+            paddingHorizontal: 20,
+            backgroundColor: isDarkMode ? '#252525' : 'white',
+            paddingBottom: 15,
           }}>
-          Explore
-        </CustomText>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('GalleryForAddPost')}>
+            <CameraButton />
+          </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('Activity')}>
-          <NotiFication />
-        </TouchableOpacity>
-      </SpaceBetweenRow>
+          <CustomText
+            style={{
+              fontSize: 20,
+              fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+            }}>
+            Explore
+          </CustomText>
+
+          <TouchableOpacity onPress={() => navigation.navigate('Activity')}>
+            <NotiFication />
+          </TouchableOpacity>
+        </SpaceBetweenRow>
+        <SpaceBetweenRow style={{
+          paddingHorizontal: 50,
+          backgroundColor: isDarkMode ? 'black' : 'white',
+          paddingVertical: 10
+        }}>
+          <TouchableOpacity
+            style={{ alignItems: 'center', gap: 5 }}
+            onPress={() => setSelectedTab('home')}
+          >
+            <CustomText
+              style={{
+                fontSize: 15,
+                fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+
+              }}
+            >Home</CustomText>
+            {selectedTab == 'home' && <View style={{
+              height: 2,
+              width: 50,
+              backgroundColor: isDarkMode ? 'white' : 'gray',
+              borderRadius: 5
+            }} />}
+
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{ alignItems: 'center', gap: 5 }}
+            onPress={() => setSelectedTab('Top25')}
+
+          >
+            <CustomText
+              style={{
+                fontSize: 15,
+                fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+              }}
+            >Top25</CustomText>
+            {selectedTab == 'Top25' && <View style={{
+              height: 2,
+              width: 50,
+              backgroundColor: isDarkMode ? 'white' : 'gray',
+              borderRadius: 5
+            }} />}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{ alignItems: 'center', gap: 5 }}
+            onPress={() => setSelectedTab('News')}
+
+          >
+            <CustomText
+              style={{
+                fontSize: 15,
+                fontFamily: FONTS_FAMILY.SourceSans3_Medium,
+              }}
+            >News</CustomText>
+            {selectedTab == 'News' && <View style={{
+              height: 2,
+              width: 50,
+              backgroundColor: isDarkMode ? 'white' : 'gray',
+              borderRadius: 5
+            }} />}
+          </TouchableOpacity>
+        </SpaceBetweenRow>
+      </View>
     )
   }
 
@@ -775,11 +828,17 @@ const Home = ({ navigation }) => {
 
   const renderFeeds = () => {
     return (
+
       <FlatList
         // data={allPosts}
-        data={allPosts.filter(
-          item => item?.media && !item?.media.toLowerCase().includes('.mp4'),
-        )}
+        // data={allPosts.filter(
+        //   item => item?.media && !item?.media.toLowerCase().includes('.mp4'),
+        // )}
+        data={allPosts.filter(item => {
+          const hasImage = item?.media && !item?.media.toLowerCase().includes('.mp4');
+          const isTop25 = selectedTab === 'Top25' ? item?.TotalLikes > 25 : true;
+          return hasImage && isTop25;
+        })}
         style={{ marginBottom: 90 }}
         keyExtractor={(item, index) => `${item._id}-${index}`}
         showsVerticalScrollIndicator={false}
@@ -946,16 +1005,7 @@ const Home = ({ navigation }) => {
                       style={{ right: 0 }}
                       onPress={() => onLikeUnlike(item)}>
                       {item?.likes?.includes(selector?._id) ? (
-                        // <MaterialIcons
-                        //   name={'favorite'}
-                        //   color={'red'}
-                        //   size={16}
-                        // />
 
-                        //                        name, 
-                        // size = 24, 
-                        // colors = ['#FF6B6B', '#4ECDC4'], 
-                        // iconType = 'MaterialIcons',
                         <GradientIcon
                           colors={['#4F52FE', '#FC14CB']}
                           size={18}
@@ -963,11 +1013,7 @@ const Home = ({ navigation }) => {
                           name={'triangle'}
                         />
                       ) : (
-                        // <MaterialIcons
-                        //   name={'favorite-border'}
-                        //   color={isDarkMode ? 'white' : 'black'}
-                        //   size={16}
-                        // />
+
                         <GradientIcon
                           colors={['#4F52FE', '#FC14CB']}
                           size={18}
@@ -978,8 +1024,33 @@ const Home = ({ navigation }) => {
                     </TouchableOpacity>
                     <Text style={styles.likes}>
                       {item?.TotalLikes}{' '}
-                      {/* {item?.TotalLikes > 1 ? 'likes' : 'like'} */}
                     </Text>
+
+                    <TouchableOpacity
+                      style={{
+                        alignItems: 'center',
+                        gap: 5,
+                        flexDirection: 'row',
+                        // borderWidth: 0.5,
+                        borderColor: isDarkMode ? 'gray' : 'gray',
+                        borderRadius: 18,
+                        paddingHorizontal: 10,
+                      }}
+                      onPress={() => onDisLikes(item)}>
+
+                      <GradientIcon
+                        colors={['#4F52FE', '#FC14CB']}
+                        size={18}
+                        iconType='Feather'
+                        name={'triangle'}
+                        style={{
+                          transform: [{ rotate: '180deg' }],
+                        }}
+                      />
+                      <Text style={{ ...styles.likes, fontSize: 13 }}>
+                        {item?.TotalUnLikes}
+                      </Text>
+                    </TouchableOpacity>
                   </Row>
                   <Row
                     style={{
@@ -987,7 +1058,7 @@ const Home = ({ navigation }) => {
                       borderColor: isDarkMode ? 'gray' : 'gray',
                       borderRadius: 18,
                       paddingHorizontal: 5,
-                      gap:5
+                      gap: 5
                     }}>
                     <TouchableOpacity
                       onPress={() => {
@@ -1018,46 +1089,13 @@ const Home = ({ navigation }) => {
                 </View>
 
                 <Row style={{ gap: 20, marginRight: 6 }}>
-                  <TouchableOpacity
-                    style={{
-                      alignItems: 'center',
-                      gap: 5,
-                      flexDirection: 'row',
-                      // borderWidth: 0.5,
-                      borderColor: isDarkMode ? 'gray' : 'gray',
-                      borderRadius: 18,
-                      paddingHorizontal: 10,
-                    }}
-                    onPress={() => onDisLikes(item)}>
-                    {/* <Foundation
-                      name={'dislike'}
-                      color={isDarkMode ? 'white' : 'black'}
-                      size={18}
-                    /> */}
-                    <GradientIcon
-                      colors={['#4F52FE', '#FC14CB']}
-                      size={18}
-                      iconType='Feather'
-                      name={'triangle'}
-                      style={{
-                        transform: [{ rotate: '180deg' }],
-                      }}
-                    />
-                    <Text style={{ ...styles.likes, fontSize: 13 }}>
-                      {item?.TotalUnLikes}
-                    </Text>
-                  </TouchableOpacity>
+
 
                   <TouchableOpacity
                     style={{ right: 0 }}
                     onPress={() => SavePost(item)}>
                     {item?.SavedBy?.includes(selector?._id) ? (
-                      // <FontAwesome
-                      //   name={'bookmark'}
-                      //   // color={isDarkMode ? theme : theme}
-                      //   color={isDarkMode ? 'white' : 'black'}
-                      //   size={18}
-                      // />
+
                       <GradientIcon
                         colors={['#4F52FE', '#FC14CB']}
                         size={18}
@@ -1066,11 +1104,7 @@ const Home = ({ navigation }) => {
 
                       />
                     ) : (
-                      // <FontAwesome
-                      //   name={'bookmark-o'}
-                      //   color={isDarkMode ? 'white' : 'black'}
-                      //   size={18}
-                      // />
+
                       <GradientIcon
                         colors={['#4F52FE', '#FC14CB']}
                         size={18}
@@ -1081,6 +1115,7 @@ const Home = ({ navigation }) => {
                     )}
                   </TouchableOpacity>
                 </Row>
+
               </View>
             </TouchableOpacity>
           )
@@ -1199,11 +1234,11 @@ const Home = ({ navigation }) => {
       fontSize: 12,
     },
     postImage: {
-      width: '81%',
-      height: 170,
-      // resizeMode: 'cover',
-      borderRadius: 13,
-      alignSelf: 'flex-end',
+      width: '100%',
+      // pehle--->171 tha 81% 
+      // borderRadius: 13,
+      // alignSelf: 'flex-end',
+      height: 300,
       marginRight: 10,
     },
     actions: {
@@ -1212,8 +1247,8 @@ const Home = ({ navigation }) => {
       paddingTop: 8,
       marginHorizontal: 10,
       paddingBottom: 10,
-      width: '81%',
-      alignSelf: 'flex-end',
+      // width: '81%',
+      // alignSelf: 'flex-end',
     },
     leftIcons: {
       flexDirection: 'row',
@@ -1281,13 +1316,16 @@ const Home = ({ navigation }) => {
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
       />
       {renderHeader()}
-      {renderStories()}
+      {selectedTab == 'home' && renderStories()}
       {loading ? (
         <FeedShimmerLoader isDarkMode={isDarkMode} count={5} />
       ) : (
         renderFeeds()
       )}
+
+
       {renderCommentModal()}
+
       <PostDetailModal
         visible={postDetailVisible}
         onClose={() => {

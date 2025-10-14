@@ -339,8 +339,14 @@ const PostDetailModal = ({
     <>
       <Modal
         isVisible={visible}
-        animationIn="zoomIn"
-        animationOut="zoomOut"
+        animationIn="fadeIn"
+        animationOut="fadeOut"
+        animationInTiming={200}
+        animationOutTiming={200}
+        // animationIn="slideInUp"
+        // animationOut="slideOutDown"
+        // animationIn="zoomIn"
+        // animationOut="zoomOut"
         // animationInTiming={300}
         // animationOutTiming={250}
         // backdropTransitionInTiming={300}
@@ -548,12 +554,12 @@ const PostDetailModal = ({
                       size={20}
                       color={isDarkMode ? 'white' : 'black'}
                     /> */}
-                      <GradientIcon
-                          colors={['#4F52FE', '#FC14CB']}
-                          size={18}
-                          iconType='FontAwesome'
-                          name={'comment-o'}
-                        />
+                    <GradientIcon
+                      colors={['#4F52FE', '#FC14CB']}
+                      size={18}
+                      iconType='FontAwesome'
+                      name={'comment-o'}
+                    />
                     <Text style={styles.actionText}>{comments.length}</Text>
                   </TouchableOpacity>
 

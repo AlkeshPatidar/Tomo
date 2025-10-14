@@ -320,7 +320,7 @@
 //        </> 
 //     )
 // }
-        
+
 //         </View>
 //     );
 // };
@@ -661,7 +661,7 @@
 //        </> 
 //     )
 // }
-        
+
 //         </View>
 //     );
 // };
@@ -698,7 +698,7 @@
 // const SearchScreen = ({ navigation }) => {
 //     const { isDarkMode } = useSelector(state => state.theme);
 //     const { showLoader, hideLoader } = useLoader();
-    
+
 //     // Existing states
 //     const [allShops, setAllShops] = useState([]);
 //     const [filteredShops, setFilteredShops] = useState([]);
@@ -707,14 +707,14 @@
 //     const [isSearching, setIsSearching] = useState(false);
 //     const [searchFocused, setSearchFocused] = useState(false);
 //     const [loading, setLoading] = useState(false);
-    
+
 //     // New location-based states
 //     const [nearbyUsers, setNearbyUsers] = useState([]);
 //     const [userLocation, setUserLocation] = useState(null);
 //     const [searchRadius, setSearchRadius] = useState(5); // Default 5km
 //     const [showRadiusModal, setShowRadiusModal] = useState(false);
 //     const [locationPermission, setLocationPermission] = useState(false);
-    
+
 //     // Browse categories
 //     const browseCategories = [
 //         // { id: 'meetups', title: 'Meetups', icon: '👥' },
@@ -920,7 +920,7 @@
 //                     <Text style={[styles.modalSubtitle, { color: isDarkMode ? '#888' : '#666' }]}>
 //                         How far should we look for nearby users?
 //                     </Text>
-                    
+
 //                     {[1, 3, 5, 10, 25, 50].map(radius => (
 //                         <TouchableOpacity
 //                             key={radius}
@@ -941,7 +941,7 @@
 //                             </Text>
 //                         </TouchableOpacity>
 //                     ))}
-                    
+
 //                     <TouchableOpacity
 //                         style={styles.modalCloseButton}
 //                         onPress={() => setShowRadiusModal(false)}
@@ -1351,21 +1351,21 @@
 // export default SearchScreen;
 
 import React, { useEffect, useState } from 'react';
-import { 
-    View, 
-    TextInput, 
-    FlatList, 
-    Image, 
-    StyleSheet, 
-    TouchableOpacity, 
-    StatusBar, 
-    Text, 
+import {
+    View,
+    TextInput,
+    FlatList,
+    Image,
+    StyleSheet,
+    TouchableOpacity,
+    StatusBar,
+    Text,
     ScrollView,
     Modal,
     Alert,
-    Dimensions 
+    Dimensions
 } from 'react-native';
-import { LocationIcon, LocationNewTheme, Mic, Search,  } from '../../assets/SVGs';
+import { LocationIcon, LocationNewTheme, Mic, Search, } from '../../assets/SVGs';
 import { useSelector } from 'react-redux';
 import useLoader from '../../utils/LoaderHook';
 import { apiGet } from '../../utils/Apis';
@@ -1373,13 +1373,14 @@ import urls from '../../config/urls';
 import { FONTS_FAMILY } from '../../assets/Fonts';
 import SearchShimmerLoader from '../../components/Skeletons/SearchShimmer';
 import { App_Primary_color } from '../../common/Colors/colors';
+import { ToastMsg } from '../../utils/helperFunctions';
 
 const { width } = Dimensions.get('window');
 
 const SearchScreen = ({ navigation }) => {
     const { isDarkMode } = useSelector(state => state.theme);
     const { showLoader, hideLoader } = useLoader();
-    
+
     // Existing states
     const [allShops, setAllShops] = useState([]);
     const [filteredShops, setFilteredShops] = useState([]);
@@ -1388,15 +1389,15 @@ const SearchScreen = ({ navigation }) => {
     const [isSearching, setIsSearching] = useState(false);
     const [searchFocused, setSearchFocused] = useState(false);
     const [loading, setLoading] = useState(false);
-    
+
     // New location-based states
     const [nearbyUsers, setNearbyUsers] = useState([]);
     const [userLocation, setUserLocation] = useState(null);
-    const [searchRadius, setSearchRadius] = useState(10000); // Default 10km (in meters for API)
+    const [searchRadius, setSearchRadius] = useState(5000); // Default 10km (in meters for API)
     const [showRadiusModal, setShowRadiusModal] = useState(false);
     const [locationPermission, setLocationPermission] = useState(false);
     const [nearbyLoading, setNearbyLoading] = useState(false);
-    
+
     // Browse categories
     const browseCategories = [
         // { id: 'meetups', title: 'Meetups', icon: '👥' },
@@ -1464,7 +1465,7 @@ const SearchScreen = ({ navigation }) => {
             if (res?.statusCode === 200 && res?.data) {
                 setNearbyUsers(res.data);
                 // console.log('Nearest',JSON.stringify(nearbyUsers) );
-                
+
             } else {
                 setNearbyUsers([]);
             }
@@ -1475,16 +1476,7 @@ const SearchScreen = ({ navigation }) => {
         setNearbyLoading(false);
     };
 
-    const calculateDistance = (lat1, lon1, lat2, lon2) => {
-        const R = 6371; // Radius of the Earth in kilometers
-        const dLat = (lat2 - lat1) * Math.PI / 180;
-        const dLon = (lon2 - lon1) * Math.PI / 180;
-        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-                  Math.sin(dLon/2) * Math.sin(dLon/2);
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return R * c;
-    };
+
 
     const filterShops = () => {
         const filtered = allShops.filter(shop => {
@@ -1521,7 +1513,7 @@ const SearchScreen = ({ navigation }) => {
     };
 
     const handleCategoryPress = (category) => {
-        navigation.navigate('Tab',{screen:'MarketPlace'});
+        navigation.navigate('Tab', { screen: 'MarketPlace' });
     };
 
     // Convert meters to km for display
@@ -1564,9 +1556,9 @@ const SearchScreen = ({ navigation }) => {
             {/* {console.log('+++++++++++++++++++++', item)
             } */}
             <Image
-                source={{ 
-                    uri: item.Image && item.Image.startsWith('http') 
-                        ? item.Image 
+                source={{
+                    uri: item.Image && item.Image.startsWith('http')
+                        ? item.Image
                         : 'https://picsum.photos/100/100'
                 }}
                 style={styles.nearbyUserImage}
@@ -1577,24 +1569,13 @@ const SearchScreen = ({ navigation }) => {
             <View style={styles.locationBadge}>
                 <LocationIcon width={10} height={10} color="#fff" />
                 <Text style={styles.locationText}>
-                    {item?.Location?.City? item?.Location?.City :formatDistance(item.distance || 0)}
+                    {item?.Location?.City ? item?.Location?.City : formatDistance(item.distance || 0)}
                 </Text>
             </View>
         </TouchableOpacity>
     );
 
-    const renderBrowseCategory = ({ item, index }) => (
-        <TouchableOpacity
-            style={[styles.categoryContainer, { backgroundColor: isDarkMode ? '#1a1a1a' : '#f8f8f8' }]}
-            onPress={() => handleCategoryPress(item)}
-        >
-            <View style={styles.categoryImageContainer}>
-                <Text style={styles.categoryEmoji}>{item.icon}</Text>
-            </View>
-            <View style={styles.categoryOverlay} />
-            <Text style={styles.categoryTitle}>{item.title}</Text>
-        </TouchableOpacity>
-    );
+
 
     const RadiusModal = () => (
         <Modal
@@ -1610,7 +1591,7 @@ const SearchScreen = ({ navigation }) => {
                     <Text style={[styles.modalSubtitle, { color: isDarkMode ? '#888' : '#666' }]}>
                         How far should we look for nearby users?
                     </Text>
-                    
+
                     {[1000, 3000, 5000, 10000, 25000, 50000].map(radius => (
                         <TouchableOpacity
                             key={radius}
@@ -1627,11 +1608,11 @@ const SearchScreen = ({ navigation }) => {
                                 styles.radiusText,
                                 { color: searchRadius === radius ? '#fff' : (isDarkMode ? '#fff' : '#000') }
                             ]}>
-                                {radius >= 1000 ? `${radius/1000} km` : `${radius}m`}
+                                {radius >= 1000 ? `${radius / 1000} km` : `${radius}m`}
                             </Text>
                         </TouchableOpacity>
                     ))}
-                    
+
                     <TouchableOpacity
                         style={styles.modalCloseButton}
                         onPress={() => setShowRadiusModal(false)}
@@ -1724,7 +1705,7 @@ const SearchScreen = ({ navigation }) => {
         locationBadge: {
             flexDirection: 'row',
             alignItems: 'center',
-            backgroundColor:!isDarkMode?'gray': '#252525',
+            backgroundColor: !isDarkMode ? 'gray' : '#252525',
             paddingHorizontal: 6,
             paddingVertical: 2,
             borderRadius: 8,
@@ -1953,10 +1934,13 @@ const SearchScreen = ({ navigation }) => {
                                         <Text style={styles.sectionTitle}>People near you</Text>
                                         <TouchableOpacity
                                             style={styles.radiusButton}
-                                            onPress={() => setShowRadiusModal(true)}
+                                            onPress={() => {
+                                                ToastMsg('This feature is coming soon!')
+                                                // setShowRadiusModal(true)
+                                            }}
                                         >
                                             <Text style={styles.radiusButtonText}>
-                                                {searchRadius >= 1000 ? `${searchRadius/1000}km` : `${searchRadius}m`}
+                                                {searchRadius >= 1000 ? `${searchRadius / 1000}km` : `${searchRadius}m`}
                                             </Text>
                                         </TouchableOpacity>
                                     </View>
