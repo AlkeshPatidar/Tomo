@@ -871,7 +871,7 @@ const Home = ({ navigation }) => {
                         ? { uri: item?.User?.Image }
                         : IMG.MessageProfile
                     }
-                    style={styles.profileImage}
+                    style={{...styles.profileImage, bottom: selectedTab=='News'?35:0}}
                   />
                   <TouchableOpacity
                     onPress={() =>
@@ -896,7 +896,7 @@ const Home = ({ navigation }) => {
 
                     <Text style={styles.caption}>
                       <Text style={styles.caption}>
-                        {item?.caption || 'No Caption Added'}
+                        {selectedTab=='News'?'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.': item?.caption}
                       </Text>
                     </Text>
                   </TouchableOpacity>
@@ -990,11 +990,11 @@ const Home = ({ navigation }) => {
               </TouchableOpacity>
 
               {/* Actions */}
-              <View style={styles.actions}>
+
+             { selectedTab =='News'?<></>: <View style={styles.actions}>
                 <View style={styles.leftIcons}>
                   <Row
                     style={{
-                      // borderWidth: 0.5,
                       borderColor: isDarkMode ? 'gray' : 'gray',
                       borderRadius: 18,
                       paddingHorizontal: 5,
@@ -1031,7 +1031,6 @@ const Home = ({ navigation }) => {
                         alignItems: 'center',
                         gap: 5,
                         flexDirection: 'row',
-                        // borderWidth: 0.5,
                         borderColor: isDarkMode ? 'gray' : 'gray',
                         borderRadius: 18,
                         paddingHorizontal: 10,
@@ -1054,7 +1053,6 @@ const Home = ({ navigation }) => {
                   </Row>
                   <Row
                     style={{
-                      // borderWidth: 0.5,
                       borderColor: isDarkMode ? 'gray' : 'gray',
                       borderRadius: 18,
                       paddingHorizontal: 5,
@@ -1067,7 +1065,6 @@ const Home = ({ navigation }) => {
                         setPostId(item?._id)
                       }}>
                       {isDarkMode ? (
-                        // <CommentWhite height={16} width={16} />
                         <GradientIcon
                           colors={['#4F52FE', '#FC14CB']}
                           size={18}
@@ -1075,7 +1072,6 @@ const Home = ({ navigation }) => {
                           name={'comment-o'}
                         />
                       ) : (
-                        // <CommentIcon height={16} width={16} />
                         <GradientIcon
                           colors={['#4F52FE', '#FC14CB']}
                           size={18}
@@ -1116,7 +1112,8 @@ const Home = ({ navigation }) => {
                   </TouchableOpacity>
                 </Row>
 
-              </View>
+              </View>}
+
             </TouchableOpacity>
           )
         }}
