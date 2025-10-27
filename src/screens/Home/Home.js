@@ -1453,7 +1453,7 @@ const Home = ({ navigation }) => {
       const res = await apiGet('/api/admin/GetAllActiveAdvertisement')
       if (res?.data) {
         setAdvertisements(res.data)
-        console.log(Add);
+        // console.log('ADDDDDDDDDDDD',Add);
         
         // Initialize image index for each ad
         const initialAdImageIndex = {}
@@ -2251,7 +2251,7 @@ const Home = ({ navigation }) => {
           {currentMedia.type === 'image' ? (
             <Image
               source={{ uri: currentMedia.url }}
-              style={styles.postImage}
+              style={{...styles.postImage}}
               resizeMode='cover'
             />
           ) : (
@@ -2302,7 +2302,7 @@ const Home = ({ navigation }) => {
 
         {/* Ad CTA */}
         <TouchableOpacity style={styles.adCtaContainer}
-        onPress={()=>Linking.openURL(ad?.url)}
+        // onPress={()=>Linking.openURL(ad?.url)}
         >
           {/* {console.log('ad URL::::>', ad.url)
           } */}
