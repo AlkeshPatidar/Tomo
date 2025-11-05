@@ -443,7 +443,7 @@ const OtherUserDetail = ({ navigation, route }) => {
       // marginRight: 30,
     },
     activeTabButton: {
-      borderBottomWidth: 2,
+      // borderBottomWidth: 2,
       borderBottomColor: isDarkMode ? 'white' : '#000',
     },
     tabText: {
@@ -689,6 +689,17 @@ const OtherUserDetail = ({ navigation, route }) => {
           style={[styles.tabText, activeTab === 'all' && styles.activeTabText]}>
           All posts
         </Text>
+        {activeTab === 'all' && <LinearGradient
+          colors={['#FF00FF', '#4B6BFF']} // your gradient colors (pink → blue like your button)
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{
+            height: 2,
+            width: 50,
+            borderRadius: 5,
+            top: 18
+          }}
+        />}
       </TouchableOpacity>
       <TouchableOpacity
         style={[
@@ -703,6 +714,17 @@ const OtherUserDetail = ({ navigation, route }) => {
           ]}>
           Saved
         </Text>
+        {activeTab === 'saved' && <LinearGradient
+          colors={['#FF00FF', '#4B6BFF']} // your gradient colors (pink → blue like your button)
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{
+            height: 2,
+            width: 50,
+            borderRadius: 5,
+            top: 18
+          }}
+        />}
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -718,6 +740,17 @@ const OtherUserDetail = ({ navigation, route }) => {
           ]}>
           Marketplace Products
         </Text>
+        {activeTab === 'Marketplace' && <LinearGradient
+          colors={['#FF00FF', '#4B6BFF']} // your gradient colors (pink → blue like your button)
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{
+            height: 2,
+            width: 150,
+            borderRadius: 5,
+            top: 18
+          }}
+        />}
       </TouchableOpacity>
 
 
@@ -728,10 +761,10 @@ const OtherUserDetail = ({ navigation, route }) => {
   const renderPost = ({ item }) => (
     <TouchableOpacity
       onPress={() =>
-        navigation.navigate(activeTab === 'all' ? 'AllPostOfAUser' :activeTab === 'saved'? 'SavedPosts':'ProductDetail', { userId: item?.User?._id })
+        navigation.navigate(activeTab === 'all' ? 'AllPostOfAUser' : activeTab === 'saved' ? 'SavedPosts' : 'ProductDetail', { userId: item?.User?._id })
       }
       style={styles.postItem}>
-    
+
       <Image source={{ uri: activeTab === 'all' ? item?.media : activeTab === 'saved' ? item?.Post?.media : item?.Image }} style={styles.postImage} />
     </TouchableOpacity>
   )
