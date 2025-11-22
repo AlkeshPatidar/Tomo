@@ -85,6 +85,11 @@ const CustomDrawer = ({isVisible, onClose, navigation}) => {
       onClose()
     }
 
+       if (label == 'Feedback') {
+      navigation.navigate('FeedBack')
+      onClose()
+    }
+
     if (label == 'Help Center') {
       navigation.navigate('ContactUs')
       onClose()
@@ -321,6 +326,7 @@ const CustomDrawer = ({isVisible, onClose, navigation}) => {
             <OptionItem label='Terms & Conditions' />
             {/* <OptionItem label="Help Center" /> */}
             <OptionItem label='Invite a Freind' />
+             <OptionItem label='Feedback' />
             <OptionItem label='FAQ' />
 
             <OptionItem label='Log Out' />

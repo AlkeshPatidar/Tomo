@@ -19,7 +19,7 @@ const Activity = ({ navigation }) => {
     const [searchText, setSearchText] = useState('');
     const [animatedValue] = useState(new Animated.Value(0));
     const { isDarkMode } = useSelector(state => state.theme);
-    // const { showLoader, hideLoader } = useLoader()
+    const { showLoader, hideLoader } = useLoader()
     const dispatch = useDispatch()
 
     const [loading, setLoading] = useState(false)

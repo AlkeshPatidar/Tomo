@@ -27,6 +27,7 @@ import TermsAndConditions from '../../screens/PrivacyPolicy/Terms&Conditions';
 import AllProductsOfAShops from '../../screens/Shops/AllProductsOfaShop';
 import CreateProducts from '../../screens/Shops/CreateProduct';
 import AllPostOfAUser from '../../screens/AllPostOfAUser/AllPostOfaUser';
+import FeedBack from '../../screens/Feedback/FeedBack';
 
 
 
@@ -73,6 +74,8 @@ const StackNavigation = () => {
         <Stack.Screen name={'PrivacyPolicy'} component={PrivacyPolicy} />
         <Stack.Screen name={'TermsAndConditions'} component={TermsAndConditions} />
         <Stack.Screen name={'AllPostOfAUser'} component={AllPostOfAUser} />
+        <Stack.Screen name={'FeedBack'} component={FeedBack} />
+
 
 
 
