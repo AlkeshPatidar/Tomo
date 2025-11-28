@@ -7,7 +7,7 @@ import Home from '../../screens/Home/Home';
 
 import { TouchableOpacity, View } from 'react-native';
 
-import { ActiveHome, ActiveMessage, ActiveSearch, DeActiveHomeWhite, DeActiveSearch, DeactiveWhiteMsg, DeActiveWhiteSearch, MarkeActive, MarketDeactive, MarketDeactiveForLite, TabBottomLine } from '../../assets/SVGs';
+import { ActiveHome, ActiveHomeNew, ActiveMessage, ActiveSearch, BottomTabLinenew, DeActiveHomeWhite, DeActiveSearch, DeactiveWhiteMsg, DeActiveWhiteSearch, MarkeActive, MarketDeactive, MarketDeactiveForLite, MarketplaceActiveTabNew, MessageActiveTabNew, SearchActiveTabNew, TabBottomLine } from '../../assets/SVGs';
 import { MidIcon } from '../../assets/SVGs';
 import { DeActiveMsg } from '../../assets/SVGs';
 import { DeActiveLast } from '../../assets/SVGs';
@@ -93,8 +93,8 @@ function TabNavigation() {
             tabBarIcon: ({ focused }) =>
               focused ? (
                 <View style={{ alignItems: 'center', top: 16, width: 100 }}>
-                  <ActiveHome />
-                  <TabBottomLine style={{ top: 15 }} />
+                  <ActiveHomeNew />
+                  <BottomTabLinenew style={{ top: 15 }} />
                 </View>
               ) : (
                 <View style={{ alignItems: 'center', top: 16, width: 100 }}>
@@ -116,8 +116,9 @@ function TabNavigation() {
               tabBarIcon: ({ focused }) =>
                 focused ? (
                   <View style={{ alignItems: 'center', top: 16, width: 100 }}>
-                    <MarkeActive />
-                    <TabBottomLine style={{  top: 15 }} />
+                    <MarketplaceActiveTabNew />
+                  <BottomTabLinenew style={{ top: 15 }} />
+                 
 
                   </View>
                 ) : (
@@ -136,8 +137,9 @@ function TabNavigation() {
             tabBarIcon: ({ focused }) =>
               focused ? (
                 <View style={{ alignItems: 'center', top: 16, width: 100 }}>
-                  <ActiveSearch />
-                  <TabBottomLine style={{  top: 15 }} />
+                  <SearchActiveTabNew />
+                  <BottomTabLinenew style={{ top: 15 }} />
+               
 
                 </View>
               ) : (
@@ -177,8 +179,9 @@ function TabNavigation() {
             tabBarIcon: ({ focused }) =>
               focused ? (
                 <View style={{ alignItems: 'center', top: 16, width: 100 }}>
-                  <ActiveMessage />
-                  <TabBottomLine style={{  top: 15 }} />
+                  <MessageActiveTabNew />
+                  <BottomTabLinenew style={{ top: 15 }} />
+               
 
                 </View>
               ) : (
@@ -200,7 +203,8 @@ function TabNavigation() {
               focused ? (
                 <View style={{ alignItems: 'center', top: 16, width: 100 }}>
                   <DeActiveLast />
-                  <TabBottomLine style={{  top: 15 }} />
+                  <BottomTabLinenew style={{ top: 15 }} />
+               
 
                 </View>
               ) : (

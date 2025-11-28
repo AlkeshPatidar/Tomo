@@ -509,14 +509,16 @@ const PostDetailModal = ({
                       post?.likes?.includes(selector?._id) ?
 
                         <GradientIcon
-                          colors={['#4F52FE', '#FC14CB']}
+                          // colors={['#4F52FE', '#FC14CB']}
+                          colors={['#21B7FF', '#0084F8']}
                           size={18}
                           iconType='Ionicons'
                           name={'triangle'}
                         /> :
 
                         <GradientIcon
-                          colors={['#4F52FE', '#FC14CB']}
+                          // colors={['#4F52FE', '#FC14CB']}
+                          colors={['#21B7FF', '#0084F8']}
                           size={18}
                           iconType='Feather'
                           name={'triangle'}
@@ -536,7 +538,8 @@ const PostDetailModal = ({
                     /> */}
 
                     <GradientIcon
-                      colors={['#4F52FE', '#FC14CB']}
+                      // colors={['#4F52FE', '#FC14CB']}
+                      colors={['#21B7FF', '#0084F8']}
                       size={18}
                       iconType='Feather'
                       name={'triangle'}
@@ -555,7 +558,8 @@ const PostDetailModal = ({
                       color={isDarkMode ? 'white' : 'black'}
                     /> */}
                     <GradientIcon
-                      colors={['#4F52FE', '#FC14CB']}
+                      // colors={['#4F52FE', '#FC14CB']}
+                      colors={['#21B7FF', '#0084F8']}
                       size={18}
                       iconType='FontAwesome'
                       name={'comment-o'}

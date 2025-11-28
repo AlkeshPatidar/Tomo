@@ -10,6 +10,8 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import Feather from 'react-native-vector-icons/Feather';
 import Entypo from 'react-native-vector-icons/Entypo';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5'
+import FontAwesome6 from 'react-native-vector-icons/FontAwesome6'
+
 
 
 
@@ -38,6 +40,8 @@ const GradientIcon = ({
         return Entypo;
              case 'FontAwesome5':
         return FontAwesome5;
+                 case 'FontAwesome6':
+        return FontAwesome6;
       default:
         return MaterialIcons;
     }

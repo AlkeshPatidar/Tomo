@@ -42,6 +42,7 @@ import { ToastMsg } from '../../utils/helperFunctions'
 import { white } from '../../common/Colors/colors'
 import ProfileShimmer from '../../components/Skeletons/ProfilePageShimmer'
 import GradientIcon from '../../components/GradientIcon'
+import GlowWrapper from '../../components/GlowWrapper/GlowWrapper'
 
 const OtherUserDetail = ({ navigation, route }) => {
   const [isDrawerVisible, setDrawerVisible] = useState(false)
@@ -282,7 +283,8 @@ const OtherUserDetail = ({ navigation, route }) => {
       //   position: 'absolute',
       bottom: 15,
       right: 15,
-      backgroundColor: '#FC14CB',
+      // backgroundColor: '#FC14CB',
+      backgroundColor:'#21B7FF',
       paddingHorizontal: 16,
       paddingVertical: 8,
       borderRadius: 10,
@@ -472,6 +474,8 @@ const OtherUserDetail = ({ navigation, route }) => {
       width: '100%',
       height: '100%',
       resizeMode: 'cover',
+      // padding:1,
+      borderRadius:8
     },
     emptyState: {
       flex: 1,
@@ -560,7 +564,8 @@ const OtherUserDetail = ({ navigation, route }) => {
           color={isDarkMode ? white : '#000'}
         /> */}
         <GradientIcon
-          colors={['#4F52FE', '#FC14CB']}
+          // colors={['#4F52FE', '#FC14CB']}
+          colors={['#21B7FF', '#0084F8']}
           size={18}
           iconType='Feather'
           name={'settings'}
@@ -690,7 +695,8 @@ const OtherUserDetail = ({ navigation, route }) => {
           All posts
         </Text>
         {activeTab === 'all' && <LinearGradient
-          colors={['#FF00FF', '#4B6BFF']} // your gradient colors (pink → blue like your button)
+          // colors={['#FF00FF', '#4B6BFF']} 
+          colors={['#21B7FF', '#0084F8']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={{
@@ -715,7 +721,9 @@ const OtherUserDetail = ({ navigation, route }) => {
           Saved
         </Text>
         {activeTab === 'saved' && <LinearGradient
-          colors={['#FF00FF', '#4B6BFF']} // your gradient colors (pink → blue like your button)
+          // colors={['#FF00FF', '#4B6BFF']} 
+          colors={['#21B7FF', '#0084F8']}
+
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={{
@@ -741,7 +749,9 @@ const OtherUserDetail = ({ navigation, route }) => {
           Marketplace Products
         </Text>
         {activeTab === 'Marketplace' && <LinearGradient
-          colors={['#FF00FF', '#4B6BFF']} // your gradient colors (pink → blue like your button)
+          // colors={['#FF00FF', '#4B6BFF']} 
+          colors={['#21B7FF', '#0084F8']}
+
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={{
@@ -759,14 +769,26 @@ const OtherUserDetail = ({ navigation, route }) => {
   )
 
   const renderPost = ({ item }) => (
+    <GlowWrapper 
+    containerStyle={{
+      width:'47%',
+      margin:'1%',
+         height: 120,
+      margin: '1%',
+    }}
+    borderRadius={8}
+    >
     <TouchableOpacity
       onPress={() =>
         navigation.navigate(activeTab === 'all' ? 'AllPostOfAUser' : activeTab === 'saved' ? 'SavedPosts' : 'ProductDetail', { userId: item?.User?._id })
       }
-      style={styles.postItem}>
+      // style={styles.postItem}
+      >
 
       <Image source={{ uri: activeTab === 'all' ? item?.media : activeTab === 'saved' ? item?.Post?.media : item?.Image }} style={styles.postImage} />
     </TouchableOpacity>
+
+    </GlowWrapper>
   )
 
   const renderPostsGrid = () => {

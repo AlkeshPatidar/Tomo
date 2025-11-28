@@ -239,7 +239,7 @@ const Splash = ({ navigation }) => {
                 barStyle="light-content"
             />
             <Image
-            source={IMG.FinalLogo}
+            source={IMG.TomoLogo}
             style={{
                 width: '60%',
                 height: '30%',

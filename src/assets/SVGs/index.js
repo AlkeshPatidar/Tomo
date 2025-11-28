@@ -81,10 +81,27 @@ import LocationNewTheme from './LocationNewTheme.svg'
 import NotificationBellIcon from './NotificationBellIcon.svg'
 import SearchNewTheme from './SearchNewTheme.svg'
 
+import AddPostBtn from './AddPostBtn.svg'
+
+import ActiveHomeNew from './ActiveHomeNew.svg'
+import BottomTabLinenew from './BottomTabLinenew.svg'
+
+import MarketplaceActiveTabNew from './MarketplaceActiveTabNew.svg'
+import SearchActiveTabNew from './SearchActiveTabNew.svg'
+import MessageActiveTabNew from './MessageActiveTabNew.svg'
+
+
+
+
+
 
 
 
 export {
+  MarketplaceActiveTabNew,
+  SearchActiveTabNew,
+  MessageActiveTabNew,
+  AddPostBtn,
   DeActiveHomeWhite,
   DeActiveWhiteSearch,
   DeactiveWhiteMsg,
@@ -157,5 +174,7 @@ export {
   ActiveBottmTb,
   LocationNewTheme,
   SearchNewTheme,
-  NotificationBellIcon
+  NotificationBellIcon,
+  ActiveHomeNew ,
+ BottomTabLinenew 
 }

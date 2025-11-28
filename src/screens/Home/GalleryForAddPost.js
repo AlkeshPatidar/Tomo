@@ -1435,7 +1435,9 @@ const GalleryForAddPost = ({ navigation }) => {
         ]}
         onPress={() => setActiveTab('Images')}>
         <LinearGradient
-          colors={['#FC14CB', '#4F52FE']}
+          // colors={['#FC14CB', '#4F52FE']}
+          colors={['#21B7FF', '#0084F8']}
+
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.tabButton, { borderRadius: 8 }]}>
@@ -1470,7 +1472,9 @@ const GalleryForAddPost = ({ navigation }) => {
         ]}
         onPress={() => setActiveTab('Videos')}>
         <LinearGradient
-          colors={['#FC14CB', '#4F52FE']}
+          // colors={['#FC14CB', '#4F52FE']}
+          colors={['#21B7FF', '#0084F8']}
+
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.tabButton, { borderRadius: 8 }]}>
@@ -1881,7 +1885,9 @@ const GalleryForAddPost = ({ navigation }) => {
                   onPress={handlePostStory}
                   disabled={!selectedImage}>
                   <LinearGradient
-                    colors={['#FC14CB', '#4F52FE']}
+                    // colors={['#FC14CB', '#4F52FE']}
+                              colors={['#21B7FF', '#0084F8']}
+
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={[
@@ -1938,10 +1944,10 @@ const styles = StyleSheet.create({
     borderRadius: 25,
   },
   activeTab: {
-    elevation: 2,
-    shadowOpacity: 0.2,
+    elevation: 1,
+    // shadowOpacity: 0.2,
     shadowRadius: 4,
-    borderWidth: 1,
+    // borderWidth: 1,
     borderColor: '#4F52FE',
   },
   tabText: {
@@ -2174,13 +2180,13 @@ const styles = StyleSheet.create({
   },
   postButtonContainer: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderTopWidth: 1,
     backgroundColor: 'transparent',
   },
   postBtn: {
     backgroundColor: '#1e90ff',
-    paddingVertical: 16,
+    paddingVertical: 13,
     paddingHorizontal: 24,
     borderRadius: 25,
     flexDirection: 'row',

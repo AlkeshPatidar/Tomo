@@ -300,7 +300,7 @@ const CustomDrawer = ({isVisible, onClose, navigation}) => {
             }}
           /> */}
              <Image
-            source={IMG.FinalLogo}
+            source={IMG.TomoLogo}
             style={{
               height: 120,
               width: 120,

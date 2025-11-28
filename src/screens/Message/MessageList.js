@@ -11,13 +11,14 @@ import { apiGet } from '../../utils/Apis';
 import urls from '../../config/urls';
 import useLoader from '../../utils/LoaderHook';
 import MessageListShimmer from '../../components/Skeletons/MessageListShimmer';
+import GradientIcon from '../../components/GradientIcon';
 
 const MessageList = ({ navigation }) => {
 
     const { isDarkMode } = useSelector(state => state.theme);
     const [allUser, setAllUsers] = useState([])
-    const {showLoader, hideLoader}=useLoader()
-    const [loading, setLoading]=useState(false)
+    const { showLoader, hideLoader } = useLoader()
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         fetchData()
@@ -151,8 +152,19 @@ const MessageList = ({ navigation }) => {
 
                 </TouchableOpacity>
                 <CustomText style={{ fontSize: 20, fontFamily: FONTS_FAMILY.SourceSans3_Bold }}>Message</CustomText>
-                <TouchableOpacity>
-                    <Editsq />
+                <TouchableOpacity
+                    style={{
+                        // marginHorizontal:10
+                    }}
+                >
+                    {/* <Editsq /> */}
+                    <GradientIcon
+                        // colors={['#4F52FE', '#FC14CB']}
+                        colors={['#21B7FF', '#0084F8']}
+                        size={20}
+                        iconType='Feather'
+                        name={'edit'}
+                    />
                 </TouchableOpacity>
             </SpaceBetweenRow>
         )
@@ -161,11 +173,11 @@ const MessageList = ({ navigation }) => {
     const MessageCard = ({ item }) => {
         return (
             <TouchableOpacity style={styles.card}
-                onPress={() => navigation.navigate('Chat', {userId:item?._id, userForChat:item})}
+                onPress={() => navigation.navigate('Chat', { userId: item?._id, userForChat: item })}
             >
                 {/* Profile Image */}
                 <View style={styles.profileContainer}>
-                    <Image source={item?.Image?{uri:item?.Image}:IMG.MessageProfile} style={styles.avatar} />
+                    <Image source={item?.Image ? { uri: item?.Image } : IMG.MessageProfile} style={styles.avatar} />
                     {/* {item.isOnline && <View style={styles.onlineDot} />} */}
                 </View>
 
@@ -192,9 +204,9 @@ const MessageList = ({ navigation }) => {
     };
 
     if (loading) {
-    return <MessageListShimmer/>;
+        return <MessageListShimmer />;
 
-}
+    }
     return (
         <View style={styles.container}>
             {/* Search Bar */}
@@ -205,7 +217,14 @@ const MessageList = ({ navigation }) => {
             />
             {renderHeader()}
             <View style={styles.searchContainer}>
-                <Search />
+                {/* <Search /> */}
+                <GradientIcon
+                    // colors={['#4F52FE', '#FC14CB']}
+                    colors={['#21B7FF', '#0084F8']}
+                    size={18}
+                    iconType='FontAwesome5'
+                    name={'search'}
+                />
                 <TextInput style={styles.searchInput} placeholder="Search" placeholderTextColor="#A0A0A0" />
             </View>
 
