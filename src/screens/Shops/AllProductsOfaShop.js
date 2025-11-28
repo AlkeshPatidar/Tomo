@@ -548,7 +548,8 @@ const AllProductsOfAShops = ({ navigation, route }) => {
                             })}
                         >
                             <LinearGradient
-                                colors={['#ff00ff', '#6a5acd']}
+                                // colors={['#ff00ff', '#6a5acd']}
+                                colors={['#21B7FF', '#0084F8']}
                                 start={{ x: 1, y: 0 }}
                                 end={{ x: 1, y: 1 }}
                                 style={styles.followButton}

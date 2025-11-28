@@ -250,6 +250,7 @@ import { inValidEmail, inValidPassword } from "../../utils/CheckValidation";
 import { launchImageLibrary } from 'react-native-image-picker';
 import { Platform, PermissionsAndroid } from 'react-native';
 import axios from "axios";
+import LinearGradient from "react-native-linear-gradient";
 
 const AddShops = ({ navigation }) => {
     const { isDarkMode } = useSelector(state => state.theme);
@@ -603,12 +604,32 @@ const AddShops = ({ navigation }) => {
                             />
                         </TouchableOpacity>
 
-                        <TouchableOpacity
+                        {/* <TouchableOpacity
                             style={{ top: 30 }}
                             onPress={onSubmit}
                         >
                             <SubmitBtn width={380} height={65} />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
+
+                          <TouchableOpacity
+                                                    onPress={onSubmit}
+                                                >
+                                                    <LinearGradient
+                                                        // colors={['#ff00ff', '#6a5acd']}
+                                                        colors={['#21B7FF', '#0084F8']}
+                                                        start={{ x: 1, y: 0 }}
+                                                        end={{ x: 1, y: 1 }}
+                                                        style={styles.followButton}
+                                                    >
+                                                        <Text style={[
+                                                            styles.followText,
+                                                            { color: '#fff' }
+                                                        ]}>
+                                                            Add shop
+                                                        </Text>
+                                                    </LinearGradient>
+                                                </TouchableOpacity>
+
                     </View>
                 </ScrollView>
 
@@ -670,7 +691,21 @@ const AddShops = ({ navigation }) => {
             paddingHorizontal: 20,
             borderRadius: 8,
             marginTop: 20
-        }
+        },
+          followButton: {
+        paddingVertical: 15,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        alignItems: 'center',
+        // marginHorizontal:30
+        width:300,
+        marginTop:30
+    },
+    followText: {
+        fontSize: 16,
+        fontWeight: '600',
+        fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+    },
     });
 
     return (

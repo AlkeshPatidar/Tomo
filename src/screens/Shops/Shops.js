@@ -275,7 +275,7 @@
 // export default Shops;
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
+import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar , Text} from 'react-native';
 import { useSelector } from 'react-redux';
 import { AddShopBtn, BackBlackSimple, BackIcon } from '../../assets/SVGs';
 import SpaceBetweenRow from '../../components/wrapper/spacebetween';
@@ -290,6 +290,7 @@ import useKeyboardStatus from '../../utils/KeyBoardHook';
 import ShopsShimmerLoader from '../../components/Skeletons/ShopsShimmer';
 import GradientIcon from '../../components/GradientIcon';
 import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
+import LinearGradient from 'react-native-linear-gradient';
 
 // Separate component for shop card to optimize rendering
 const ShopCard = React.memo(({ item, isDarkMode, onPress }) => {
@@ -459,7 +460,7 @@ const Shops = ({ navigation }) => {
                 <ShopsShimmerLoader isDarkMode={isDarkMode} shopCount={8} />
             ) : (
                 <>
-                
+
                     <View style={[
                         styles.searchContainer,
                         { backgroundColor: isDarkMode ? '#252525' : '#F0F0F0' }
@@ -497,8 +498,26 @@ const Shops = ({ navigation }) => {
                     />
 
                     {selector?.SellerStatus === 'Approved' && (
-                        <TouchableOpacity onPress={() => navigation?.navigate('AddShops')}>
-                            <AddShopBtn />
+                        // <TouchableOpacity onPress={() => navigation?.navigate('AddShops')}>
+                        //     <AddShopBtn />
+                        // </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => navigation?.navigate('AddShops')}
+                        >
+                            <LinearGradient
+                                // colors={['#ff00ff', '#6a5acd']}
+                                colors={['#21B7FF', '#0084F8']}
+                                start={{ x: 1, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                style={styles.followButton}
+                            >
+                                <Text style={[
+                                    styles.followText,
+                                    { color: '#fff' }
+                                ]}>
+                                    Add shop
+                                </Text>
+                            </LinearGradient>
                         </TouchableOpacity>
                     )}
 
@@ -565,6 +584,18 @@ const styles = StyleSheet.create({
     locationText: {
         fontSize: 10,
         flex: 1,
+    },
+    followButton: {
+        paddingVertical: 15,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginHorizontal:30
+    },
+    followText: {
+        fontSize: 16,
+        fontWeight: '600',
+        fontFamily: FONTS_FAMILY.SourceSans3_Bold,
     },
 });
 

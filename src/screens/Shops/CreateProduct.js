@@ -2,7 +2,7 @@
 
 
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, ImageBackground, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Animated, ImageBackground, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import CustomText from "../../components/TextComponent";
 import IMG from "../../assets/Images";
 import Row from "../../components/wrapper/row";
@@ -18,6 +18,7 @@ import { inValidEmail, inValidPassword } from "../../utils/CheckValidation";
 import { launchImageLibrary } from 'react-native-image-picker';
 import { Platform, PermissionsAndroid } from 'react-native';
 import axios from "axios";
+import LinearGradient from "react-native-linear-gradient";
 
 const CreateProducts = ({ navigation, route }) => {
     const { isDarkMode } = useSelector(state => state.theme);
@@ -201,16 +202,35 @@ const CreateProducts = ({ navigation, route }) => {
 
 
 
-                        <TouchableOpacity style={{ top: 100 }}
+                        {/* <TouchableOpacity style={{ top: 100 }}
                             // onPress={() => navigation.navigate('Tab')}
                             onPress={onSubmit}
                         >
                             <SubmitBtn width={380} height={65} />
+                        </TouchableOpacity> */}
+
+                        <TouchableOpacity
+                            onPress={onSubmit}
+                        >
+                            <LinearGradient
+                                // colors={['#ff00ff', '#6a5acd']}
+                                colors={['#21B7FF', '#0084F8']}
+                                start={{ x: 1, y: 0 }}
+                                end={{ x: 1, y: 1 }}
+                                style={styles.followButton}
+                            >
+                                <Text style={[
+                                    styles.followText,
+                                    { color: '#fff' }
+                                ]}>
+                                    Add shop
+                                </Text>
+                            </LinearGradient>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
 
-                <BottomIndicator style={{ position: 'absolute', bottom: 10, alignSelf: 'center' }} />
+                {/* <BottomIndicator style={{ position: 'absolute', bottom: 10, alignSelf: 'center' }} /> */}
             </Animated.View>
         )
     }
@@ -220,7 +240,22 @@ const CreateProducts = ({ navigation, route }) => {
             flex: 1,
             backgroundColor: isDarkMode ? 'black' : 'white'
         },
-        
+        followButton: {
+            paddingVertical: 15,
+            paddingHorizontal: 16,
+            borderRadius: 8,
+            alignItems: 'center',
+            // marginHorizontal:30
+            width: 300,
+            marginTop: 30,
+            
+        },
+        followText: {
+            fontSize: 16,
+            fontWeight: '600',
+            fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+        },
+
     });
 
     return (
