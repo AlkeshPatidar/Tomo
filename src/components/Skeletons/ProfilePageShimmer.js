@@ -306,6 +306,7 @@
 
 // export default ProfileShimmer;
 
+import { useIsFocused } from '@react-navigation/native';
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -313,19 +314,45 @@ import { useSelector } from 'react-redux';
 const ProfileShimmer = () => {
     const { isDarkMode } = useSelector(state => state.theme);
     const shimmerAnimatedValue = useRef(new Animated.Value(0)).current;
+    const isFocused = useIsFocused();
+
+    // useEffect(() => {
+    //     const shimmerAnimation = Animated.loop(
+    //         Animated.timing(shimmerAnimatedValue, {
+    //             toValue: 1,
+    //             duration: 1500,
+    //             useNativeDriver: true,
+    //         })
+    //     );
+    //     shimmerAnimation.start();
+
+    //     return () => shimmerAnimation.stop();
+    // }, []);
 
     useEffect(() => {
         const shimmerAnimation = Animated.loop(
-            Animated.timing(shimmerAnimatedValue, {
-                toValue: 1,
-                duration: 1500,
-                useNativeDriver: true,
-            })
+            Animated.sequence([
+                Animated.timing(shimmerAnimatedValue, {
+                    toValue: 1,
+                    duration: 1000,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(shimmerAnimatedValue, {
+                    toValue: 0,
+                    duration: 1000,
+                    useNativeDriver: true,
+                }),
+            ])
         );
-        shimmerAnimation.start();
-
-        return () => shimmerAnimation.stop();
-    }, []);
+    
+        if (isFocused) {
+            shimmerAnimation.start();  // 🔥 Screen visible → animation ON
+        } else {
+            shimmerAnimation.stop();   // 🛑 Screen background → animation OFF
+        }
+    
+        return () => shimmerAnimation.stop(); // Unmount → full cleanup
+    }, [isFocused, shimmerAnimatedValue]);
 
     const shimmerOpacity = shimmerAnimatedValue.interpolate({
         inputRange: [0, 0.5, 1],

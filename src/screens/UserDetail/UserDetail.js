@@ -905,4 +905,5 @@ const OtherUserDetail = ({ navigation, route }) => {
   )
 }
 
-export default OtherUserDetail
+// export default 
+export default React.memo(OtherUserDetail);

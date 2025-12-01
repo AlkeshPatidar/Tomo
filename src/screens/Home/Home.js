@@ -3466,19 +3466,19 @@ const Home = ({ navigation }) => {
 
   const isFocused = useIsFocused()
 
-  useEffect(() => {
-    Animated.timing(storyOpacity, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true,
-    }).start()
+  // useEffect(() => {
+  //   Animated.timing(storyOpacity, {
+  //     toValue: 1,
+  //     duration: 500,
+  //     useNativeDriver: true,
+  //   }).start()
 
-    Animated.timing(feedTranslateY, {
-      toValue: 0,
-      duration: 500,
-      useNativeDriver: true,
-    }).start()
-  }, [])
+  //   Animated.timing(feedTranslateY, {
+  //     toValue: 0,
+  //     duration: 500,
+  //     useNativeDriver: true,
+  //   }).start()
+  // }, [])
 
   useEffect(() => {
     fetchData()
@@ -3999,7 +3999,7 @@ const Home = ({ navigation }) => {
           style={{
             paddingVertical: 5,
             backgroundColor: isDarkMode ? '#000' : '#fff',
-            opacity: storyOpacity,
+            // opacity: storyOpacity,
           }}>
           <ScrollView
             horizontal
@@ -4712,7 +4712,8 @@ const additionalStyles = {
   },
 }
 
-export default Home
+// export default Home
+export default React.memo(Home);
 
 
 

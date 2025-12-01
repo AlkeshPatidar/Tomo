@@ -1,3 +1,4 @@
+import { useIsFocused } from '@react-navigation/native';
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, Dimensions } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -8,26 +9,54 @@ const SearchShimmerLoader = () => {
     const { isDarkMode } = useSelector(state => state.theme);
     const shimmerAnimatedValue = useRef(new Animated.Value(0)).current;
 
-    useEffect(() => {
-        const shimmerAnimation = Animated.loop(
-            Animated.sequence([
-                Animated.timing(shimmerAnimatedValue, {
-                    toValue: 1,
-                    duration: 1000,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(shimmerAnimatedValue, {
-                    toValue: 0,
-                    duration: 1000,
-                    useNativeDriver: true,
-                }),
-            ])
-        );
+    // useEffect(() => {
+    //     const shimmerAnimation = Animated.loop(
+    //         Animated.sequence([
+    //             Animated.timing(shimmerAnimatedValue, {
+    //                 toValue: 1,
+    //                 duration: 1000,
+    //                 useNativeDriver: true,
+    //             }),
+    //             Animated.timing(shimmerAnimatedValue, {
+    //                 toValue: 0,
+    //                 duration: 1000,
+    //                 useNativeDriver: true,
+    //             }),
+    //         ])
+    //     );
 
-        shimmerAnimation.start();
+    //     shimmerAnimation.start();
 
-        return () => shimmerAnimation.stop();
-    }, []);
+    //     return () => shimmerAnimation.stop();
+    // }, []);
+
+    const isFocused = useIsFocused();
+
+useEffect(() => {
+    const shimmerAnimation = Animated.loop(
+        Animated.sequence([
+            Animated.timing(shimmerAnimatedValue, {
+                toValue: 1,
+                duration: 1000,
+                useNativeDriver: true,
+            }),
+            Animated.timing(shimmerAnimatedValue, {
+                toValue: 0,
+                duration: 1000,
+                useNativeDriver: true,
+            }),
+        ])
+    );
+
+    if (isFocused) {
+        shimmerAnimation.start();   // 🔥 Screen visible → Start animation
+    } else {
+        shimmerAnimation.stop();    // 🛑 Screen hidden → Stop animation
+    }
+
+    return () => shimmerAnimation.stop(); // Component unmount → Cleanup
+}, [isFocused]);
+
 
     const shimmerOpacity = shimmerAnimatedValue.interpolate({
         inputRange: [0, 1],

@@ -845,7 +845,7 @@ const BrowseCategoryCard = React.memo(({ category, isDarkMode, onPress }) => {
             showStars={true}
             starCount={6}
             showShinePatches={false}
-            intensity="low"
+            intensity="high"
             containerStyle={{
                 width: (width - 48) / 2,
                 marginBottom: 12,
@@ -1379,4 +1379,5 @@ const formatDistance = (distanceInMeters) => {
     );
 };
 
-export default SearchScreen;
+// export default ;
+export default React.memo(SearchScreen);

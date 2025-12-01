@@ -274,8 +274,337 @@
 
 // export default Shops;
 
+// import React, { useEffect, useState, useCallback } from 'react';
+// import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar , Text} from 'react-native';
+// import { useSelector } from 'react-redux';
+// import { AddShopBtn, BackBlackSimple, BackIcon } from '../../assets/SVGs';
+// import SpaceBetweenRow from '../../components/wrapper/spacebetween';
+// import CustomText from '../../components/TextComponent';
+// import { FONTS_FAMILY } from '../../assets/Fonts';
+// import IMG from '../../assets/Images';
+// import useLoader from '../../utils/LoaderHook';
+// import { apiGet } from '../../utils/Apis';
+// import urls from '../../config/urls';
+// import { useIsFocused } from '@react-navigation/native';
+// import useKeyboardStatus from '../../utils/KeyBoardHook';
+// import ShopsShimmerLoader from '../../components/Skeletons/ShopsShimmer';
+// import GradientIcon from '../../components/GradientIcon';
+// import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
+// import LinearGradient from 'react-native-linear-gradient';
+
+// // Separate component for shop card to optimize rendering
+// const ShopCard = React.memo(({ item, isDarkMode, onPress }) => {
+//     return (
+//         <GlowWrapper
+//             isDarkMode={isDarkMode}
+//             borderRadius={10}
+//             showStars={true}
+//             starCount={100}
+//             showShinePatches={false}
+//             intensity="low"
+//             containerStyle={{
+//                 flex: 1,
+//                 margin: 5,
+//             }}
+//         >
+//             <TouchableOpacity
+//                 style={[
+//                     styles.cardContainer,
+//                     { backgroundColor: isDarkMode ? '#252525' : '#fff' }
+//                 ]}
+//                 onPress={onPress}
+//                 activeOpacity={0.8}
+//             >
+//                 <Image
+//                     source={item?.Image ? { uri: item?.Image } : IMG.PostImage}
+//                     style={styles.shopImage}
+//                     resizeMode="cover"
+//                 />
+//                 <View style={styles.shopInfo}>
+//                     <CustomText style={styles.shopName} numberOfLines={1}>
+//                         {item?.Name}
+//                     </CustomText>
+//                     <View style={styles.locationRow}>
+//                         <GradientIcon
+//                             colors={['#21B7FF', '#0084F8']}
+//                             size={14}
+//                             iconType='FontAwesome6'
+//                             name={'location-dot'}
+//                         />
+//                         <CustomText
+//                             style={[
+//                                 styles.locationText,
+//                                 { color: isDarkMode ? 'white' : '#7d7d7d' }
+//                             ]}
+//                             numberOfLines={1}
+//                         >
+//                             {item?.Address[0]?.LocationName}
+//                         </CustomText>
+//                     </View>
+//                 </View>
+//             </TouchableOpacity>
+//         </GlowWrapper>
+//     );
+// });
+
+// const Shops = ({ navigation }) => {
+//     const [allShops, setAllShops] = useState([]);
+//     const [filteredShops, setFilteredShops] = useState([]);
+//     const [searchQuery, setSearchQuery] = useState('');
+//     const { showLoader, hideLoader } = useLoader();
+//     const isFocused = useIsFocused();
+//     const [loading, setLoading] = useState(false);
+//     const { isKeyboardOpen } = useKeyboardStatus();
+//     const { isDarkMode } = useSelector(state => state.theme);
+
+//     let selector = useSelector(state => state?.user?.userData);
+//     if (Object.keys(selector).length !== 0) {
+//         selector = JSON.parse(selector);
+//     }
+
+//     useEffect(() => {
+//         if (isFocused) {
+//             fetchData();
+//         }
+//     }, [isFocused]);
+
+//     // Real-time search filter
+//     useEffect(() => {
+//         if (searchQuery.trim() === '') {
+//             setFilteredShops(allShops);
+//         } else {
+//             const filtered = allShops.filter(shop => {
+//                 const shopName = shop?.Name?.toLowerCase() || '';
+//                 const shopAddress = shop?.Address?.[0]?.LocationName?.toLowerCase() || '';
+//                 const query = searchQuery.toLowerCase();
+
+//                 return shopName.includes(query) || shopAddress.includes(query);
+//             });
+//             setFilteredShops(filtered);
+//         }
+//     }, [searchQuery, allShops]);
+
+//     const fetchData = async () => {
+//         setLoading(true);
+//         try {
+//             const res = await apiGet(urls.getAllShops);
+//             setAllShops(res?.data || []);
+//             setFilteredShops(res?.data || []);
+//         } catch (error) {
+//             console.error('Error fetching shops:', error);
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     const handleSearch = useCallback((text) => {
+//         setSearchQuery(text);
+//     }, []);
+
+//     const handleShopPress = useCallback((shopId) => {
+//         navigation.navigate('AllProductsOfAShops', { shopId });
+//     }, [navigation]);
+
+//     const renderHeader = () => {
+//         return (
+//             <SpaceBetweenRow
+//                 style={[
+//                     styles.header,
+//                     { backgroundColor: isDarkMode ? '#252525' : 'white' }
+//                 ]}
+//             >
+//                 <TouchableOpacity onPress={() => navigation.goBack()}>
+//                     {isDarkMode ? <BackIcon /> : <BackBlackSimple />}
+//                 </TouchableOpacity>
+//                 <CustomText style={styles.headerTitle}>
+//                     Market Place
+//                 </CustomText>
+//                 <TouchableOpacity onPress={() => navigation.navigate('Activity')}>
+//                     <GradientIcon
+//                         colors={['#21B7FF', '#0084F8']}
+//                         size={20}
+//                         iconType='FontAwesome5'
+//                         name={'bell'}
+//                     />
+//                 </TouchableOpacity>
+//             </SpaceBetweenRow>
+//         );
+//     };
+
+//     const renderItem = useCallback(({ item }) => (
+//         <ShopCard
+//             item={item}
+//             isDarkMode={isDarkMode}
+//             onPress={() => handleShopPress(item?._id)}
+//         />
+//     ), [isDarkMode, handleShopPress]);
+
+//     const keyExtractor = useCallback((item) => item?._id, []);
+
+//     const getItemLayout = useCallback((data, index) => ({
+//         length: 180,
+//         offset: 180 * Math.floor(index / 2),
+//         index,
+//     }), []);
+
+//     return (
+//         <View style={[styles.container, { backgroundColor: isDarkMode ? 'black' : '#fff' }]}>
+//             <StatusBar
+//                 translucent={true}
+//                 backgroundColor="transparent"
+//                 barStyle={isDarkMode ? "light-content" : "dark-content"}
+//             />
+//             {renderHeader()}
+
+//             {loading ? (
+//                 <ShopsShimmerLoader isDarkMode={isDarkMode} shopCount={8} />
+//             ) : (
+//                 <>
+
+//                     <View style={[
+//                         styles.searchContainer,
+//                         { backgroundColor: isDarkMode ? '#252525' : '#F0F0F0' }
+//                     ]}>
+//                         <GradientIcon
+//                             colors={['#21B7FF', '#0084F8']}
+//                             size={18}
+//                             iconType='FontAwesome5'
+//                             name={'search'}
+//                         />
+//                         <TextInput
+//                             style={[
+//                                 styles.searchInput,
+//                                 { color: isDarkMode ? 'white' : 'black' }
+//                             ]}
+//                             placeholder="Search shops..."
+//                             placeholderTextColor="#A0A0A0"
+//                             value={searchQuery}
+//                             onChangeText={handleSearch}
+//                         />
+//                     </View>
+
+//                     <FlatList
+//                         data={filteredShops}
+//                         keyExtractor={keyExtractor}
+//                         renderItem={renderItem}
+//                         numColumns={2}
+//                         contentContainerStyle={styles.listContent}
+//                         showsVerticalScrollIndicator={false}
+//                         // removeClippedSubviews={true}
+//                         maxToRenderPerBatch={10}
+//                         windowSize={5}
+//                         initialNumToRender={6}
+//                         // getItemLayout={getItemLayout}
+//                     />
+
+//                     {selector?.SellerStatus === 'Approved' && (
+//                         // <TouchableOpacity onPress={() => navigation?.navigate('AddShops')}>
+//                         //     <AddShopBtn />
+//                         // </TouchableOpacity>
+//                         <TouchableOpacity
+//                             onPress={() => navigation?.navigate('AddShops')}
+//                         >
+//                             <LinearGradient
+//                                 // colors={['#ff00ff', '#6a5acd']}
+//                                 colors={['#21B7FF', '#0084F8']}
+//                                 start={{ x: 1, y: 0 }}
+//                                 end={{ x: 1, y: 1 }}
+//                                 style={styles.followButton}
+//                             >
+//                                 <Text style={[
+//                                     styles.followText,
+//                                     { color: '#fff' }
+//                                 ]}>
+//                                     Add shop
+//                                 </Text>
+//                             </LinearGradient>
+//                         </TouchableOpacity>
+//                     )}
+
+//                     {!isKeyboardOpen && <View style={{ height: 100 }} />}
+//                 </>
+//             )}
+//         </View>
+//     );
+// };
+
+// const styles = StyleSheet.create({
+//     container: {
+//         flex: 1,
+//     },
+//     header: {
+//         paddingTop: 50,
+//         paddingHorizontal: 20,
+//         paddingBottom: 15,
+//     },
+//     headerTitle: {
+//         fontSize: 20,
+//         fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+//     },
+//     searchContainer: {
+//         flexDirection: 'row',
+//         alignItems: 'center',
+//         borderRadius: 30,
+//         margin: 10,
+//         padding: 4,
+//         marginTop: 10,
+//         paddingHorizontal: 15,
+//         gap: 10,
+//     },
+//     searchInput: {
+//         flex: 1,
+//         fontSize: 16,
+//     },
+//     listContent: {
+//         paddingHorizontal: 5,
+//         paddingBottom: 20,
+//     },
+//     cardContainer: {
+//         borderRadius: 10,
+//         padding: 7,
+//     },
+//     shopImage: {
+//         height: 100,
+//         width: '100%',
+//         borderRadius: 10,
+//     },
+//     shopInfo: {
+//         marginTop: 6,
+//     },
+//     shopName: {
+//         fontSize: 16,
+//         fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+//         marginBottom: 5,
+//     },
+//     locationRow: {
+//         flexDirection: 'row',
+//         alignItems: 'center',
+//         gap: 5,
+//     },
+//     locationText: {
+//         fontSize: 10,
+//         flex: 1,
+//     },
+//     followButton: {
+//         paddingVertical: 15,
+//         paddingHorizontal: 16,
+//         borderRadius: 8,
+//         alignItems: 'center',
+//         marginHorizontal:30
+//     },
+//     followText: {
+//         fontSize: 16,
+//         fontWeight: '600',
+//         fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+//     },
+// });
+
+// // export default ;
+// export default React.memo(Shops);
+
+
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar , Text} from 'react-native';
+import { View, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, StatusBar, Text } from 'react-native';
 import { useSelector } from 'react-redux';
 import { AddShopBtn, BackBlackSimple, BackIcon } from '../../assets/SVGs';
 import SpaceBetweenRow from '../../components/wrapper/spacebetween';
@@ -292,60 +621,59 @@ import GradientIcon from '../../components/GradientIcon';
 import GlowWrapper from '../../components/GlowWrapper/GlowWrapper';
 import LinearGradient from 'react-native-linear-gradient';
 
-// Separate component for shop card to optimize rendering
+// EXACT COPY OF YOUR SEARCHSCREEN PATTERN
 const ShopCard = React.memo(({ item, isDarkMode, onPress }) => {
+    if (!item || !item._id) return null;
+
     return (
         <GlowWrapper
             isDarkMode={isDarkMode}
             borderRadius={10}
             showStars={true}
-            starCount={6}
+            starCount={5}
             showShinePatches={true}
             intensity="low"
             containerStyle={{
                 flex: 1,
-                margin: 5,
+                margin: 4,
             }}
         >
             <TouchableOpacity
                 style={[
                     styles.cardContainer,
-                    { backgroundColor: isDarkMode ? '#252525' : '#fff' }
+                    { backgroundColor: isDarkMode ? '#1a1a1a' : '#f0f0f0' }
                 ]}
-                onPress={onPress}
                 activeOpacity={0.8}
+                onPress={onPress}
             >
                 <Image
                     source={item?.Image ? { uri: item?.Image } : IMG.PostImage}
                     style={styles.shopImage}
                     resizeMode="cover"
                 />
-                <View style={styles.shopInfo}>
-                    <CustomText style={styles.shopName} numberOfLines={1}>
+                <View style={styles.overlay} />
+                <View style={styles.textContainer}>
+                    <Text style={styles.shopName} numberOfLines={1}>
                         {item?.Name}
-                    </CustomText>
+                    </Text>
                     <View style={styles.locationRow}>
                         <GradientIcon
                             colors={['#21B7FF', '#0084F8']}
-                            size={14}
+                            size={12}
                             iconType='FontAwesome6'
                             name={'location-dot'}
                         />
-                        <CustomText
-                            style={[
-                                styles.locationText,
-                                { color: isDarkMode ? 'white' : '#7d7d7d' }
-                            ]}
-                            numberOfLines={1}
-                        >
-                            {item?.Address[0]?.LocationName}
-                        </CustomText>
+                        <Text style={styles.locationText} numberOfLines={1}>
+                            {item?.Address?.[0]?.LocationName || 'No location'}
+                        </Text>
                     </View>
                 </View>
             </TouchableOpacity>
         </GlowWrapper>
     );
 });
+
+ShopCard.displayName = 'ShopCard';
 
 const Shops = ({ navigation }) => {
     const [allShops, setAllShops] = useState([]);
@@ -368,7 +696,6 @@ const Shops = ({ navigation }) => {
         }
     }, [isFocused]);
 
-    // Real-time search filter
     useEffect(() => {
         if (searchQuery.trim() === '') {
             setFilteredShops(allShops);
@@ -377,7 +704,6 @@ const Shops = ({ navigation }) => {
                 const shopName = shop?.Name?.toLowerCase() || '';
                 const shopAddress = shop?.Address?.[0]?.LocationName?.toLowerCase() || '';
                 const query = searchQuery.toLowerCase();
-
                 return shopName.includes(query) || shopAddress.includes(query);
             });
             setFilteredShops(filtered);
@@ -439,13 +765,9 @@ const Shops = ({ navigation }) => {
         />
     ), [isDarkMode, handleShopPress]);
 
-    const keyExtractor = useCallback((item) => item?._id?.toString(), []);
-
-    const getItemLayout = useCallback((data, index) => ({
-        length: 180,
-        offset: 180 * Math.floor(index / 2),
-        index,
-    }), []);
+    const keyExtractor = useCallback((item, index) => {
+        return item?._id?.toString() || `item-${index}`;
+    }, []);
 
     return (
         <View style={[styles.container, { backgroundColor: isDarkMode ? 'black' : '#fff' }]}>
@@ -460,7 +782,6 @@ const Shops = ({ navigation }) => {
                 <ShopsShimmerLoader isDarkMode={isDarkMode} shopCount={8} />
             ) : (
                 <>
-
                     <View style={[
                         styles.searchContainer,
                         { backgroundColor: isDarkMode ? '#252525' : '#F0F0F0' }
@@ -490,31 +811,20 @@ const Shops = ({ navigation }) => {
                         numColumns={2}
                         contentContainerStyle={styles.listContent}
                         showsVerticalScrollIndicator={false}
-                        removeClippedSubviews={true}
-                        maxToRenderPerBatch={10}
-                        windowSize={5}
-                        initialNumToRender={6}
-                        getItemLayout={getItemLayout}
                     />
 
                     {selector?.SellerStatus === 'Approved' && (
-                        // <TouchableOpacity onPress={() => navigation?.navigate('AddShops')}>
-                        //     <AddShopBtn />
-                        // </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() => navigation?.navigate('AddShops')}
+                            style={styles.addShopButtonContainer}
                         >
                             <LinearGradient
-                                // colors={['#ff00ff', '#6a5acd']}
                                 colors={['#21B7FF', '#0084F8']}
                                 start={{ x: 1, y: 0 }}
                                 end={{ x: 1, y: 1 }}
                                 style={styles.followButton}
                             >
-                                <Text style={[
-                                    styles.followText,
-                                    { color: '#fff' }
-                                ]}>
+                                <Text style={styles.followText}>
                                     Add shop
                                 </Text>
                             </LinearGradient>
@@ -556,25 +866,45 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     listContent: {
-        paddingHorizontal: 5,
+        paddingHorizontal: 8,
         paddingBottom: 20,
     },
     cardContainer: {
+        height: 160,
         borderRadius: 10,
-        padding: 7,
+        overflow: 'hidden',
+        position: 'relative',
     },
     shopImage: {
-        height: 100,
         width: '100%',
-        borderRadius: 10,
+        height: '100%',
+        resizeMode: 'cover',
     },
-    shopInfo: {
-        marginTop: 6,
+    overlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '50%',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        borderBottomLeftRadius: 10,
+        borderBottomRightRadius: 10,
+    },
+    textContainer: {
+        position: 'absolute',
+        bottom: 12,
+        left: 12,
+        right: 12,
     },
     shopName: {
+        color: '#fff',
         fontSize: 16,
+        fontWeight: '600',
         fontFamily: FONTS_FAMILY.SourceSans3_Bold,
-        marginBottom: 5,
+        textShadowColor: 'rgba(0, 0, 0, 0.8)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 3,
+        marginBottom: 4,
     },
     locationRow: {
         flexDirection: 'row',
@@ -582,21 +912,26 @@ const styles = StyleSheet.create({
         gap: 5,
     },
     locationText: {
-        fontSize: 10,
+        fontSize: 11,
+        color: '#ccc',
         flex: 1,
+    },
+    addShopButtonContainer: {
+        paddingHorizontal: 30,
+        paddingBottom: 10,
     },
     followButton: {
         paddingVertical: 15,
         paddingHorizontal: 16,
         borderRadius: 8,
         alignItems: 'center',
-        marginHorizontal:30
     },
     followText: {
         fontSize: 16,
         fontWeight: '600',
         fontFamily: FONTS_FAMILY.SourceSans3_Bold,
+        color: '#fff',
     },
 });
 
-export default Shops;
+export default React.memo(Shops);

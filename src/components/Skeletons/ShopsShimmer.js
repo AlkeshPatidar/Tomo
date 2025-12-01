@@ -1,3 +1,4 @@
+import { useIsFocused } from '@react-navigation/native';
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet, Dimensions } from 'react-native';
 
@@ -5,6 +6,27 @@ const { width } = Dimensions.get('window');
 
 const ShimmerPlaceholder = ({ width, height, borderRadius = 4, style }) => {
     const shimmerValue = useRef(new Animated.Value(0)).current;
+    const isFocused =useIsFocused()
+
+    // useEffect(() => {
+    //     const shimmerAnimation = Animated.loop(
+    //         Animated.sequence([
+    //             Animated.timing(shimmerValue, {
+    //                 toValue: 1,
+    //                 duration: 1000,
+    //                 useNativeDriver: true,
+    //             }),
+    //             Animated.timing(shimmerValue, {
+    //                 toValue: 0,
+    //                 duration: 1000,
+    //                 useNativeDriver: true,
+    //             }),
+    //         ])
+    //     );
+    //     shimmerAnimation.start();
+
+    //     return () => shimmerAnimation.stop();
+    // }, [shimmerValue]);
 
     useEffect(() => {
         const shimmerAnimation = Animated.loop(
@@ -21,10 +43,15 @@ const ShimmerPlaceholder = ({ width, height, borderRadius = 4, style }) => {
                 }),
             ])
         );
-        shimmerAnimation.start();
-
-        return () => shimmerAnimation.stop();
-    }, [shimmerValue]);
+    
+        if (isFocused) {
+            shimmerAnimation.start();  // 🔥 Screen visible → animation ON
+        } else {
+            shimmerAnimation.stop();   // 🛑 Screen background → animation OFF
+        }
+    
+        return () => shimmerAnimation.stop(); // Unmount → full cleanup
+    }, [isFocused, shimmerValue]);
 
     const opacity = shimmerValue.interpolate({
         inputRange: [0, 1],
